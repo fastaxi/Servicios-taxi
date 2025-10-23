@@ -231,7 +231,7 @@ export default function UsersScreen() {
           >
             <ScrollView keyboardShouldPersistTaps="handled">
               <Text variant="titleLarge" style={styles.modalTitle}>
-                Nuevo Taxista
+                {editingUser ? 'Editar Taxista' : 'Nuevo Taxista'}
               </Text>
 
               <TextInput
@@ -249,16 +249,19 @@ export default function UsersScreen() {
                 mode="outlined"
                 autoCapitalize="none"
                 style={styles.input}
+                disabled={!!editingUser}
               />
 
-              <TextInput
-                label="Contraseña *"
-                value={formData.password}
-                onChangeText={(text) => setFormData({ ...formData, password: text })}
-                mode="outlined"
-                secureTextEntry
-                style={styles.input}
-              />
+              {!editingUser && (
+                <TextInput
+                  label="Contraseña *"
+                  value={formData.password}
+                  onChangeText={(text) => setFormData({ ...formData, password: text })}
+                  mode="outlined"
+                  secureTextEntry
+                  style={styles.input}
+                />
+              )}
 
               <TextInput
                 label="Licencia Nº *"
