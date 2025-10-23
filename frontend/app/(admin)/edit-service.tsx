@@ -15,8 +15,8 @@ import {
   Menu,
   Snackbar,
 } from 'react-native-paper';
-import { useAuth } from '../contexts/AuthContext';
-import { useSync } from '../contexts/SyncContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useSync } from '../../contexts/SyncContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import axios from 'axios';
 
