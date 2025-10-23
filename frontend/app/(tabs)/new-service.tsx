@@ -37,8 +37,7 @@ export default function NewServiceScreen() {
   const [origen, setOrigen] = useState('');
   const [destino, setDestino] = useState('');
   const [importe, setImporte] = useState('');
-  const [tiempoEspera, setTiempoEspera] = useState('');
-  const [tiempoEsperaTipo, setTiempoEsperaTipo] = useState('minutos');
+  const [importeEspera, setImporteEspera] = useState('');
   const [kilometros, setKilometros] = useState('');
   const [tipo, setTipo] = useState('particular');
   const [empresaId, setEmpresaId] = useState('');
