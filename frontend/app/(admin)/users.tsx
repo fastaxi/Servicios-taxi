@@ -41,6 +41,7 @@ export default function UsersScreen() {
     username: '',
     nombre: '',
     password: '',
+    licencia: '',
   });
 
   const { token } = useAuth();
