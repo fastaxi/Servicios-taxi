@@ -138,12 +138,15 @@ export default function UsersScreen() {
         setSnackbar({ visible: true, message: 'Taxista actualizado correctamente' });
       } else {
         // Crear nuevo taxista - generar username a partir del nombre
+        console.log('Modo CREACIÓN');
         const generatedUsername = formData.nombre
           .toLowerCase()
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
           .replace(/\s+/g, '') // Eliminar espacios
           .replace(/[^a-z0-9]/g, ''); // Solo letras y números
+        
+        console.log('Username generado:', generatedUsername);
         
         await axios.post(
           `${API_URL}/users`,
