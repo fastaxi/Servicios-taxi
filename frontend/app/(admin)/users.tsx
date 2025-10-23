@@ -253,16 +253,15 @@ export default function UsersScreen() {
                 disabled={!!editingUser}
               />
 
-              {!editingUser && (
-                <TextInput
-                  label="Contraseña *"
-                  value={formData.password}
-                  onChangeText={(text) => setFormData({ ...formData, password: text })}
-                  mode="outlined"
-                  secureTextEntry
-                  style={styles.input}
-                />
-              )}
+              <TextInput
+                label={editingUser ? "Contraseña (dejar vacío para no cambiar)" : "Contraseña *"}
+                value={formData.password}
+                onChangeText={(text) => setFormData({ ...formData, password: text })}
+                mode="outlined"
+                secureTextEntry
+                style={styles.input}
+                placeholder={editingUser ? "Dejar vacío si no deseas cambiar" : ""}
+              />
 
               <TextInput
                 label="Licencia Nº *"
