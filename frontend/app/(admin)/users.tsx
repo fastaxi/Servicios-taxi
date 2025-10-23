@@ -210,6 +210,14 @@ export default function UsersScreen() {
                 style={styles.input}
               />
 
+              <TextInput
+                label="Licencia Nº *"
+                value={formData.licencia}
+                onChangeText={(text) => setFormData({ ...formData, licencia: text })}
+                mode="outlined"
+                style={styles.input}
+              />
+
               <View style={styles.modalActions}>
                 <Button mode="outlined" onPress={closeModal} style={styles.modalButton}>
                   Cancelar
