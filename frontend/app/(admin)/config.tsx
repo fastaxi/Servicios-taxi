@@ -103,7 +103,10 @@ export default function ConfigScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      setSnackbar({ visible: true, message: 'Configuración guardada correctamente' });
+      // Recargar la configuración en toda la app
+      await reloadConfig();
+      
+      setSnackbar({ visible: true, message: 'Configuración guardada correctamente. Los cambios se aplicarán en toda la app.' });
     } catch (error: any) {
       console.error('Error saving config:', error);
       setSnackbar({
