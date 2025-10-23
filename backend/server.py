@@ -374,6 +374,7 @@ async def get_services(
     current_user: dict = Depends(get_current_user),
     tipo: Optional[str] = Query(None),
     empresa_id: Optional[str] = Query(None),
+    taxista_id: Optional[str] = Query(None),
     fecha_inicio: Optional[str] = Query(None),
     fecha_fin: Optional[str] = Query(None)
 ):
@@ -382,6 +383,10 @@ async def get_services(
     # If not admin, only show own services
     if current_user.get("role") != "admin":
         query["taxista_id"] = str(current_user["_id"])
+    else:
+        # If admin and taxista_id filter provided
+        if taxista_id:
+            query["taxista_id"] = taxista_id
     
     # Apply filters
     if tipo:
