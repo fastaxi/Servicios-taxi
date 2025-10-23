@@ -70,7 +70,10 @@ export default function UsersScreen() {
   };
 
   const openModal = (user?: User) => {
+    console.log('=== openModal llamado ===');
+    console.log('user recibido:', user);
     if (user) {
+      console.log('MODO EDICIÓN - Seteando editingUser:', user);
       setEditingUser(user);
       setFormData({
         username: user.username,
@@ -79,6 +82,7 @@ export default function UsersScreen() {
         licencia: user.licencia || '',
       });
     } else {
+      console.log('MODO CREACIÓN - Limpiando editingUser a null');
       setEditingUser(null);
       setFormData({
         username: '',
