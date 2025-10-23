@@ -127,11 +127,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Endpoints para crear, listar y eliminar usuarios. Solo admin puede acceder. Taxista de prueba creado exitosamente."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: POST /users (admin ✓, taxista 403 ✓), GET /users (admin ✓, taxista 403 ✓), DELETE /users/{id} ✓. Autorización funcionando correctamente."
 
   - task: "CRUD Empresas"
     implemented: true
