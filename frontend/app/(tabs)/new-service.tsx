@@ -160,8 +160,7 @@ export default function NewServiceScreen() {
     setOrigen('');
     setDestino('');
     setImporte('');
-    setTiempoEspera('');
-    setTiempoEsperaTipo('minutos');
+    setImporteEspera('');
     setKilometros('');
     setTipo('particular');
     setEmpresaId('');
