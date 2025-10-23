@@ -81,8 +81,7 @@ export default function EditServiceScreen() {
         setOrigen(service.origen);
         setDestino(service.destino);
         setImporte(service.importe.toString());
-        setTiempoEspera(service.tiempo_espera ? service.tiempo_espera.toString() : '');
-        setTiempoEsperaTipo(service.tiempo_espera_tipo || 'minutos');
+        setImporteEspera(service.importe_espera ? service.importe_espera.toString() : '');
         setKilometros(service.kilometros.toString());
         setTipo(service.tipo);
         setEmpresaId(service.empresa_id || '');
