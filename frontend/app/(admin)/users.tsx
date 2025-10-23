@@ -263,15 +263,22 @@ export default function UsersScreen() {
                 style={styles.input}
               />
 
-              <TextInput
-                label="Usuario *"
-                value={formData.username}
-                onChangeText={(text) => setFormData({ ...formData, username: text })}
-                mode="outlined"
-                autoCapitalize="none"
-                style={styles.input}
-                disabled={editingUser ? true : false}
-              />
+              {editingUser && (
+                <TextInput
+                  label="Usuario"
+                  value={formData.username}
+                  mode="outlined"
+                  style={styles.input}
+                  disabled={true}
+                  editable={false}
+                />
+              )}
+
+              {!editingUser && (
+                <Text variant="bodySmall" style={styles.helperText}>
+                  El usuario se generará automáticamente a partir del nombre
+                </Text>
+              )}
 
               <TextInput
                 label={editingUser ? "Contraseña (dejar vacío para no cambiar)" : "Contraseña *"}
