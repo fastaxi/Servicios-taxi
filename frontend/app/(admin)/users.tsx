@@ -324,6 +324,13 @@ const styles = StyleSheet.create({
   username: {
     color: '#666',
   },
+  licencia: {
+    color: '#666',
+    marginTop: 4,
+  },
+  actions: {
+    flexDirection: 'row',
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
