@@ -266,6 +266,15 @@ export default function CompaniesScreen() {
               />
 
               <TextInput
+                label="Código Postal *"
+                value={formData.codigo_postal}
+                onChangeText={(text) => setFormData({ ...formData, codigo_postal: text })}
+                mode="outlined"
+                keyboardType="numeric"
+                style={styles.input}
+              />
+
+              <TextInput
                 label="Localidad *"
                 value={formData.localidad}
                 onChangeText={(text) => setFormData({ ...formData, localidad: text })}
@@ -278,6 +287,25 @@ export default function CompaniesScreen() {
                 value={formData.provincia}
                 onChangeText={(text) => setFormData({ ...formData, provincia: text })}
                 mode="outlined"
+                style={styles.input}
+              />
+
+              <TextInput
+                label="Teléfono *"
+                value={formData.telefono}
+                onChangeText={(text) => setFormData({ ...formData, telefono: text })}
+                mode="outlined"
+                keyboardType="phone-pad"
+                style={styles.input}
+              />
+
+              <TextInput
+                label="Email *"
+                value={formData.email}
+                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                mode="outlined"
+                keyboardType="email-address"
+                autoCapitalize="none"
                 style={styles.input}
               />
 
