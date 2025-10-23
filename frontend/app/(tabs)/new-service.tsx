@@ -228,7 +228,7 @@ export default function NewServiceScreen() {
               value={importe}
               onChangeText={setImporte}
               mode="outlined"
-              keyboardType="decimal-pad"
+              keyboardType="default"
               style={styles.halfInput}
             />
             <TextInput
@@ -236,7 +236,7 @@ export default function NewServiceScreen() {
               value={kilometros}
               onChangeText={setKilometros}
               mode="outlined"
-              keyboardType="decimal-pad"
+              keyboardType="default"
               style={styles.halfInput}
             />
           </View>
@@ -246,9 +246,9 @@ export default function NewServiceScreen() {
             value={importeEspera}
             onChangeText={setImporteEspera}
             mode="outlined"
-            keyboardType="numeric"
+            keyboardType="default"
             style={styles.input}
-            placeholder="0.00"
+            placeholder="0,00"
           />
 
           <Text variant="titleMedium" style={styles.sectionTitle}>
