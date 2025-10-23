@@ -64,6 +64,7 @@ class UserBase(BaseModel):
     username: str
     nombre: str
     role: str = "taxista"  # admin or taxista
+    licencia: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
