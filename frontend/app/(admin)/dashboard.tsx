@@ -18,6 +18,7 @@ import {
   IconButton,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'expo-router';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
