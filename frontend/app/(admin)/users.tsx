@@ -82,7 +82,7 @@ export default function UsersScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.username || !formData.nombre || !formData.password) {
+    if (!formData.username || !formData.nombre || !formData.password || !formData.licencia) {
       setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
       return;
     }
