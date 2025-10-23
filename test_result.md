@@ -367,9 +367,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Backend: Probar todos los endpoints CRUD y exportación"
-    - "Backend: Validar filtros y sincronización batch"
-    - "Backend: Verificar autorización y permisos"
+    - "Backend testing COMPLETADO ✅ - Todos los endpoints funcionando"
+    - "Frontend: Pendiente de testing UI (opcional - usuario puede probar manualmente)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
