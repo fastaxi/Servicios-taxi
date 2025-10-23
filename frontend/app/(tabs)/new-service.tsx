@@ -236,30 +236,15 @@ export default function NewServiceScreen() {
             />
           </View>
 
-          <Text variant="titleMedium" style={styles.sectionTitle}>
-            Tiempo de Espera
-          </Text>
-          <View style={styles.row}>
-            <TextInput
-              label={tiempoEsperaTipo === 'euros' ? 'Tiempo de Espera (ej: 2.50)' : 'Tiempo de Espera'}
-              value={tiempoEspera}
-              onChangeText={setTiempoEspera}
-              mode="outlined"
-              keyboardType="numeric"
-              style={styles.halfInput}
-              placeholder={tiempoEsperaTipo === 'euros' ? '0.00' : '0'}
-            />
-            <View style={styles.halfInput}>
-              <SegmentedButtons
-                value={tiempoEsperaTipo}
-                onValueChange={setTiempoEsperaTipo}
-                buttons={[
-                  { value: 'minutos', label: 'Min' },
-                  { value: 'euros', label: '€' },
-                ]}
-              />
-            </View>
-          </View>
+          <TextInput
+            label="Importe de espera (€)"
+            value={importeEspera}
+            onChangeText={setImporteEspera}
+            mode="outlined"
+            keyboardType="numeric"
+            style={styles.input}
+            placeholder="0.00"
+          />
 
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Tipo de Servicio
