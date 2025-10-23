@@ -66,6 +66,7 @@ export default function DashboardScreen() {
   const [exportMenuVisible, setExportMenuVisible] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   const { token } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     loadData();
