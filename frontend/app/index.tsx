@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { TextInput, Button, Text, Snackbar } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfig } from '../contexts/ConfigContext';
 import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
@@ -10,6 +11,7 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { user, login, loading: authLoading } = useAuth();
+  const { config, loading: configLoading } = useConfig();
   const router = useRouter();
 
   useEffect(() => {
