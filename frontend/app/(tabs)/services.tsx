@@ -64,12 +64,20 @@ export default function ServicesScreen() {
     <Card style={styles.card}>
       <Card.Content>
         <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.cardTitle}>
-            {item.origen} → {item.destino}
-          </Text>
-          <Chip mode="flat" style={styles.chip}>
-            {item.importe}€
-          </Chip>
+          <View style={styles.cardTitleContainer}>
+            <Text variant="titleMedium" style={styles.cardTitle}>
+              {item.origen} → {item.destino}
+            </Text>
+            <Chip mode="flat" style={styles.chip}>
+              {item.importe}€
+            </Chip>
+          </View>
+          <IconButton
+            icon="pencil"
+            size={20}
+            onPress={() => router.push(`/(tabs)/edit-service?id=${item.id}`)}
+            iconColor="#0066CC"
+          />
         </View>
 
         <View style={styles.detailRow}>
