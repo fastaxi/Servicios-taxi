@@ -27,6 +27,7 @@ export default function ServicesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { token } = useAuth();
   const { pendingServices, syncStatus, syncServices } = useSync();
+  const router = useRouter();
 
   useEffect(() => {
     loadServices();
