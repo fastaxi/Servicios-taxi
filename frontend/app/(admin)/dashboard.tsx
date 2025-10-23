@@ -253,6 +253,13 @@ export default function DashboardScreen() {
           <Text variant="bodySmall">{item.kilometros} km</Text>
         </View>
 
+        {item.importe_espera > 0 && (
+          <View style={styles.detailRow}>
+            <Text variant="bodySmall" style={styles.label}>Imp. espera:</Text>
+            <Text variant="bodySmall">{item.importe_espera}€</Text>
+          </View>
+        )}
+
         <View style={styles.detailRow}>
           <Text variant="bodySmall" style={styles.label}>Tipo:</Text>
           <Chip mode="outlined" compact>
