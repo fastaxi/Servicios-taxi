@@ -81,11 +81,21 @@ export default function AdminProfileScreen() {
             Contacto
           </Text>
           <Text variant="bodyMedium" style={styles.contact}>
-            www.taxitineo.com
+            {config.web}
           </Text>
           <Text variant="bodyMedium" style={styles.contact}>
-            985 80 15 15
+            {config.telefono}
           </Text>
+          {config.email && (
+            <Text variant="bodyMedium" style={styles.contact}>
+              {config.email}
+            </Text>
+          )}
+          {config.direccion && (
+            <Text variant="bodyMedium" style={styles.contact}>
+              {config.direccion}
+            </Text>
+          )}
         </Card.Content>
       </Card>
 
