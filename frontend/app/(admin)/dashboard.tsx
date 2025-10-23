@@ -219,12 +219,23 @@ export default function DashboardScreen() {
     <Card style={styles.card}>
       <Card.Content>
         <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.cardTitle}>
-            {item.origen} → {item.destino}
-          </Text>
-          <Chip mode="flat" style={styles.chip}>
-            {item.importe}€
-          </Chip>
+          <View style={styles.cardTitleContainer}>
+            <Text variant="titleMedium" style={styles.cardTitle}>
+              {item.origen} → {item.destino}
+            </Text>
+            <Chip mode="flat" style={styles.chip}>
+              {item.importe}€
+            </Chip>
+          </View>
+          <IconButton
+            icon="pencil"
+            size={20}
+            onPress={() => {
+              // Navegar a editar servicio (usaremos la misma pantalla que el taxista)
+              // Nota: necesitaremos crear una ruta para el admin o usar la del taxista
+            }}
+            iconColor="#0066CC"
+          />
         </View>
 
         <View style={styles.detailRow}>
