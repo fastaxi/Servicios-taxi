@@ -75,7 +75,7 @@ export default function ServicesScreen() {
           <IconButton
             icon="pencil"
             size={20}
-            onPress={() => router.push(`/(tabs)/edit-service?id=${item.id}`)}
+            onPress={() => router.push(`/edit-service?id=${item.id}`)}
             iconColor="#0066CC"
           />
         </View>
