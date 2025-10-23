@@ -60,6 +60,10 @@ export default function ServicesScreen() {
     setRefreshing(false);
   };
 
+  const formatEuro = (amount: number) => {
+    return amount.toFixed(2).replace('.', ',') + ' €';
+  };
+
   const renderService = ({ item }: { item: Service }) => (
     <Card style={styles.card}>
       <Card.Content>
@@ -69,7 +73,7 @@ export default function ServicesScreen() {
               {item.origen} → {item.destino}
             </Text>
             <Chip mode="flat" style={styles.chip}>
-              {item.importe}€
+              {formatEuro(item.importe)}
             </Chip>
           </View>
           <IconButton
@@ -93,7 +97,7 @@ export default function ServicesScreen() {
         {item.importe_espera > 0 && (
           <View style={styles.detailRow}>
             <Text variant="bodyMedium" style={styles.label}>Importe espera:</Text>
-            <Text variant="bodyMedium">{item.importe_espera}€</Text>
+            <Text variant="bodyMedium">{formatEuro(item.importe_espera)}</Text>
           </View>
         )}
 
