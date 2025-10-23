@@ -115,10 +115,10 @@ export default function LoginScreen() {
 
           <View style={styles.footer}>
             <Text variant="bodySmall" style={styles.footerText}>
-              www.taxitineo.com
+              {config.web}
             </Text>
             <Text variant="bodySmall" style={styles.footerText}>
-              985 80 15 15
+              {config.telefono}
             </Text>
           </View>
         </View>
