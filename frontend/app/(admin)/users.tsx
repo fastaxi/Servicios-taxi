@@ -102,8 +102,8 @@ export default function UsersScreen() {
         return;
       }
     } else {
-      // Modo creación: requerimos todos los campos
-      if (!formData.username || !formData.nombre || !formData.password || !formData.licencia) {
+      // Modo creación: requerimos nombre, password y licencia (username se genera automáticamente)
+      if (!formData.nombre || !formData.password || !formData.licencia) {
         setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
         return;
       }
@@ -131,13 +131,26 @@ export default function UsersScreen() {
         );
         setSnackbar({ visible: true, message: 'Taxista actualizado correctamente' });
       } else {
-        // Crear nuevo taxista
+        // Crear nuevo taxista - generar username a partir del nombre
+        const generatedUsername = formData.nombre
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
+          .replace(/\s+/g, '') // Eliminar espacios
+          .replace(/[^a-z0-9]/g, ''); // Solo letras y números
+        
         await axios.post(
           `${API_URL}/users`,
-          { ...formData, role: 'taxista' },
+          { 
+            username: generatedUsername,
+            nombre: formData.nombre,
+            password: formData.password,
+            licencia: formData.licencia,
+            role: 'taxista' 
+          },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setSnackbar({ visible: true, message: 'Taxista creado correctamente' });
+        setSnackbar({ visible: true, message: `Taxista creado correctamente. Usuario: ${generatedUsername}` });
       }
       
       await loadUsers();
