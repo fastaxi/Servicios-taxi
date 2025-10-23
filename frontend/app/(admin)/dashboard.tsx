@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
-  Alert,
   ScrollView,
 } from 'react-native';
 import {
@@ -15,11 +14,14 @@ import {
   Button,
   Menu,
   Snackbar,
+  TextInput,
+  IconButton,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { format } from 'date-fns';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
@@ -41,14 +43,25 @@ interface Company {
   nombre: string;
 }
 
+interface Taxista {
+  id: string;
+  nombre: string;
+  username: string;
+}
+
 export default function DashboardScreen() {
   const [services, setServices] = useState<Service[]>([]);
   const [filteredServices, setFilteredServices] = useState<Service[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [taxistas, setTaxistas] = useState<Taxista[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filterType, setFilterType] = useState('todos');
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedTaxista, setSelectedTaxista] = useState<string | null>(null);
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
+  const [taxistaMenuVisible, setTaxistaMenuVisible] = useState(false);
   const [exportMenuVisible, setExportMenuVisible] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   const { token } = useAuth();
@@ -59,21 +72,25 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     applyFilters();
-  }, [services, filterType, selectedCompany]);
+  }, [services, filterType, selectedCompany, selectedTaxista, fechaInicio, fechaFin]);
 
   const loadData = async () => {
     try {
-      const [servicesRes, companiesRes] = await Promise.all([
+      const [servicesRes, companiesRes, taxistasRes] = await Promise.all([
         axios.get(`${API_URL}/services`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get(`${API_URL}/companies`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
+        axios.get(`${API_URL}/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
 
       setServices(servicesRes.data);
       setCompanies(companiesRes.data);
+      setTaxistas(taxistasRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -82,6 +99,7 @@ export default function DashboardScreen() {
   const applyFilters = () => {
     let filtered = [...services];
 
+    // Filtro por tipo
     if (filterType === 'empresa') {
       filtered = filtered.filter((s) => s.tipo === 'empresa');
       if (selectedCompany) {
@@ -91,6 +109,19 @@ export default function DashboardScreen() {
       filtered = filtered.filter((s) => s.tipo === 'particular');
     }
 
+    // Filtro por taxista
+    if (selectedTaxista) {
+      filtered = filtered.filter((s) => s.taxista_nombre === selectedTaxista);
+    }
+
+    // Filtro por fechas
+    if (fechaInicio) {
+      filtered = filtered.filter((s) => s.fecha >= fechaInicio);
+    }
+    if (fechaFin) {
+      filtered = filtered.filter((s) => s.fecha <= fechaFin);
+    }
+
     setFilteredServices(filtered);
   };
 
@@ -98,6 +129,14 @@ export default function DashboardScreen() {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
+  };
+
+  const limpiarFiltros = () => {
+    setFilterType('todos');
+    setSelectedCompany(null);
+    setSelectedTaxista(null);
+    setFechaInicio('');
+    setFechaFin('');
   };
 
   const getTotalImporte = () => {
@@ -110,26 +149,41 @@ export default function DashboardScreen() {
 
   const exportData = async (format: 'csv' | 'excel' | 'pdf') => {
     try {
-      let queryParams = '';
+      let queryParams = new URLSearchParams();
+      
       if (filterType === 'empresa') {
-        queryParams = '?tipo=empresa';
+        queryParams.append('tipo', 'empresa');
         if (selectedCompany) {
           const company = companies.find((c) => c.nombre === selectedCompany);
           if (company) {
-            queryParams += `&empresa_id=${company.id}`;
+            queryParams.append('empresa_id', company.id);
           }
         }
       } else if (filterType === 'particular') {
-        queryParams = '?tipo=particular';
+        queryParams.append('tipo', 'particular');
       }
 
-      const response = await axios.get(
-        `${API_URL}/services/export/${format}${queryParams}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob',
+      if (selectedTaxista) {
+        const taxista = taxistas.find((t) => t.nombre === selectedTaxista);
+        if (taxista) {
+          queryParams.append('taxista_id', taxista.id);
         }
-      );
+      }
+
+      if (fechaInicio) {
+        queryParams.append('fecha_inicio', fechaInicio);
+      }
+      if (fechaFin) {
+        queryParams.append('fecha_fin', fechaFin);
+      }
+
+      const queryString = queryParams.toString();
+      const url = `${API_URL}/services/export/${format}${queryString ? '?' + queryString : ''}`;
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob',
+      });
 
       const fileUri = `${FileSystem.documentDirectory}servicios.${format}`;
       const base64 = await blobToBase64(response.data);
@@ -230,6 +284,8 @@ export default function DashboardScreen() {
       </ScrollView>
 
       <View style={styles.filtersContainer}>
+        <Text variant="titleMedium" style={styles.filterTitle}>Filtros</Text>
+        
         <SegmentedButtons
           value={filterType}
           onValueChange={(value) => {
@@ -249,7 +305,7 @@ export default function DashboardScreen() {
             visible={menuVisible}
             onDismiss={() => setMenuVisible(false)}
             anchor={
-              <Button mode="outlined" onPress={() => setMenuVisible(true)}>
+              <Button mode="outlined" onPress={() => setMenuVisible(true)} icon="office-building">
                 {selectedCompany || 'Todas las empresas'}
               </Button>
             }
@@ -275,22 +331,88 @@ export default function DashboardScreen() {
         )}
 
         <Menu
-          visible={exportMenuVisible}
-          onDismiss={() => setExportMenuVisible(false)}
+          visible={taxistaMenuVisible}
+          onDismiss={() => setTaxistaMenuVisible(false)}
           anchor={
-            <Button
-              mode="contained"
-              onPress={() => setExportMenuVisible(true)}
-              icon="download"
+            <Button 
+              mode="outlined" 
+              onPress={() => setTaxistaMenuVisible(true)} 
+              icon="account"
+              style={styles.filterButton}
             >
-              Exportar
+              {selectedTaxista || 'Todos los taxistas'}
             </Button>
           }
         >
-          <Menu.Item onPress={() => exportData('csv')} title="Exportar CSV" />
-          <Menu.Item onPress={() => exportData('excel')} title="Exportar Excel" />
-          <Menu.Item onPress={() => exportData('pdf')} title="Exportar PDF" />
+          <Menu.Item
+            onPress={() => {
+              setSelectedTaxista(null);
+              setTaxistaMenuVisible(false);
+            }}
+            title="Todos los taxistas"
+          />
+          {taxistas.map((taxista) => (
+            <Menu.Item
+              key={taxista.id}
+              onPress={() => {
+                setSelectedTaxista(taxista.nombre);
+                setTaxistaMenuVisible(false);
+              }}
+              title={taxista.nombre}
+            />
+          ))}
         </Menu>
+
+        <View style={styles.dateRow}>
+          <TextInput
+            label="Fecha Inicio"
+            value={fechaInicio}
+            onChangeText={setFechaInicio}
+            mode="outlined"
+            placeholder="dd/mm/yyyy"
+            style={styles.dateInput}
+            dense
+          />
+          <TextInput
+            label="Fecha Fin"
+            value={fechaFin}
+            onChangeText={setFechaFin}
+            mode="outlined"
+            placeholder="dd/mm/yyyy"
+            style={styles.dateInput}
+            dense
+          />
+        </View>
+
+        <View style={styles.actionRow}>
+          <Button
+            mode="outlined"
+            onPress={limpiarFiltros}
+            icon="filter-remove"
+            style={styles.actionButton}
+          >
+            Limpiar
+          </Button>
+
+          <Menu
+            visible={exportMenuVisible}
+            onDismiss={() => setExportMenuVisible(false)}
+            anchor={
+              <Button
+                mode="contained"
+                onPress={() => setExportMenuVisible(true)}
+                icon="download"
+                style={styles.actionButton}
+              >
+                Exportar
+              </Button>
+            }
+          >
+            <Menu.Item onPress={() => exportData('csv')} title="Exportar CSV" />
+            <Menu.Item onPress={() => exportData('excel')} title="Exportar Excel" />
+            <Menu.Item onPress={() => exportData('pdf')} title="Exportar PDF" />
+          </Menu>
+        </View>
       </View>
 
       <FlatList
@@ -345,10 +467,36 @@ const styles = StyleSheet.create({
   },
   filtersContainer: {
     padding: 16,
-    gap: 12,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  filterTitle: {
+    marginBottom: 12,
+    color: '#0066CC',
+    fontWeight: 'bold',
   },
   segmented: {
-    marginBottom: 8,
+    marginBottom: 12,
+  },
+  filterButton: {
+    marginBottom: 12,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  dateInput: {
+    flex: 1,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  actionButton: {
+    flex: 1,
   },
   list: {
     padding: 16,
