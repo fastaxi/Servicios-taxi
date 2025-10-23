@@ -3,11 +3,13 @@ import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Text, Card, Button, Divider } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
+import { useConfig } from '../../contexts/ConfigContext';
 import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { pendingServices } = useSync();
+  const { config } = useConfig();
   const router = useRouter();
 
   const handleLogout = async () => {
