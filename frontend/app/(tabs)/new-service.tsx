@@ -32,12 +32,13 @@ export default function NewServiceScreen() {
   const { token } = useAuth();
   const { addPendingService } = useSync();
 
-  const [fecha, setFecha] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [fecha, setFecha] = useState(format(new Date(), 'dd/MM/yyyy'));
   const [hora, setHora] = useState(format(new Date(), 'HH:mm'));
   const [origen, setOrigen] = useState('');
   const [destino, setDestino] = useState('');
   const [importe, setImporte] = useState('');
   const [tiempoEspera, setTiempoEspera] = useState('');
+  const [tiempoEsperaTipo, setTiempoEsperaTipo] = useState('minutos');
   const [kilometros, setKilometros] = useState('');
   const [tipo, setTipo] = useState('particular');
   const [empresaId, setEmpresaId] = useState('');
@@ -69,6 +70,13 @@ export default function NewServiceScreen() {
       return false;
     }
 
+    // Validar formato de fecha dd/mm/yyyy
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateRegex.test(fecha)) {
+      setSnackbar({ visible: true, message: 'Formato de fecha incorrecto. Usa dd/mm/yyyy' });
+      return false;
+    }
+
     if (tipo === 'empresa' && !empresaId) {
       setSnackbar({ visible: true, message: 'Por favor, selecciona una empresa' });
       return false;
@@ -87,6 +95,14 @@ export default function NewServiceScreen() {
       return false;
     }
 
+    if (tiempoEspera) {
+      const tiempoNum = parseFloat(tiempoEspera);
+      if (isNaN(tiempoNum) || tiempoNum < 0) {
+        setSnackbar({ visible: true, message: 'El tiempo de espera debe ser un número válido' });
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -101,7 +117,8 @@ export default function NewServiceScreen() {
       origen,
       destino,
       importe: parseFloat(importe),
-      tiempo_espera: tiempoEspera ? parseInt(tiempoEspera) : 0,
+      tiempo_espera: tiempoEspera ? parseFloat(tiempoEspera) : 0,
+      tiempo_espera_tipo: tiempoEsperaTipo,
       kilometros: parseFloat(kilometros),
       tipo,
       empresa_id: tipo === 'empresa' ? empresaId : null,
@@ -140,12 +157,13 @@ export default function NewServiceScreen() {
   };
 
   const resetForm = () => {
-    setFecha(format(new Date(), 'yyyy-MM-dd'));
+    setFecha(format(new Date(), 'dd/MM/yyyy'));
     setHora(format(new Date(), 'HH:mm'));
     setOrigen('');
     setDestino('');
     setImporte('');
     setTiempoEspera('');
+    setTiempoEsperaTipo('minutos');
     setKilometros('');
     setTipo('particular');
     setEmpresaId('');
@@ -169,12 +187,12 @@ export default function NewServiceScreen() {
 
           <View style={styles.dateRow}>
             <TextInput
-              label="Fecha"
+              label="Fecha (dd/mm/aaaa)"
               value={fecha}
               onChangeText={setFecha}
               mode="outlined"
               style={styles.dateInput}
-              placeholder="YYYY-MM-DD"
+              placeholder="dd/mm/aaaa"
             />
             <TextInput
               label="Hora"
@@ -221,14 +239,29 @@ export default function NewServiceScreen() {
             />
           </View>
 
-          <TextInput
-            label="Tiempo de Espera (min)"
-            value={tiempoEspera}
-            onChangeText={setTiempoEspera}
-            mode="outlined"
-            keyboardType="number-pad"
-            style={styles.input}
-          />
+          <Text variant="titleMedium" style={styles.sectionTitle}>
+            Tiempo de Espera
+          </Text>
+          <View style={styles.row}>
+            <TextInput
+              label="Tiempo de Espera"
+              value={tiempoEspera}
+              onChangeText={setTiempoEspera}
+              mode="outlined"
+              keyboardType="decimal-pad"
+              style={styles.halfInput}
+            />
+            <View style={styles.halfInput}>
+              <SegmentedButtons
+                value={tiempoEsperaTipo}
+                onValueChange={setTiempoEsperaTipo}
+                buttons={[
+                  { value: 'minutos', label: 'Min' },
+                  { value: 'euros', label: '€' },
+                ]}
+              />
+            </View>
+          </View>
 
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Tipo de Servicio
