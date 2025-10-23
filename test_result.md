@@ -210,27 +210,33 @@ backend:
 
   - task: "Exportación Excel"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint implementado con openpyxl. Incluye estilos y auto-ajuste de columnas. Pendiente de testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /services/export/excel funcionando correctamente. Archivo Excel generado (5479 bytes) con estilos y formato correcto. Solo admin tiene acceso."
 
   - task: "Exportación PDF"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint implementado con reportlab. Formato tabla con colores. Pendiente de testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /services/export/pdf funcionando correctamente. Archivo PDF generado (2326 bytes) con tabla formateada y colores Asturias. Solo admin tiene acceso."
 
 frontend:
   - task: "Login Screen"
