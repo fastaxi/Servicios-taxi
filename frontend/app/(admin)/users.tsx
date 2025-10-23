@@ -257,7 +257,8 @@ export default function UsersScreen() {
                 mode="outlined"
                 autoCapitalize="none"
                 style={styles.input}
-                disabled={!!editingUser}
+                editable={!editingUser}
+                disabled={editingUser !== null}
               />
 
               <TextInput
