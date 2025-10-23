@@ -92,6 +92,7 @@ export default function UsersScreen() {
 
   const closeModal = () => {
     setModalVisible(false);
+    setEditingUser(null);
   };
 
   const handleSubmit = async () => {
