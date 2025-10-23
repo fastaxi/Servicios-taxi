@@ -81,8 +81,11 @@ export default function CompaniesScreen() {
         nombre: company.nombre,
         cif: company.cif,
         direccion: company.direccion,
+        codigo_postal: company.codigo_postal,
         localidad: company.localidad,
         provincia: company.provincia,
+        telefono: company.telefono,
+        email: company.email,
       });
     } else {
       setEditingCompany(null);
