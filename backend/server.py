@@ -246,9 +246,20 @@ async def get_users(current_user: dict = Depends(get_current_admin)):
         for user in users
     ]
 
+class UserUpdate(BaseModel):
+    username: str
+    nombre: str
+    role: str = "taxista"
+    licencia: Optional[str] = None
+    password: Optional[str] = None
+
 @api_router.put("/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, user: UserBase, current_user: dict = Depends(get_current_admin)):
-    user_dict = user.dict(exclude={'password'})
+async def update_user(user_id: str, user: UserUpdate, current_user: dict = Depends(get_current_admin)):
+    user_dict = user.dict(exclude={'password'}, exclude_none=True)
+    
+    # Si se proporciona una nueva contraseña, hashearla
+    if user.password:
+        user_dict["password"] = get_password_hash(user.password)
     
     result = await db.users.update_one(
         {"_id": ObjectId(user_id)},
