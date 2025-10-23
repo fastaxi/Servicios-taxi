@@ -120,10 +120,20 @@ class ServiceBase(BaseModel):
 class ServiceCreate(ServiceBase):
     pass
 
-class ServiceResponse(ServiceBase):
+class ServiceResponse(BaseModel):
     id: str
     taxista_id: str
     taxista_nombre: str
+    fecha: str
+    hora: str
+    origen: str
+    destino: str
+    importe: float
+    importe_espera: Optional[float] = 0  # Opcional para compatibilidad con datos antiguos
+    kilometros: float
+    tipo: str
+    empresa_id: Optional[str] = None
+    empresa_nombre: Optional[str] = None
     created_at: datetime
     synced: bool = True
 
