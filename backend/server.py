@@ -131,6 +131,21 @@ class ServiceResponse(ServiceBase):
     class Config:
         from_attributes = True
 
+class ConfigBase(BaseModel):
+    nombre_radio_taxi: str
+    telefono: str
+    web: str
+    direccion: Optional[str] = ""
+    email: Optional[str] = ""
+    logo_base64: Optional[str] = None
+
+class ConfigResponse(ConfigBase):
+    id: str
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class ServiceSync(BaseModel):
     services: List[ServiceBase]
 
