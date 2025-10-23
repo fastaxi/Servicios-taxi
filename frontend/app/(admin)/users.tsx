@@ -29,6 +29,7 @@ interface User {
   username: string;
   nombre: string;
   role: string;
+  licencia?: string;
 }
 
 export default function UsersScreen() {
