@@ -22,7 +22,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Dashboard',
+          title: 'Panel',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
           ),
