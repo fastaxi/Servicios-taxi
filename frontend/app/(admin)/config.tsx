@@ -16,6 +16,7 @@ import {
   Snackbar,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
+import { useConfig } from '../../contexts/ConfigContext';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 
