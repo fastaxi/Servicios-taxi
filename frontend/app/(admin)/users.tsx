@@ -94,26 +94,51 @@ export default function UsersScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.username || !formData.nombre || !formData.password || !formData.licencia) {
-      setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
-      return;
+    if (editingUser) {
+      // Modo edición: no requerimos contraseña
+      if (!formData.username || !formData.nombre || !formData.licencia) {
+        setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
+        return;
+      }
+    } else {
+      // Modo creación: requerimos todos los campos
+      if (!formData.username || !formData.nombre || !formData.password || !formData.licencia) {
+        setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
+        return;
+      }
     }
 
     try {
-      await axios.post(
-        `${API_URL}/users`,
-        { ...formData, role: 'taxista' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      if (editingUser) {
+        // Actualizar taxista existente
+        await axios.put(
+          `${API_URL}/users/${editingUser.id}`,
+          { 
+            username: formData.username,
+            nombre: formData.nombre,
+            licencia: formData.licencia,
+            role: 'taxista'
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSnackbar({ visible: true, message: 'Taxista actualizado correctamente' });
+      } else {
+        // Crear nuevo taxista
+        await axios.post(
+          `${API_URL}/users`,
+          { ...formData, role: 'taxista' },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSnackbar({ visible: true, message: 'Taxista creado correctamente' });
+      }
       
-      setSnackbar({ visible: true, message: 'Taxista creado correctamente' });
       await loadUsers();
       closeModal();
     } catch (error: any) {
-      console.error('Error creating user:', error);
+      console.error('Error saving user:', error);
       setSnackbar({
         visible: true,
-        message: error.response?.data?.detail || 'Error al crear taxista',
+        message: error.response?.data?.detail || 'Error al guardar taxista',
       });
     }
   };
