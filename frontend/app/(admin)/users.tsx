@@ -257,7 +257,7 @@ export default function UsersScreen() {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={openModal}
+        onPress={() => openModal()}
       />
 
       <Portal>
