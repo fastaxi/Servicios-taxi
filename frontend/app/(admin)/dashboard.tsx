@@ -34,6 +34,7 @@ interface Service {
   origen: string;
   destino: string;
   importe: number;
+  importe_espera: number;
   kilometros: number;
   tipo: string;
   empresa_nombre?: string;
