@@ -170,13 +170,26 @@ export default function UsersScreen() {
             <Text variant="bodySmall" style={styles.username}>
               @{item.username}
             </Text>
+            {item.licencia && (
+              <Text variant="bodySmall" style={styles.licencia}>
+                Licencia: {item.licencia}
+              </Text>
+            )}
           </View>
-          <IconButton
-            icon="delete"
-            size={20}
-            onPress={() => handleDelete(item.id)}
-            iconColor="#D32F2F"
-          />
+          <View style={styles.actions}>
+            <IconButton
+              icon="pencil"
+              size={20}
+              onPress={() => openModal(item)}
+              iconColor="#0066CC"
+            />
+            <IconButton
+              icon="delete"
+              size={20}
+              onPress={() => handleDelete(item.id)}
+              iconColor="#D32F2F"
+            />
+          </View>
         </View>
       </Card.Content>
     </Card>
