@@ -96,9 +96,9 @@ export default function UsersScreen() {
 
   const handleSubmit = async () => {
     if (editingUser) {
-      // Modo edición: no requerimos contraseña
+      // Modo edición: no requerimos contraseña (es opcional)
       if (!formData.username || !formData.nombre || !formData.licencia) {
-        setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
+        setSnackbar({ visible: true, message: 'Por favor, completa todos los campos obligatorios' });
         return;
       }
     } else {
@@ -112,14 +112,21 @@ export default function UsersScreen() {
     try {
       if (editingUser) {
         // Actualizar taxista existente
+        const updateData: any = { 
+          username: formData.username,
+          nombre: formData.nombre,
+          licencia: formData.licencia,
+          role: 'taxista'
+        };
+        
+        // Solo incluir contraseña si se proporcionó
+        if (formData.password && formData.password.trim() !== '') {
+          updateData.password = formData.password;
+        }
+        
         await axios.put(
           `${API_URL}/users/${editingUser.id}`,
-          { 
-            username: formData.username,
-            nombre: formData.nombre,
-            licencia: formData.licencia,
-            role: 'taxista'
-          },
+          updateData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setSnackbar({ visible: true, message: 'Taxista actualizado correctamente' });
