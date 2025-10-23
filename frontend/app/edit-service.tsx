@@ -123,10 +123,10 @@ export default function EditServiceScreen() {
       return false;
     }
 
-    if (tiempoEspera) {
-      const tiempoNum = parseFloat(tiempoEspera);
-      if (isNaN(tiempoNum) || tiempoNum < 0) {
-        setSnackbar({ visible: true, message: 'El tiempo de espera debe ser un número válido' });
+    if (importeEspera) {
+      const importeNum = parseFloat(importeEspera);
+      if (isNaN(importeNum) || importeNum < 0) {
+        setSnackbar({ visible: true, message: 'El importe de espera debe ser un número válido' });
         return false;
       }
     }
