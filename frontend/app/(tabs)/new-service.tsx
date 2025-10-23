@@ -63,6 +63,11 @@ export default function NewServiceScreen() {
     }
   };
 
+  const parseEuroNumber = (value: string): number => {
+    // Convierte formato europeo (1.234,56) a formato JS (1234.56)
+    return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+  };
+
   const validateForm = () => {
     if (!fecha || !hora || !origen || !destino || !importe || !kilometros) {
       setSnackbar({ visible: true, message: 'Por favor, completa todos los campos obligatorios' });
@@ -81,8 +86,8 @@ export default function NewServiceScreen() {
       return false;
     }
 
-    const importeNum = parseFloat(importe);
-    const kmNum = parseFloat(kilometros);
+    const importeNum = parseEuroNumber(importe);
+    const kmNum = parseEuroNumber(kilometros);
 
     if (isNaN(importeNum) || importeNum <= 0) {
       setSnackbar({ visible: true, message: 'El importe debe ser un número válido mayor que 0' });
@@ -95,8 +100,8 @@ export default function NewServiceScreen() {
     }
 
     if (importeEspera) {
-      const importeNum = parseFloat(importeEspera);
-      if (isNaN(importeNum) || importeNum < 0) {
+      const importeEsperaNum = parseEuroNumber(importeEspera);
+      if (isNaN(importeEsperaNum) || importeEsperaNum < 0) {
         setSnackbar({ visible: true, message: 'El importe de espera debe ser un número válido' });
         return false;
       }
