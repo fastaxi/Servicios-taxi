@@ -35,6 +35,7 @@ export default function UsersScreen() {
   const [users, setUsers] = useState<User[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   
   const [formData, setFormData] = useState({
