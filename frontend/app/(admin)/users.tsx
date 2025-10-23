@@ -185,9 +185,12 @@ export default function UsersScreen() {
       await loadUsers();
     } catch (error: any) {
       console.error('Error deleting user:', error);
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : error.response?.data?.message || error.message || 'Error al eliminar taxista';
       setSnackbar({
         visible: true,
-        message: error.response?.data?.detail || 'Error al eliminar taxista',
+        message: errorMessage,
       });
     }
   };
