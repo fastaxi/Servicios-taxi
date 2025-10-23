@@ -246,6 +246,28 @@ async def get_users(current_user: dict = Depends(get_current_admin)):
         for user in users
     ]
 
+@api_router.put("/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, user: UserBase, current_user: dict = Depends(get_current_admin)):
+    user_dict = user.dict(exclude={'password'})
+    
+    result = await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": user_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
+    return UserResponse(
+        id=str(updated_user["_id"]),
+        username=updated_user["username"],
+        nombre=updated_user["nombre"],
+        role=updated_user["role"],
+        licencia=updated_user.get("licencia"),
+        created_at=updated_user["created_at"]
+    )
+
 @api_router.delete("/users/{user_id}")
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_admin)):
     result = await db.users.delete_one({"_id": ObjectId(user_id)})
