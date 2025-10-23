@@ -2,10 +2,12 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Text, Card, Button, Divider } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
+import { useConfig } from '../../contexts/ConfigContext';
 import { useRouter } from 'expo-router';
 
 export default function AdminProfileScreen() {
   const { user, logout } = useAuth();
+  const { config } = useConfig();
   const router = useRouter();
 
   const handleLogout = async () => {
