@@ -229,6 +229,7 @@ async def create_user(user: UserCreate, current_user: dict = Depends(get_current
         username=created_user["username"],
         nombre=created_user["nombre"],
         role=created_user["role"],
+        licencia=created_user.get("licencia"),
         created_at=created_user["created_at"]
     )
 
