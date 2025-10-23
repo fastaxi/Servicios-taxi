@@ -68,13 +68,24 @@ export default function UsersScreen() {
     setRefreshing(false);
   };
 
-  const openModal = () => {
-    setFormData({
-      username: '',
-      nombre: '',
-      password: '',
-      licencia: '',
-    });
+  const openModal = (user?: User) => {
+    if (user) {
+      setEditingUser(user);
+      setFormData({
+        username: user.username,
+        nombre: user.nombre,
+        password: '', // No mostramos la contraseña
+        licencia: user.licencia || '',
+      });
+    } else {
+      setEditingUser(null);
+      setFormData({
+        username: '',
+        nombre: '',
+        password: '',
+        licencia: '',
+      });
+    }
     setModalVisible(true);
   };
 
