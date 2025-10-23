@@ -20,11 +20,19 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/logo-taxi-tineo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        {config.logo_base64 ? (
+          <Image
+            source={{ uri: config.logo_base64 }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        ) : (
+          <Image
+            source={require('../../assets/images/logo-taxi-tineo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        )}
       </View>
 
       <Card style={styles.card}>
