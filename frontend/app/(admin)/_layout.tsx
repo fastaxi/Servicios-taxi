@@ -47,6 +47,15 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="config"
+        options={{
+          title: 'Configuración',
+          tabBarIcon: ({ color, size}) => (
+            <MaterialCommunityIcons name="cog" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
