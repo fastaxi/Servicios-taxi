@@ -1,15 +1,27 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
 import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List
-import uuid
-from datetime import datetime
-
+from typing import List, Optional
+from bson import ObjectId
+import csv
+import io
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,40 +31,584 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Security
+SECRET_KEY = os.environ.get('SECRET_KEY', 'taxi-tineo-secret-key-change-in-production')
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
-# Create a router with the /api prefix
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
+
+# Create the main app
+app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# Helper function for ObjectId
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid ObjectId")
+        return ObjectId(v)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+    @classmethod
+    def __get_pydantic_json_schema__(cls, field_schema):
+        field_schema.update(type="string")
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+# Models
+class UserBase(BaseModel):
+    username: str
+    nombre: str
+    role: str = "taxista"  # admin or taxista
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
+class UserCreate(UserBase):
+    password: str
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
+class UserResponse(UserBase):
+    id: str
+    created_at: datetime
 
-# Include the router in the main app
+    class Config:
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserResponse
+
+class CompanyBase(BaseModel):
+    nombre: str
+    cif: str
+    direccion: str
+    localidad: str
+    provincia: str
+
+class CompanyCreate(CompanyBase):
+    pass
+
+class CompanyResponse(CompanyBase):
+    id: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ServiceBase(BaseModel):
+    fecha: str
+    hora: str
+    origen: str
+    destino: str
+    importe: float  # IVA 10% incluido
+    tiempo_espera: int  # minutos
+    kilometros: float
+    tipo: str  # "empresa" or "particular"
+    empresa_id: Optional[str] = None
+    empresa_nombre: Optional[str] = None
+
+class ServiceCreate(ServiceBase):
+    pass
+
+class ServiceResponse(ServiceBase):
+    id: str
+    taxista_id: str
+    taxista_nombre: str
+    created_at: datetime
+    synced: bool = True
+
+    class Config:
+        from_attributes = True
+
+class ServiceSync(BaseModel):
+    services: List[ServiceBase]
+
+# Auth helpers
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    user = await db.users.find_one({"username": username})
+    if user is None:
+        raise credentials_exception
+    return user
+
+async def get_current_admin(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    return current_user
+
+# Auth endpoints
+@api_router.post("/auth/login", response_model=Token)
+async def login(user_login: UserLogin):
+    user = await db.users.find_one({"username": user_login.username})
+    if not user or not verify_password(user_login.password, user["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+    
+    access_token = create_access_token(data={"sub": user["username"]})
+    user_response = UserResponse(
+        id=str(user["_id"]),
+        username=user["username"],
+        nombre=user["nombre"],
+        role=user["role"],
+        created_at=user["created_at"]
+    )
+    return Token(access_token=access_token, token_type="bearer", user=user_response)
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_me(current_user: dict = Depends(get_current_user)):
+    return UserResponse(
+        id=str(current_user["_id"]),
+        username=current_user["username"],
+        nombre=current_user["nombre"],
+        role=current_user["role"],
+        created_at=current_user["created_at"]
+    )
+
+# User endpoints (admin only)
+@api_router.post("/users", response_model=UserResponse)
+async def create_user(user: UserCreate, current_user: dict = Depends(get_current_admin)):
+    # Check if user exists
+    existing_user = await db.users.find_one({"username": user.username})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already exists"
+        )
+    
+    user_dict = user.dict()
+    user_dict["password"] = get_password_hash(user_dict["password"])
+    user_dict["created_at"] = datetime.utcnow()
+    
+    result = await db.users.insert_one(user_dict)
+    created_user = await db.users.find_one({"_id": result.inserted_id})
+    
+    return UserResponse(
+        id=str(created_user["_id"]),
+        username=created_user["username"],
+        nombre=created_user["nombre"],
+        role=created_user["role"],
+        created_at=created_user["created_at"]
+    )
+
+@api_router.get("/users", response_model=List[UserResponse])
+async def get_users(current_user: dict = Depends(get_current_admin)):
+    users = await db.users.find({"role": "taxista"}).to_list(1000)
+    return [
+        UserResponse(
+            id=str(user["_id"]),
+            username=user["username"],
+            nombre=user["nombre"],
+            role=user["role"],
+            created_at=user["created_at"]
+        )
+        for user in users
+    ]
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_admin)):
+    result = await db.users.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted successfully"}
+
+# Company endpoints
+@api_router.post("/companies", response_model=CompanyResponse)
+async def create_company(company: CompanyCreate, current_user: dict = Depends(get_current_admin)):
+    company_dict = company.dict()
+    company_dict["created_at"] = datetime.utcnow()
+    
+    result = await db.companies.insert_one(company_dict)
+    created_company = await db.companies.find_one({"_id": result.inserted_id})
+    
+    return CompanyResponse(
+        id=str(created_company["_id"]),
+        **{k: v for k, v in created_company.items() if k != "_id"}
+    )
+
+@api_router.get("/companies", response_model=List[CompanyResponse])
+async def get_companies(current_user: dict = Depends(get_current_user)):
+    companies = await db.companies.find().to_list(1000)
+    return [
+        CompanyResponse(
+            id=str(company["_id"]),
+            **{k: v for k, v in company.items() if k != "_id"}
+        )
+        for company in companies
+    ]
+
+@api_router.put("/companies/{company_id}", response_model=CompanyResponse)
+async def update_company(company_id: str, company: CompanyCreate, current_user: dict = Depends(get_current_admin)):
+    company_dict = company.dict()
+    result = await db.companies.update_one(
+        {"_id": ObjectId(company_id)},
+        {"$set": company_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    updated_company = await db.companies.find_one({"_id": ObjectId(company_id)})
+    return CompanyResponse(
+        id=str(updated_company["_id"]),
+        **{k: v for k, v in updated_company.items() if k != "_id"}
+    )
+
+@api_router.delete("/companies/{company_id}")
+async def delete_company(company_id: str, current_user: dict = Depends(get_current_admin)):
+    result = await db.companies.delete_one({"_id": ObjectId(company_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Company not found")
+    return {"message": "Company deleted successfully"}
+
+# Service endpoints
+@api_router.post("/services", response_model=ServiceResponse)
+async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
+    service_dict = service.dict()
+    service_dict["taxista_id"] = str(current_user["_id"])
+    service_dict["taxista_nombre"] = current_user["nombre"]
+    service_dict["created_at"] = datetime.utcnow()
+    service_dict["synced"] = True
+    
+    result = await db.services.insert_one(service_dict)
+    created_service = await db.services.find_one({"_id": result.inserted_id})
+    
+    return ServiceResponse(
+        id=str(created_service["_id"]),
+        **{k: v for k, v in created_service.items() if k != "_id"}
+    )
+
+@api_router.post("/services/sync")
+async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(get_current_user)):
+    created_services = []
+    for service in service_sync.services:
+        service_dict = service.dict()
+        service_dict["taxista_id"] = str(current_user["_id"])
+        service_dict["taxista_nombre"] = current_user["nombre"]
+        service_dict["created_at"] = datetime.utcnow()
+        service_dict["synced"] = True
+        
+        result = await db.services.insert_one(service_dict)
+        created_services.append(str(result.inserted_id))
+    
+    return {"message": f"Synced {len(created_services)} services", "ids": created_services}
+
+@api_router.get("/services", response_model=List[ServiceResponse])
+async def get_services(
+    current_user: dict = Depends(get_current_user),
+    tipo: Optional[str] = Query(None),
+    empresa_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None)
+):
+    query = {}
+    
+    # If not admin, only show own services
+    if current_user.get("role") != "admin":
+        query["taxista_id"] = str(current_user["_id"])
+    
+    # Apply filters
+    if tipo:
+        query["tipo"] = tipo
+    if empresa_id:
+        query["empresa_id"] = empresa_id
+    if fecha_inicio:
+        query["fecha"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha" in query:
+            query["fecha"]["$lte"] = fecha_fin
+        else:
+            query["fecha"] = {"$lte": fecha_fin}
+    
+    services = await db.services.find(query).sort("created_at", -1).to_list(10000)
+    return [
+        ServiceResponse(
+            id=str(service["_id"]),
+            **{k: v for k, v in service.items() if k != "_id"}
+        )
+        for service in services
+    ]
+
+@api_router.put("/services/{service_id}", response_model=ServiceResponse)
+async def update_service(service_id: str, service: ServiceCreate, current_user: dict = Depends(get_current_user)):
+    # Check if service exists and belongs to user (unless admin)
+    existing_service = await db.services.find_one({"_id": ObjectId(service_id)})
+    if not existing_service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    if current_user.get("role") != "admin" and existing_service["taxista_id"] != str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="Not authorized to update this service")
+    
+    service_dict = service.dict()
+    result = await db.services.update_one(
+        {"_id": ObjectId(service_id)},
+        {"$set": service_dict}
+    )
+    
+    updated_service = await db.services.find_one({"_id": ObjectId(service_id)})
+    return ServiceResponse(
+        id=str(updated_service["_id"]),
+        **{k: v for k, v in updated_service.items() if k != "_id"}
+    )
+
+@api_router.delete("/services/{service_id}")
+async def delete_service(service_id: str, current_user: dict = Depends(get_current_user)):
+    # Check if service exists and belongs to user (unless admin)
+    existing_service = await db.services.find_one({"_id": ObjectId(service_id)})
+    if not existing_service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    if current_user.get("role") != "admin" and existing_service["taxista_id"] != str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this service")
+    
+    result = await db.services.delete_one({"_id": ObjectId(service_id)})
+    return {"message": "Service deleted successfully"}
+
+# Export endpoints
+@api_router.get("/services/export/csv")
+async def export_csv(
+    current_user: dict = Depends(get_current_admin),
+    tipo: Optional[str] = Query(None),
+    empresa_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None)
+):
+    query = {}
+    if tipo:
+        query["tipo"] = tipo
+    if empresa_id:
+        query["empresa_id"] = empresa_id
+    if fecha_inicio:
+        query["fecha"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha" in query:
+            query["fecha"]["$lte"] = fecha_fin
+        else:
+            query["fecha"] = {"$lte": fecha_fin}
+    
+    services = await db.services.find(query).sort("fecha", 1).to_list(10000)
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Tiempo Espera (min)", "Kilómetros", "Tipo", "Empresa"])
+    
+    for service in services:
+        writer.writerow([
+            service["fecha"],
+            service["hora"],
+            service["taxista_nombre"],
+            service["origen"],
+            service["destino"],
+            service["importe"],
+            service["tiempo_espera"],
+            service["kilometros"],
+            service["tipo"],
+            service.get("empresa_nombre", "")
+        ])
+    
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=servicios.csv"}
+    )
+
+@api_router.get("/services/export/excel")
+async def export_excel(
+    current_user: dict = Depends(get_current_admin),
+    tipo: Optional[str] = Query(None),
+    empresa_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None)
+):
+    query = {}
+    if tipo:
+        query["tipo"] = tipo
+    if empresa_id:
+        query["empresa_id"] = empresa_id
+    if fecha_inicio:
+        query["fecha"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha" in query:
+            query["fecha"]["$lte"] = fecha_fin
+        else:
+            query["fecha"] = {"$lte": fecha_fin}
+    
+    services = await db.services.find(query).sort("fecha", 1).to_list(10000)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Servicios"
+    
+    # Header styling
+    header_fill = PatternFill(start_color="0066CC", end_color="0066CC", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)
+    
+    headers = ["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Tiempo Espera (min)", "Kilómetros", "Tipo", "Empresa"]
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    # Data
+    for row_idx, service in enumerate(services, 2):
+        ws.cell(row=row_idx, column=1, value=service["fecha"])
+        ws.cell(row=row_idx, column=2, value=service["hora"])
+        ws.cell(row=row_idx, column=3, value=service["taxista_nombre"])
+        ws.cell(row=row_idx, column=4, value=service["origen"])
+        ws.cell(row=row_idx, column=5, value=service["destino"])
+        ws.cell(row=row_idx, column=6, value=service["importe"])
+        ws.cell(row=row_idx, column=7, value=service["tiempo_espera"])
+        ws.cell(row=row_idx, column=8, value=service["kilometros"])
+        ws.cell(row=row_idx, column=9, value=service["tipo"])
+        ws.cell(row=row_idx, column=10, value=service.get("empresa_nombre", ""))
+    
+    # Auto-adjust column widths
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column].width = adjusted_width
+    
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=servicios.xlsx"}
+    )
+
+@api_router.get("/services/export/pdf")
+async def export_pdf(
+    current_user: dict = Depends(get_current_admin),
+    tipo: Optional[str] = Query(None),
+    empresa_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None)
+):
+    query = {}
+    if tipo:
+        query["tipo"] = tipo
+    if empresa_id:
+        query["empresa_id"] = empresa_id
+    if fecha_inicio:
+        query["fecha"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha" in query:
+            query["fecha"]["$lte"] = fecha_fin
+        else:
+            query["fecha"] = {"$lte": fecha_fin}
+    
+    services = await db.services.find(query).sort("fecha", 1).to_list(10000)
+    
+    output = io.BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=A4)
+    elements = []
+    
+    styles = getSampleStyleSheet()
+    title = Paragraph("<b>Servicios de Taxi - Taxi Tineo</b>", styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Table data
+    data = [["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe", "KM"]]
+    
+    for service in services:
+        data.append([
+            service["fecha"],
+            service["hora"],
+            service["taxista_nombre"][:15],
+            service["origen"][:15],
+            service["destino"][:15],
+            f"{service['importe']}€",
+            service["kilometros"]
+        ])
+    
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0066CC')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    output.seek(0)
+    return StreamingResponse(
+        output,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=servicios.pdf"}
+    )
+
+# Initialize default admin user
+@app.on_event("startup")
+async def startup_event():
+    # Create default admin if not exists
+    admin = await db.users.find_one({"username": "admin"})
+    if not admin:
+        admin_data = {
+            "username": "admin",
+            "password": get_password_hash("admin123"),
+            "nombre": "Administrador",
+            "role": "admin",
+            "created_at": datetime.utcnow()
+        }
+        await db.users.insert_one(admin_data)
+        logger.info("Default admin user created: username=admin, password=admin123")
+
+# Include router
 app.include_router(api_router)
 
 app.add_middleware(
