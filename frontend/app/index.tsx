@@ -42,7 +42,7 @@ export default function LoginScreen() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || configLoading) {
     return (
       <View style={styles.container}>
         <Text>Cargando...</Text>
@@ -60,16 +60,24 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.logoContainer}>
-          <Image
-            source={require('../assets/images/logo-taxi-tineo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          {config.logo_base64 ? (
+            <Image
+              source={{ uri: config.logo_base64 }}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          ) : (
+            <Image
+              source={require('../assets/images/logo-taxi-tineo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          )}
         </View>
 
         <View style={styles.formContainer}>
           <Text variant="headlineMedium" style={styles.title}>
-            Taxi Tineo
+            {config.nombre_radio_taxi}
           </Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
             Gestión de Servicios
