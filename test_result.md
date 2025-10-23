@@ -142,11 +142,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Endpoints completos para gestionar empresas. Empresa de prueba creada correctamente."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: POST /companies (admin ✓, taxista 403 ✓), GET /companies (admin ✓, taxista ✓), PUT /companies/{id} ✓, DELETE /companies/{id} ✓. Autorización correcta."
 
   - task: "CRUD Servicios"
     implemented: true
@@ -154,35 +157,44 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Endpoints para crear, listar, actualizar y eliminar servicios. Servicio de prueba creado exitosamente con todos los campos."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: POST /services (taxista ✓, admin ✓), GET /services (taxista ve solo propios ✓, admin ve todos ✓), PUT /services/{id} ✓, DELETE /services/{id} ✓. Autorización por propietario funcionando."
 
   - task: "Sincronización batch de servicios"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint /api/services/sync implementado para recibir múltiples servicios offline. Pendiente de testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: POST /services/sync con array de 2 servicios funcionando correctamente. Sincronización batch operativa."
 
   - task: "Filtros de servicios"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Filtros por tipo, empresa_id, fecha_inicio y fecha_fin implementados en GET /api/services. Pendiente de testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: Filtros ?tipo=particular ✓, ?fecha_inicio & ?fecha_fin ✓. Todos los filtros funcionando correctamente."
 
   - task: "Exportación CSV"
     implemented: true
