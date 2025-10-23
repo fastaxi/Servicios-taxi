@@ -39,9 +39,12 @@ export default function ServicesScreen() {
 
   const loadServices = async () => {
     try {
+      console.log('=== Cargando servicios del taxista ===');
+      console.log('Token:', token ? 'Presente' : 'Ausente');
       const response = await axios.get(`${API_URL}/services`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Servicios recibidos:', response.data.length);
       setServices(response.data);
     } catch (error) {
       console.error('Error loading services:', error);
