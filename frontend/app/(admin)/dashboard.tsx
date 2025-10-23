@@ -231,7 +231,7 @@ export default function DashboardScreen() {
               {item.origen} → {item.destino}
             </Text>
             <Chip mode="flat" style={styles.chip}>
-              {item.importe}€
+              {formatEuro(item.importe)}
             </Chip>
           </View>
           <IconButton
@@ -260,7 +260,7 @@ export default function DashboardScreen() {
         {item.importe_espera > 0 && (
           <View style={styles.detailRow}>
             <Text variant="bodySmall" style={styles.label}>Imp. espera:</Text>
-            <Text variant="bodySmall">{item.importe_espera}€</Text>
+            <Text variant="bodySmall">{formatEuro(item.importe_espera)}</Text>
           </View>
         )}
 
