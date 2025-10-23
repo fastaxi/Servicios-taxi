@@ -72,6 +72,7 @@ export default function UsersScreen() {
       username: '',
       nombre: '',
       password: '',
+      licencia: '',
     });
     setModalVisible(true);
   };
