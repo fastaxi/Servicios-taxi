@@ -43,12 +43,12 @@ Contraseña: taxista123
 
 ### Vista Web (Preview)
 ```
-https://bb738587-1f61-4ab1-b72f-fdddb5611289.preview.emergentagent.com
+https://taxi-fleet-3.preview.emergentagent.com
 ```
 
 ### API Backend
 ```
-https://bb738587-1f61-4ab1-b72f-fdddb5611289.preview.emergentagent.com/api
+https://taxi-fleet-3.preview.emergentagent.com/api
 ```
 
 ## 📱 Cómo Usar en Dispositivo Móvil Real

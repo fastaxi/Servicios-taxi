@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import io
 
 # Configuration
-BASE_URL = "https://radiotaxi-app.preview.emergentagent.com/api"
+BASE_URL = "https://taxi-fleet-3.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 TAXISTA_CREDENTIALS = {"username": "taxista1", "password": "taxista123"}
 

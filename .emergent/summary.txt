@@ -1,0 +1,130 @@
+<analysis>
+The AI engineer successfully built a comprehensive taxi management application, iterating heavily based on user feedback. Initial development focused on establishing a full-stack Expo/FastAPI/MongoDB architecture, including user authentication, service logging, and administrative features like company and user management, along with basic data export. A key challenge involved persistent frontend caching issues and a subtle React rendering bug () that required deep debugging and careful state management in . Backend validation errors due to schema changes and old data also needed addressing by making fields optional and cleaning test data. Subsequent enhancements added critical features such as dynamic app configuration, advanced filtering in the admin panel, and robust service editing capabilities for both taxistas and administrators. The latest task involves refining the Tiempo de espera field to be solely Importe de espera in euros, removing minutes.
+</analysis>
+
+<product_requirements>
+The user requires an Android mobile application for the taxi sector in Asturias, Spain.
+**Core Features:**
+1.  **Taxista Module:**
+    *   User registration with username/password.
+    *   Record services with: Date, Time, Service Origin, Service Destination, Service Amount (10% IVA included), Waiting Time (initially minutes/euros, then changed to only Importe de espera in euros), Total Kilometers, Company/Particular.
+    *   View and edit their own recorded services.
+    *   Offline functionality: Record services without connection, synchronize later.
+2.  **Administrator Module:**
+    *   Admin user to be created by the system.
+    *   Register and manage other users (taxistas), including assigning a License Number and editable password.
+    *   Manage companies (Name, CIF, Address, Locality, Province, then added Postal Code, Contact Phone, Email).
+    *   View all services performed by all users.
+    *   Filter services by: Company, Particular, Specific Taxista, Date Range (calendar).
+    *   Export filtered data in CSV, Excel, and PDF formats.
+    *   Edit any service, similar to taxistas.
+    *   Personalize the application: Logo, contact details (name, phone, website, address, email).
+3.  **Branding:** Initially requested Asturian flag colors and Taxi Tineo logo/contact info, later evolved to dynamic configuration.
+4.  **Technical:** Mobile app (Expo), FastAPI backend, MongoDB database. JWT for authentication.
+
+**Implementation Status:**
+All core features and requested enhancements have been implemented and tested, including user/company/service CRUD, admin filters, dynamic branding, and offline sync. The Importe de espera field is currently being updated.
+</product_requirements>
+
+<key_technical_concepts>
+-   **Full-stack:** Expo (React Native) frontend, FastAPI backend, MongoDB database.
+-   **Authentication:** JWT (JSON Web Tokens) for user (admin/taxista) authentication.
+-   **Routing:** Expo Router for file-based navigation.
+-   **State Management:** React Context API for global configuration and authentication.
+-   **Forms:**  for efficient form handling and validation.
+-   **UI Library:**  for Material Design components.
+-   **Data Persistence:** Asynchronous storage for offline capabilities (implied by ).
+-   **Image Handling:**  for selecting and storing images as Base64.
+-   **Data Export:** Backend generation of CSV, Excel, PDF.
+</key_technical_concepts>
+
+<code_architecture>
+The application uses a standard full-stack structure with a  Expo project and a  FastAPI project, both residing in the  directory.
+
+**Directory Structure:**
+
+
+**Key Files and Changes:**
+
+*   
+    *   **Importance:** Contains the FastAPI backend, MongoDB models, authentication logic, and API endpoints for users, companies, services, and dynamic configuration.
+    *   **Changes:**
+        *   Initial setup with user (admin/taxista) and company models.
+        *   Added fields to Company model (codigo_postal, telefono, email) and User model (licencia). Made these optional in response models to handle existing data.
+        *   Implemented CRUD endpoints for users, companies, services, and a dedicated endpoint for  (logo, name, contact info).
+        *   Adjusted  model for  and then  (only euros).
+        *   Implemented filtering logic for services by taxista and date range.
+        *   Updated service creation/editing to handle new fields and logic.
+        *   Removed  field, making  a direct float.
+
+*   
+    *   **Importance:** Main layout for Expo Router, handling global wrappers like  and .
+    *   **Changes:** Wrapped the app with  to make dynamic settings available globally.
+
+*   
+    *   **Importance:** Initial login screen.
+    *   **Changes:** Updated to use dynamic configuration (logo, name, contact info) from .
+
+*   
+    *   **Importance:** Admin screen for managing taxistas (users).
+    *   **Changes:**
+        *   Added  field for taxistas.
+        *   Enabled editing of taxista details, including optional password change.
+        *   Implemented automatic username generation from name for new taxistas.
+        *   Fixed a critical bug where the FAB button was passing an event object to , causing edit mode to trigger incorrectly.
+        *   Improved error handling for snackbar messages to convert error objects to strings.
+        *   Removed the  input field from the creation form, as it's now auto-generated.
+
+*   
+    *   **Importance:** Admin screen for managing companies.
+    *   **Changes:** Added new fields (codigo_postal, telefono, email) to the company creation/edit form.
+
+*   
+    *   **Importance:** Admin panel displaying service statistics and list.
+    *   **Changes:** Added filters for taxista and date range, using . Added edit button for services.
+
+*   
+    *   **Importance:** New admin screen for managing dynamic application configuration.
+    *   **Changes:** Created to allow admin to upload logo (base64) and edit radio taxi details (name, phone, website, address, email). Uses .
+
+*   
+    *   **Importance:** Taxista's view of their own services.
+    *   **Changes:** Added an edit button for each service, navigating to the  screen.
+
+*   
+    *   **Importance:** Taxista's form to record a new service.
+    *   **Changes:**
+        *   Updated to support  (minutes/euros) initially, then changed to just  (euros only, allowing decimals).
+        *   Changed  for  to numeric for better decimal support.
+        *   Updated date format to dd/mm/yyyy.
+        *   Currently being modified to change Tiempo de espera to Importe de espera.
+
+*    (initially in , moved to root )
+    *   **Importance:** Shared screen for editing an existing service for both taxistas and administrators.
+    *   **Changes:**
+        *   Created to allow editing of service details.
+        *   Updated to support  (euros only, allowing decimals).
+        *   Changed  for  to numeric for better decimal support.
+        *   Updated date format to dd/mm/yyyy.
+        *   Currently being modified to change Tiempo de espera to Importe de espera.
+
+*   
+    *   **Importance:** React Context for managing and providing dynamic application configuration throughout the frontend.
+    *   **Changes:** Created to fetch and provide  data (logo, name, contact info) to all components.
+</code_architecture>
+
+<pending_tasks>
+-   Frontend updates for Importe de espera in  and admin dashboard.
+-   Final verification of the Importe de espera change across all relevant frontend components.
+</pending_tasks>
+
+<current_work>
+The AI engineer is currently in the process of updating the application to change the Tiempo de espera field to Importe de espera, and to ensure it is exclusively in euros, removing the option for minutes. This involves changes in both the backend and frontend.
+
+So far, the backend () has been updated to reflect this change ().
+On the frontend, the  file has been partially updated to remove the minutes option (, ). The work is ongoing, as indicated by the final chat message being an edit to . The full scope of this change will involve updating  and potentially the dashboard to reflect Importe de espera only.
+</current_work>
+
+<optional_next_step>
+Update the  file in the frontend to change Tiempo de espera to Importe de espera (euros only).
+</optional_next_step>
