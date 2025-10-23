@@ -97,14 +97,14 @@ export default function UsersScreen() {
   const handleSubmit = async () => {
     if (editingUser) {
       // Modo edición: no requerimos contraseña (es opcional)
-      if (!formData.username || !formData.nombre || !formData.licencia) {
+      if (!formData.nombre || !formData.licencia) {
         setSnackbar({ visible: true, message: 'Por favor, completa todos los campos obligatorios' });
         return;
       }
     } else {
       // Modo creación: requerimos nombre, password y licencia (username se genera automáticamente)
       if (!formData.nombre || !formData.password || !formData.licencia) {
-        setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
+        setSnackbar({ visible: true, message: 'Por favor, completa: Nombre, Contraseña y Licencia' });
         return;
       }
     }
