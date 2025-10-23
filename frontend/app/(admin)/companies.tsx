@@ -44,8 +44,11 @@ export default function CompaniesScreen() {
     nombre: '',
     cif: '',
     direccion: '',
+    codigo_postal: '',
     localidad: '',
     provincia: 'Asturias',
+    telefono: '',
+    email: '',
   });
 
   const { token } = useAuth();
