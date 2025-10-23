@@ -232,10 +232,7 @@ export default function DashboardScreen() {
           <IconButton
             icon="pencil"
             size={20}
-            onPress={() => {
-              // Navegar a editar servicio (usaremos la misma pantalla que el taxista)
-              // Nota: necesitaremos crear una ruta para el admin o usar la del taxista
-            }}
+            onPress={() => router.push(`/(admin)/edit-service?id=${item.id}`)}
             iconColor="#0066CC"
           />
         </View>
