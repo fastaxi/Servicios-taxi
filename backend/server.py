@@ -88,8 +88,11 @@ class CompanyBase(BaseModel):
     nombre: str
     cif: str
     direccion: str
+    codigo_postal: str
     localidad: str
     provincia: str
+    telefono: str
+    email: str
 
 class CompanyCreate(CompanyBase):
     pass
