@@ -109,7 +109,7 @@ export default function CompaniesScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.nombre || !formData.cif || !formData.direccion || !formData.localidad) {
+    if (!formData.nombre || !formData.cif || !formData.direccion || !formData.codigo_postal || !formData.localidad || !formData.telefono || !formData.email) {
       setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
       return;
     }
