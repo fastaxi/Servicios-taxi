@@ -112,7 +112,7 @@ class ServiceBase(BaseModel):
     destino: str
     importe: float  # IVA 10% incluido
     tiempo_espera: float  # puede ser minutos o euros
-    tiempo_espera_tipo: str  # "minutos" or "euros"
+    tiempo_espera_tipo: Optional[str] = "minutos"  # "minutos" or "euros"
     kilometros: float
     tipo: str  # "empresa" or "particular"
     empresa_id: Optional[str] = None
