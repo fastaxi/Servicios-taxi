@@ -358,6 +358,12 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
   },
+  helperText: {
+    color: '#666',
+    fontStyle: 'italic',
+    marginBottom: 16,
+    marginTop: -8,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
