@@ -242,6 +242,7 @@ async def get_users(current_user: dict = Depends(get_current_admin)):
             username=user["username"],
             nombre=user["nombre"],
             role=user["role"],
+            licencia=user.get("licencia"),
             created_at=user["created_at"]
         )
         for user in users
