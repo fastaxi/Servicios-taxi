@@ -142,8 +142,12 @@ export default function DashboardScreen() {
     setFechaFin('');
   };
 
+  const formatEuro = (amount: number) => {
+    return amount.toFixed(2).replace('.', ',') + ' €';
+  };
+
   const getTotalImporte = () => {
-    return filteredServices.reduce((sum, s) => sum + s.importe, 0).toFixed(2);
+    return formatEuro(filteredServices.reduce((sum, s) => sum + s.importe, 0));
   };
 
   const getTotalKilometros = () => {
