@@ -289,7 +289,7 @@ export default function DashboardScreen() {
         <Card style={styles.statCard}>
           <Card.Content>
             <Text variant="titleLarge" style={[styles.statValue, styles.amountText]}>
-              {getTotalImporte()}€
+              {getTotalImporte()}
             </Text>
             <Text variant="bodyMedium">Total Importe</Text>
           </Card.Content>
