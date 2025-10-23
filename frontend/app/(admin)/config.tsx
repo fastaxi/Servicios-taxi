@@ -33,6 +33,7 @@ interface Config {
 
 export default function ConfigScreen() {
   const { token } = useAuth();
+  const { reloadConfig } = useConfig();
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   
