@@ -166,9 +166,12 @@ export default function UsersScreen() {
       closeModal();
     } catch (error: any) {
       console.error('Error saving user:', error);
+      const errorMessage = typeof error.response?.data?.detail === 'string' 
+        ? error.response.data.detail 
+        : error.response?.data?.message || error.message || 'Error al guardar taxista';
       setSnackbar({
         visible: true,
-        message: error.response?.data?.detail || 'Error al guardar taxista',
+        message: errorMessage,
       });
     }
   };
