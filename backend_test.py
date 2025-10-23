@@ -1,0 +1,613 @@
+#!/usr/bin/env python3
+"""
+Comprehensive Backend API Testing for Taxi Tineo Management System
+Tests all CRUD operations, authentication, authorization, filters, and exports
+"""
+
+import requests
+import json
+import sys
+from datetime import datetime, timedelta
+import io
+
+# Configuration
+BASE_URL = "https://radiotaxi-app.preview.emergentagent.com/api"
+ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
+TAXISTA_CREDENTIALS = {"username": "taxista1", "password": "taxista123"}
+
+class TaxiTineoAPITester:
+    def __init__(self):
+        self.admin_token = None
+        self.taxista_token = None
+        self.test_results = []
+        self.created_resources = {
+            'users': [],
+            'companies': [],
+            'services': []
+        }
+        
+    def log_result(self, test_name, success, message, details=None):
+        """Log test result"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        result = {
+            'test': test_name,
+            'status': status,
+            'message': message,
+            'details': details or {}
+        }
+        self.test_results.append(result)
+        print(f"{status}: {test_name} - {message}")
+        if details and not success:
+            print(f"   Details: {details}")
+    
+    def authenticate_admin(self):
+        """Authenticate as admin and get token"""
+        try:
+            response = requests.post(f"{BASE_URL}/auth/login", json=ADMIN_CREDENTIALS)
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data['access_token']
+                self.log_result("Admin Authentication", True, "Admin login successful")
+                return True
+            else:
+                self.log_result("Admin Authentication", False, f"Login failed: {response.status_code}", response.text)
+                return False
+        except Exception as e:
+            self.log_result("Admin Authentication", False, f"Exception: {str(e)}")
+            return False
+    
+    def authenticate_taxista(self):
+        """Authenticate as taxista and get token"""
+        try:
+            response = requests.post(f"{BASE_URL}/auth/login", json=TAXISTA_CREDENTIALS)
+            if response.status_code == 200:
+                data = response.json()
+                self.taxista_token = data['access_token']
+                self.log_result("Taxista Authentication", True, "Taxista login successful")
+                return True
+            else:
+                self.log_result("Taxista Authentication", False, f"Login failed: {response.status_code}", response.text)
+                return False
+        except Exception as e:
+            self.log_result("Taxista Authentication", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_auth_endpoints(self):
+        """Test authentication endpoints"""
+        print("\n=== TESTING AUTHENTICATION ===")
+        
+        # Test invalid credentials
+        try:
+            response = requests.post(f"{BASE_URL}/auth/login", json={"username": "invalid", "password": "invalid"})
+            if response.status_code == 401:
+                self.log_result("Invalid Login", True, "Correctly rejected invalid credentials")
+            else:
+                self.log_result("Invalid Login", False, f"Expected 401, got {response.status_code}")
+        except Exception as e:
+            self.log_result("Invalid Login", False, f"Exception: {str(e)}")
+        
+        # Test /auth/me with admin token
+        if self.admin_token:
+            try:
+                headers = {"Authorization": f"Bearer {self.admin_token}"}
+                response = requests.get(f"{BASE_URL}/auth/me", headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('role') == 'admin':
+                        self.log_result("Admin /auth/me", True, "Admin profile retrieved correctly")
+                    else:
+                        self.log_result("Admin /auth/me", False, f"Wrong role: {data.get('role')}")
+                else:
+                    self.log_result("Admin /auth/me", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("Admin /auth/me", False, f"Exception: {str(e)}")
+        
+        # Test /auth/me with taxista token
+        if self.taxista_token:
+            try:
+                headers = {"Authorization": f"Bearer {self.taxista_token}"}
+                response = requests.get(f"{BASE_URL}/auth/me", headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('role') == 'taxista':
+                        self.log_result("Taxista /auth/me", True, "Taxista profile retrieved correctly")
+                    else:
+                        self.log_result("Taxista /auth/me", False, f"Wrong role: {data.get('role')}")
+                else:
+                    self.log_result("Taxista /auth/me", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("Taxista /auth/me", False, f"Exception: {str(e)}")
+    
+    def test_user_crud(self):
+        """Test user CRUD operations"""
+        print("\n=== TESTING USER CRUD ===")
+        
+        if not self.admin_token:
+            self.log_result("User CRUD Setup", False, "No admin token available")
+            return
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test create user (admin only)
+        test_user = {
+            "username": f"test_taxista_{datetime.now().strftime('%H%M%S')}",
+            "password": "test123",
+            "nombre": "Taxista de Prueba",
+            "role": "taxista"
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/users", json=test_user, headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                user_id = data['id']
+                self.created_resources['users'].append(user_id)
+                self.log_result("Create User (Admin)", True, f"User created with ID: {user_id}")
+            else:
+                self.log_result("Create User (Admin)", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Create User (Admin)", False, f"Exception: {str(e)}")
+        
+        # Test create user with taxista token (should fail)
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.post(f"{BASE_URL}/users", json=test_user, headers=taxista_headers)
+                if response.status_code == 403:
+                    self.log_result("Create User (Taxista - Should Fail)", True, "Correctly denied access to taxista")
+                else:
+                    self.log_result("Create User (Taxista - Should Fail)", False, f"Expected 403, got {response.status_code}")
+            except Exception as e:
+                self.log_result("Create User (Taxista - Should Fail)", False, f"Exception: {str(e)}")
+        
+        # Test list users (admin only)
+        try:
+            response = requests.get(f"{BASE_URL}/users", headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result("List Users (Admin)", True, f"Retrieved {len(data)} users")
+            else:
+                self.log_result("List Users (Admin)", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("List Users (Admin)", False, f"Exception: {str(e)}")
+        
+        # Test list users with taxista token (should fail)
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.get(f"{BASE_URL}/users", headers=taxista_headers)
+                if response.status_code == 403:
+                    self.log_result("List Users (Taxista - Should Fail)", True, "Correctly denied access to taxista")
+                else:
+                    self.log_result("List Users (Taxista - Should Fail)", False, f"Expected 403, got {response.status_code}")
+            except Exception as e:
+                self.log_result("List Users (Taxista - Should Fail)", False, f"Exception: {str(e)}")
+    
+    def test_company_crud(self):
+        """Test company CRUD operations"""
+        print("\n=== TESTING COMPANY CRUD ===")
+        
+        if not self.admin_token:
+            self.log_result("Company CRUD Setup", False, "No admin token available")
+            return
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test create company (admin only)
+        test_company = {
+            "nombre": f"Empresa Test {datetime.now().strftime('%H%M%S')}",
+            "cif": "B12345678",
+            "direccion": "Calle Test 123",
+            "localidad": "Tineo",
+            "provincia": "Asturias"
+        }
+        
+        company_id = None
+        try:
+            response = requests.post(f"{BASE_URL}/companies", json=test_company, headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                company_id = data['id']
+                self.created_resources['companies'].append(company_id)
+                self.log_result("Create Company (Admin)", True, f"Company created with ID: {company_id}")
+            else:
+                self.log_result("Create Company (Admin)", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Create Company (Admin)", False, f"Exception: {str(e)}")
+        
+        # Test create company with taxista token (should fail)
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.post(f"{BASE_URL}/companies", json=test_company, headers=taxista_headers)
+                if response.status_code == 403:
+                    self.log_result("Create Company (Taxista - Should Fail)", True, "Correctly denied access to taxista")
+                else:
+                    self.log_result("Create Company (Taxista - Should Fail)", False, f"Expected 403, got {response.status_code}")
+            except Exception as e:
+                self.log_result("Create Company (Taxista - Should Fail)", False, f"Exception: {str(e)}")
+        
+        # Test list companies (both admin and taxista should work)
+        try:
+            response = requests.get(f"{BASE_URL}/companies", headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result("List Companies (Admin)", True, f"Retrieved {len(data)} companies")
+            else:
+                self.log_result("List Companies (Admin)", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("List Companies (Admin)", False, f"Exception: {str(e)}")
+        
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.get(f"{BASE_URL}/companies", headers=taxista_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.log_result("List Companies (Taxista)", True, f"Retrieved {len(data)} companies")
+                else:
+                    self.log_result("List Companies (Taxista)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("List Companies (Taxista)", False, f"Exception: {str(e)}")
+        
+        # Test update company (admin only)
+        if company_id:
+            updated_company = test_company.copy()
+            updated_company["nombre"] = f"Empresa Updated {datetime.now().strftime('%H%M%S')}"
+            
+            try:
+                response = requests.put(f"{BASE_URL}/companies/{company_id}", json=updated_company, headers=admin_headers)
+                if response.status_code == 200:
+                    self.log_result("Update Company (Admin)", True, "Company updated successfully")
+                else:
+                    self.log_result("Update Company (Admin)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("Update Company (Admin)", False, f"Exception: {str(e)}")
+    
+    def test_service_crud(self):
+        """Test service CRUD operations"""
+        print("\n=== TESTING SERVICE CRUD ===")
+        
+        # Test create service as taxista
+        test_service = {
+            "fecha": "2025-01-20",
+            "hora": "14:30",
+            "origen": "Tineo Centro",
+            "destino": "Hospital de Cangas",
+            "importe": 25.50,
+            "tiempo_espera": 5,
+            "kilometros": 18.2,
+            "tipo": "particular"
+        }
+        
+        service_id = None
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.post(f"{BASE_URL}/services", json=test_service, headers=taxista_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    service_id = data['id']
+                    self.created_resources['services'].append(service_id)
+                    self.log_result("Create Service (Taxista)", True, f"Service created with ID: {service_id}")
+                else:
+                    self.log_result("Create Service (Taxista)", False, f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_result("Create Service (Taxista)", False, f"Exception: {str(e)}")
+        
+        # Test create service as admin
+        if self.admin_token:
+            admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+            try:
+                response = requests.post(f"{BASE_URL}/services", json=test_service, headers=admin_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    admin_service_id = data['id']
+                    self.created_resources['services'].append(admin_service_id)
+                    self.log_result("Create Service (Admin)", True, f"Service created with ID: {admin_service_id}")
+                else:
+                    self.log_result("Create Service (Admin)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("Create Service (Admin)", False, f"Exception: {str(e)}")
+        
+        # Test list services as taxista (should only see own services)
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.get(f"{BASE_URL}/services", headers=taxista_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.log_result("List Services (Taxista)", True, f"Retrieved {len(data)} services (own only)")
+                else:
+                    self.log_result("List Services (Taxista)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("List Services (Taxista)", False, f"Exception: {str(e)}")
+        
+        # Test list services as admin (should see all services)
+        if self.admin_token:
+            admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+            try:
+                response = requests.get(f"{BASE_URL}/services", headers=admin_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.log_result("List Services (Admin)", True, f"Retrieved {len(data)} services (all)")
+                else:
+                    self.log_result("List Services (Admin)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("List Services (Admin)", False, f"Exception: {str(e)}")
+        
+        # Test update service
+        if service_id and self.taxista_token:
+            updated_service = test_service.copy()
+            updated_service["importe"] = 30.00
+            
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.put(f"{BASE_URL}/services/{service_id}", json=updated_service, headers=taxista_headers)
+                if response.status_code == 200:
+                    self.log_result("Update Service (Owner)", True, "Service updated successfully")
+                else:
+                    self.log_result("Update Service (Owner)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("Update Service (Owner)", False, f"Exception: {str(e)}")
+    
+    def test_service_filters(self):
+        """Test service filtering"""
+        print("\n=== TESTING SERVICE FILTERS ===")
+        
+        if not self.admin_token:
+            self.log_result("Service Filters Setup", False, "No admin token available")
+            return
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test filter by tipo
+        try:
+            response = requests.get(f"{BASE_URL}/services?tipo=particular", headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result("Filter by Tipo", True, f"Retrieved {len(data)} particular services")
+            else:
+                self.log_result("Filter by Tipo", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("Filter by Tipo", False, f"Exception: {str(e)}")
+        
+        # Test filter by date range
+        try:
+            response = requests.get(f"{BASE_URL}/services?fecha_inicio=2025-01-01&fecha_fin=2025-01-31", headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result("Filter by Date Range", True, f"Retrieved {len(data)} services in date range")
+            else:
+                self.log_result("Filter by Date Range", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("Filter by Date Range", False, f"Exception: {str(e)}")
+    
+    def test_batch_sync(self):
+        """Test batch synchronization"""
+        print("\n=== TESTING BATCH SYNC ===")
+        
+        if not self.taxista_token:
+            self.log_result("Batch Sync Setup", False, "No taxista token available")
+            return
+        
+        taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+        
+        # Test sync multiple services
+        sync_data = {
+            "services": [
+                {
+                    "fecha": "2025-01-21",
+                    "hora": "09:00",
+                    "origen": "Tineo",
+                    "destino": "Oviedo",
+                    "importe": 45.50,
+                    "tiempo_espera": 0,
+                    "kilometros": 35.0,
+                    "tipo": "empresa",
+                    "empresa_id": "68f9bf6639ddad8a39451da0",
+                    "empresa_nombre": "Hospital Universitario Central de Asturias"
+                },
+                {
+                    "fecha": "2025-01-21",
+                    "hora": "11:30",
+                    "origen": "Oviedo",
+                    "destino": "Tineo",
+                    "importe": 45.50,
+                    "tiempo_espera": 10,
+                    "kilometros": 35.0,
+                    "tipo": "particular"
+                }
+            ]
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/services/sync", json=sync_data, headers=taxista_headers)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result("Batch Sync", True, f"Synced {len(sync_data['services'])} services")
+            else:
+                self.log_result("Batch Sync", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Batch Sync", False, f"Exception: {str(e)}")
+    
+    def test_export_endpoints(self):
+        """Test export endpoints"""
+        print("\n=== TESTING EXPORT ENDPOINTS ===")
+        
+        if not self.admin_token:
+            self.log_result("Export Setup", False, "No admin token available")
+            return
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test CSV export
+        try:
+            response = requests.get(f"{BASE_URL}/services/export/csv", headers=admin_headers)
+            if response.status_code == 200:
+                content_type = response.headers.get('content-type', '')
+                if 'csv' in content_type or 'text' in content_type:
+                    self.log_result("CSV Export", True, f"CSV exported successfully ({len(response.content)} bytes)")
+                else:
+                    self.log_result("CSV Export", False, f"Wrong content type: {content_type}")
+            else:
+                self.log_result("CSV Export", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("CSV Export", False, f"Exception: {str(e)}")
+        
+        # Test Excel export
+        try:
+            response = requests.get(f"{BASE_URL}/services/export/excel", headers=admin_headers)
+            if response.status_code == 200:
+                content_type = response.headers.get('content-type', '')
+                if 'spreadsheet' in content_type or 'excel' in content_type:
+                    self.log_result("Excel Export", True, f"Excel exported successfully ({len(response.content)} bytes)")
+                else:
+                    self.log_result("Excel Export", False, f"Wrong content type: {content_type}")
+            else:
+                self.log_result("Excel Export", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("Excel Export", False, f"Exception: {str(e)}")
+        
+        # Test PDF export
+        try:
+            response = requests.get(f"{BASE_URL}/services/export/pdf", headers=admin_headers)
+            if response.status_code == 200:
+                content_type = response.headers.get('content-type', '')
+                if 'pdf' in content_type:
+                    self.log_result("PDF Export", True, f"PDF exported successfully ({len(response.content)} bytes)")
+                else:
+                    self.log_result("PDF Export", False, f"Wrong content type: {content_type}")
+            else:
+                self.log_result("PDF Export", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("PDF Export", False, f"Exception: {str(e)}")
+        
+        # Test export with filters
+        try:
+            response = requests.get(f"{BASE_URL}/services/export/csv?tipo=particular", headers=admin_headers)
+            if response.status_code == 200:
+                self.log_result("CSV Export with Filters", True, "CSV with filters exported successfully")
+            else:
+                self.log_result("CSV Export with Filters", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("CSV Export with Filters", False, f"Exception: {str(e)}")
+        
+        # Test export access with taxista token (should fail)
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.get(f"{BASE_URL}/services/export/csv", headers=taxista_headers)
+                if response.status_code == 403:
+                    self.log_result("Export Access (Taxista - Should Fail)", True, "Correctly denied export access to taxista")
+                else:
+                    self.log_result("Export Access (Taxista - Should Fail)", False, f"Expected 403, got {response.status_code}")
+            except Exception as e:
+                self.log_result("Export Access (Taxista - Should Fail)", False, f"Exception: {str(e)}")
+    
+    def cleanup_resources(self):
+        """Clean up created test resources"""
+        print("\n=== CLEANING UP TEST RESOURCES ===")
+        
+        if not self.admin_token:
+            return
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Delete test users
+        for user_id in self.created_resources['users']:
+            try:
+                response = requests.delete(f"{BASE_URL}/users/{user_id}", headers=admin_headers)
+                if response.status_code == 200:
+                    print(f"✅ Deleted test user: {user_id}")
+                else:
+                    print(f"❌ Failed to delete user {user_id}: {response.status_code}")
+            except Exception as e:
+                print(f"❌ Exception deleting user {user_id}: {str(e)}")
+        
+        # Delete test companies
+        for company_id in self.created_resources['companies']:
+            try:
+                response = requests.delete(f"{BASE_URL}/companies/{company_id}", headers=admin_headers)
+                if response.status_code == 200:
+                    print(f"✅ Deleted test company: {company_id}")
+                else:
+                    print(f"❌ Failed to delete company {company_id}: {response.status_code}")
+            except Exception as e:
+                print(f"❌ Exception deleting company {company_id}: {str(e)}")
+        
+        # Delete test services
+        for service_id in self.created_resources['services']:
+            try:
+                response = requests.delete(f"{BASE_URL}/services/{service_id}", headers=admin_headers)
+                if response.status_code == 200:
+                    print(f"✅ Deleted test service: {service_id}")
+                else:
+                    print(f"❌ Failed to delete service {service_id}: {response.status_code}")
+            except Exception as e:
+                print(f"❌ Exception deleting service {service_id}: {str(e)}")
+    
+    def run_all_tests(self):
+        """Run all tests"""
+        print("🚕 Starting Taxi Tineo Backend API Tests")
+        print(f"🌐 Base URL: {BASE_URL}")
+        print("=" * 60)
+        
+        # Authentication
+        admin_auth_success = self.authenticate_admin()
+        taxista_auth_success = self.authenticate_taxista()
+        
+        if not admin_auth_success and not taxista_auth_success:
+            print("❌ CRITICAL: No authentication successful. Cannot proceed with tests.")
+            return False
+        
+        # Run all test suites
+        self.test_auth_endpoints()
+        self.test_user_crud()
+        self.test_company_crud()
+        self.test_service_crud()
+        self.test_service_filters()
+        self.test_batch_sync()
+        self.test_export_endpoints()
+        
+        # Cleanup
+        self.cleanup_resources()
+        
+        # Summary
+        self.print_summary()
+        
+        return True
+    
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "=" * 60)
+        print("📊 TEST SUMMARY")
+        print("=" * 60)
+        
+        passed = sum(1 for result in self.test_results if "✅ PASS" in result['status'])
+        failed = sum(1 for result in self.test_results if "❌ FAIL" in result['status'])
+        total = len(self.test_results)
+        
+        print(f"Total Tests: {total}")
+        print(f"Passed: {passed} ✅")
+        print(f"Failed: {failed} ❌")
+        print(f"Success Rate: {(passed/total*100):.1f}%")
+        
+        if failed > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if "❌ FAIL" in result['status']:
+                    print(f"  - {result['test']}: {result['message']}")
+        
+        print("\n" + "=" * 60)
+
+def main():
+    """Main function"""
+    tester = TaxiTineoAPITester()
+    success = tester.run_all_tests()
+    
+    if not success:
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
