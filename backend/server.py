@@ -652,7 +652,61 @@ async def export_pdf(
         headers={"Content-Disposition": "attachment; filename=servicios.pdf"}
     )
 
-# Initialize default admin user
+# Config endpoints
+@api_router.get("/config", response_model=ConfigResponse)
+async def get_config():
+    config = await db.config.find_one()
+    if not config:
+        # Devolver configuración por defecto
+        return ConfigResponse(
+            id="default",
+            nombre_radio_taxi="Taxi Tineo",
+            telefono="985 80 15 15",
+            web="www.taxitineo.com",
+            direccion="Tineo, Asturias",
+            email="",
+            logo_base64=None,
+            updated_at=datetime.utcnow()
+        )
+    
+    return ConfigResponse(
+        id=str(config["_id"]),
+        nombre_radio_taxi=config.get("nombre_radio_taxi", "Taxi Tineo"),
+        telefono=config.get("telefono", ""),
+        web=config.get("web", ""),
+        direccion=config.get("direccion", ""),
+        email=config.get("email", ""),
+        logo_base64=config.get("logo_base64"),
+        updated_at=config.get("updated_at", datetime.utcnow())
+    )
+
+@api_router.put("/config", response_model=ConfigResponse)
+async def update_config(config: ConfigBase, current_user: dict = Depends(get_current_admin)):
+    config_dict = config.dict()
+    config_dict["updated_at"] = datetime.utcnow()
+    
+    existing_config = await db.config.find_one()
+    
+    if existing_config:
+        # Actualizar existente
+        await db.config.update_one(
+            {"_id": existing_config["_id"]},
+            {"$set": config_dict}
+        )
+        config_id = existing_config["_id"]
+    else:
+        # Crear nuevo
+        result = await db.config.insert_one(config_dict)
+        config_id = result.inserted_id
+    
+    updated_config = await db.config.find_one({"_id": config_id})
+    
+    return ConfigResponse(
+        id=str(updated_config["_id"]),
+        **{k: v for k, v in updated_config.items() if k != "_id"}
+    )
+
+# Initialize default admin user and config
 @app.on_event("startup")
 async def startup_event():
     # Create default admin if not exists
@@ -667,6 +721,21 @@ async def startup_event():
         }
         await db.users.insert_one(admin_data)
         logger.info("Default admin user created: username=admin, password=admin123")
+    
+    # Create default config if not exists
+    config = await db.config.find_one()
+    if not config:
+        default_config = {
+            "nombre_radio_taxi": "Taxi Tineo",
+            "telefono": "985 80 15 15",
+            "web": "www.taxitineo.com",
+            "direccion": "Tineo, Asturias",
+            "email": "",
+            "logo_base64": None,
+            "updated_at": datetime.utcnow()
+        }
+        await db.config.insert_one(default_config)
+        logger.info("Default config created")
 
 # Include router
 app.include_router(api_router)
