@@ -96,6 +96,10 @@ export default function UsersScreen() {
   };
 
   const handleSubmit = async () => {
+    console.log('=== DEBUG handleSubmit ===');
+    console.log('editingUser:', editingUser);
+    console.log('formData:', formData);
+    
     if (editingUser) {
       // Modo edición: no requerimos contraseña (es opcional)
       if (!formData.nombre || !formData.licencia) {
@@ -112,6 +116,7 @@ export default function UsersScreen() {
 
     try {
       if (editingUser) {
+        console.log('Modo EDICIÓN - ID:', editingUser.id);
         // Actualizar taxista existente
         const updateData: any = { 
           username: formData.username,
