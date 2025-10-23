@@ -89,11 +89,11 @@ class CompanyBase(BaseModel):
     nombre: str
     cif: str
     direccion: str
-    codigo_postal: str
+    codigo_postal: Optional[str] = ""
     localidad: str
     provincia: str
-    telefono: str
-    email: str
+    telefono: Optional[str] = ""
+    email: Optional[str] = ""
 
 class CompanyCreate(CompanyBase):
     pass
