@@ -15,8 +15,8 @@ import {
   Menu,
   Snackbar,
 } from 'react-native-paper';
-import { useAuth } from '../../contexts/AuthContext';
-import { useSync } from '../../contexts/SyncContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useSync } from '../contexts/SyncContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import axios from 'axios';
 
@@ -40,8 +40,7 @@ export default function EditServiceScreen() {
   const [origen, setOrigen] = useState('');
   const [destino, setDestino] = useState('');
   const [importe, setImporte] = useState('');
-  const [tiempoEspera, setTiempoEspera] = useState('');
-  const [tiempoEsperaTipo, setTiempoEsperaTipo] = useState('minutos');
+  const [importeEspera, setImporteEspera] = useState('');
   const [kilometros, setKilometros] = useState('');
   const [tipo, setTipo] = useState('particular');
   const [empresaId, setEmpresaId] = useState('');
@@ -82,8 +81,7 @@ export default function EditServiceScreen() {
         setOrigen(service.origen);
         setDestino(service.destino);
         setImporte(service.importe.toString());
-        setTiempoEspera(service.tiempo_espera ? service.tiempo_espera.toString() : '');
-        setTiempoEsperaTipo(service.tiempo_espera_tipo || 'minutos');
+        setImporteEspera(service.importe_espera ? service.importe_espera.toString() : '');
         setKilometros(service.kilometros.toString());
         setTipo(service.tipo);
         setEmpresaId(service.empresa_id || '');
@@ -93,6 +91,11 @@ export default function EditServiceScreen() {
       console.error('Error loading service:', error);
       setSnackbar({ visible: true, message: 'Error al cargar el servicio' });
     }
+  };
+
+  const parseEuroNumber = (value: string): number => {
+    // Convierte formato europeo (1.234,56) a formato JS (1234.56)
+    return parseFloat(value.replace(/\./g, '').replace(',', '.'));
   };
 
   const validateForm = () => {
@@ -112,8 +115,8 @@ export default function EditServiceScreen() {
       return false;
     }
 
-    const importeNum = parseFloat(importe);
-    const kmNum = parseFloat(kilometros);
+    const importeNum = parseEuroNumber(importe);
+    const kmNum = parseEuroNumber(kilometros);
 
     if (isNaN(importeNum) || importeNum <= 0) {
       setSnackbar({ visible: true, message: 'El importe debe ser un número válido mayor que 0' });
@@ -125,10 +128,10 @@ export default function EditServiceScreen() {
       return false;
     }
 
-    if (tiempoEspera) {
-      const tiempoNum = parseFloat(tiempoEspera);
-      if (isNaN(tiempoNum) || tiempoNum < 0) {
-        setSnackbar({ visible: true, message: 'El tiempo de espera debe ser un número válido' });
+    if (importeEspera) {
+      const importeEsperaNum = parseEuroNumber(importeEspera);
+      if (isNaN(importeEsperaNum) || importeEsperaNum < 0) {
+        setSnackbar({ visible: true, message: 'El importe de espera debe ser un número válido' });
         return false;
       }
     }
@@ -146,10 +149,9 @@ export default function EditServiceScreen() {
       hora,
       origen,
       destino,
-      importe: parseFloat(importe),
-      tiempo_espera: tiempoEspera ? parseFloat(tiempoEspera) : 0,
-      tiempo_espera_tipo: tiempoEsperaTipo,
-      kilometros: parseFloat(kilometros),
+      importe: parseEuroNumber(importe),
+      importe_espera: importeEspera ? parseEuroNumber(importeEspera) : 0,
+      kilometros: parseEuroNumber(kilometros),
       tipo,
       empresa_id: tipo === 'empresa' ? empresaId : null,
       empresa_nombre: tipo === 'empresa' ? empresaNombre : null,
@@ -261,7 +263,7 @@ export default function EditServiceScreen() {
               value={importe}
               onChangeText={setImporte}
               mode="outlined"
-              keyboardType="decimal-pad"
+              keyboardType="default"
               style={styles.halfInput}
             />
             <TextInput
@@ -269,35 +271,20 @@ export default function EditServiceScreen() {
               value={kilometros}
               onChangeText={setKilometros}
               mode="outlined"
-              keyboardType="decimal-pad"
+              keyboardType="default"
               style={styles.halfInput}
             />
           </View>
 
-          <Text variant="titleMedium" style={styles.sectionTitle}>
-            Tiempo de Espera
-          </Text>
-          <View style={styles.row}>
-            <TextInput
-              label={tiempoEsperaTipo === 'euros' ? 'Tiempo de Espera (ej: 2.50)' : 'Tiempo de Espera'}
-              value={tiempoEspera}
-              onChangeText={setTiempoEspera}
-              mode="outlined"
-              keyboardType="numeric"
-              style={styles.halfInput}
-              placeholder={tiempoEsperaTipo === 'euros' ? '0.00' : '0'}
-            />
-            <View style={styles.halfInput}>
-              <SegmentedButtons
-                value={tiempoEsperaTipo}
-                onValueChange={setTiempoEsperaTipo}
-                buttons={[
-                  { value: 'minutos', label: 'Min' },
-                  { value: 'euros', label: '€' },
-                ]}
-              />
-            </View>
-          </View>
+          <TextInput
+            label="Importe de espera (€)"
+            value={importeEspera}
+            onChangeText={setImporteEspera}
+            mode="outlined"
+            keyboardType="default"
+            style={styles.input}
+            placeholder="0,00"
+          />
 
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Tipo de Servicio
