@@ -279,12 +279,13 @@ export default function EditServiceScreen() {
           </Text>
           <View style={styles.row}>
             <TextInput
-              label="Tiempo de Espera"
+              label={tiempoEsperaTipo === 'euros' ? 'Tiempo de Espera (ej: 2.50)' : 'Tiempo de Espera'}
               value={tiempoEspera}
               onChangeText={setTiempoEspera}
               mode="outlined"
-              keyboardType="decimal-pad"
+              keyboardType="numeric"
               style={styles.halfInput}
+              placeholder={tiempoEsperaTipo === 'euros' ? '0.00' : '0'}
             />
             <View style={styles.halfInput}>
               <SegmentedButtons
