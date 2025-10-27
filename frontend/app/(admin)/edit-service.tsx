@@ -195,16 +195,21 @@ export default function EditServiceScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(`${API_URL}/services/${serviceId}`, {
+              setLoading(true);
+              const response = await axios.delete(`${API_URL}/services/${serviceId}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
+              console.log('Delete response:', response.data);
               setSnackbar({ visible: true, message: 'Servicio eliminado correctamente' });
               setTimeout(() => {
                 router.back();
-              }, 1000);
-            } catch (error) {
+              }, 1500);
+            } catch (error: any) {
               console.error('Error deleting service:', error);
-              setSnackbar({ visible: true, message: 'Error al eliminar el servicio' });
+              const errorMsg = error.response?.data?.detail || 'Error al eliminar el servicio';
+              setSnackbar({ visible: true, message: errorMsg });
+            } finally {
+              setLoading(false);
             }
           },
         },
