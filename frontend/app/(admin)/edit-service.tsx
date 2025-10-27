@@ -67,6 +67,11 @@ export default function EditServiceScreen() {
     }
   };
 
+  const formatNumberToEuro = (num: number): string => {
+    // Convierte número a formato europeo (123.45 → "123,45")
+    return num.toString().replace('.', ',');
+  };
+
   const loadService = async () => {
     try {
       const response = await axios.get(`${API_URL}/services`, {
@@ -80,9 +85,9 @@ export default function EditServiceScreen() {
         setHora(service.hora);
         setOrigen(service.origen);
         setDestino(service.destino);
-        setImporte(service.importe.toString());
-        setImporteEspera(service.importe_espera ? service.importe_espera.toString() : '');
-        setKilometros(service.kilometros.toString());
+        setImporte(formatNumberToEuro(service.importe));
+        setImporteEspera(service.importe_espera ? formatNumberToEuro(service.importe_espera) : '');
+        setKilometros(formatNumberToEuro(service.kilometros));
         setTipo(service.tipo);
         setEmpresaId(service.empresa_id || '');
         setEmpresaNombre(service.empresa_nombre || '');
