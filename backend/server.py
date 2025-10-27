@@ -131,6 +131,7 @@ class ServiceResponse(BaseModel):
     destino: str
     importe: float
     importe_espera: Optional[float] = 0  # Opcional para compatibilidad con datos antiguos
+    importe_total: Optional[float] = 0  # Opcional para compatibilidad con datos antiguos
     kilometros: float
     tipo: str
     empresa_id: Optional[str] = None
