@@ -232,7 +232,7 @@ export default function DashboardScreen() {
               {item.origen} → {item.destino}
             </Text>
             <Chip mode="flat" style={styles.chip}>
-              {formatEuro(item.importe)}
+              {formatEuro(item.importe_total || item.importe)}
             </Chip>
           </View>
           <IconButton
