@@ -74,6 +74,13 @@ export default function DashboardScreen() {
     loadData();
   }, []);
 
+  // Recargar datos cada vez que se enfoca la pantalla
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
+
   useEffect(() => {
     applyFilters();
   }, [services, filterType, selectedCompany, selectedTaxista, fechaInicio, fechaFin]);
