@@ -64,6 +64,13 @@ export default function AdminLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="edit-service"
+        options={{
+          href: null,
+          title: 'Editar Servicio',
+        }}
+      />
     </Tabs>
   );
 }
