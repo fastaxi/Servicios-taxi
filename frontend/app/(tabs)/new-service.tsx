@@ -388,6 +388,9 @@ const styles = StyleSheet.create({
   segmented: {
     marginBottom: 16,
   },
+  totalInput: {
+    backgroundColor: '#E3F2FD',
+  },
   submitButton: {
     marginTop: 24,
     paddingVertical: 8,
