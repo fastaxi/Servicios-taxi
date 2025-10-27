@@ -112,6 +112,7 @@ class ServiceBase(BaseModel):
     destino: str
     importe: float  # IVA 10% incluido
     importe_espera: float  # Importe de espera en euros
+    importe_total: Optional[float] = None  # Se calcula automáticamente
     kilometros: float
     tipo: str  # "empresa" or "particular"
     empresa_id: Optional[str] = None
