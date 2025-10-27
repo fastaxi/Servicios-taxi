@@ -107,6 +107,14 @@ export default function DashboardScreen() {
     }
   };
 
+  // Función para convertir fecha dd/mm/yyyy a formato comparable yyyy-mm-dd
+  const convertToComparableDate = (dateStr: string): string => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return dateStr;
+    return `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-mm-dd
+  };
+
   const applyFilters = () => {
     let filtered = [...services];
 
@@ -125,12 +133,14 @@ export default function DashboardScreen() {
       filtered = filtered.filter((s) => s.taxista_nombre === selectedTaxista);
     }
 
-    // Filtro por fechas
+    // Filtro por fechas (convertir a formato comparable)
     if (fechaInicio) {
-      filtered = filtered.filter((s) => s.fecha >= fechaInicio);
+      const inicioComparable = convertToComparableDate(fechaInicio);
+      filtered = filtered.filter((s) => convertToComparableDate(s.fecha) >= inicioComparable);
     }
     if (fechaFin) {
-      filtered = filtered.filter((s) => s.fecha <= fechaFin);
+      const finComparable = convertToComparableDate(fechaFin);
+      filtered = filtered.filter((s) => convertToComparableDate(s.fecha) <= finComparable);
     }
 
     setFilteredServices(filtered);
