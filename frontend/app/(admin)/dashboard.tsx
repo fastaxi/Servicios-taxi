@@ -261,13 +261,18 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.detailRow}>
-          <Text variant="bodySmall" style={styles.label}>KM:</Text>
+          <Text variant="bodySmall" style={styles.label}>Kilómetros:</Text>
           <Text variant="bodySmall">{item.kilometros} km</Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text variant="bodySmall" style={styles.label}>Importe del servicio:</Text>
+          <Text variant="bodySmall">{formatEuro(item.importe)}</Text>
         </View>
 
         {item.importe_espera > 0 && (
           <View style={styles.detailRow}>
-            <Text variant="bodySmall" style={styles.label}>Imp. espera:</Text>
+            <Text variant="bodySmall" style={styles.label}>Importe de espera:</Text>
             <Text variant="bodySmall">{formatEuro(item.importe_espera)}</Text>
           </View>
         )}
