@@ -372,6 +372,9 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
     service_dict["created_at"] = datetime.utcnow()
     service_dict["synced"] = True
     
+    # Calcular importe_total automáticamente
+    service_dict["importe_total"] = service_dict["importe"] + service_dict.get("importe_espera", 0)
+    
     result = await db.services.insert_one(service_dict)
     created_service = await db.services.find_one({"_id": result.inserted_id})
     
