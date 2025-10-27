@@ -188,36 +188,30 @@ export default function EditServiceScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Eliminar Servicio',
-      '¿Estás seguro de que deseas eliminar este servicio?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const response = await axios.delete(`${API_URL}/services/${serviceId}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              console.log('Delete response:', response.data);
-              setSnackbar({ visible: true, message: 'Servicio eliminado correctamente' });
-              setTimeout(() => {
-                router.back();
-              }, 1500);
-            } catch (error: any) {
-              console.error('Error deleting service:', error);
-              const errorMsg = error.response?.data?.detail || 'Error al eliminar el servicio';
-              setSnackbar({ visible: true, message: errorMsg });
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    setDeleteDialogVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setDeleteDialogVisible(false);
+      setLoading(true);
+      
+      await axios.delete(`${API_URL}/services/${serviceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      setSnackbar({ visible: true, message: 'Servicio eliminado correctamente' });
+      
+      // Navegar directamente al dashboard después de 1 segundo
+      setTimeout(() => {
+        router.replace('/(admin)/dashboard');
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error deleting service:', error);
+      const errorMsg = error.response?.data?.detail || 'Error al eliminar el servicio';
+      setSnackbar({ visible: true, message: errorMsg });
+      setLoading(false);
+    }
   };
 
   return (
