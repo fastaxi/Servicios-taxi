@@ -356,6 +356,19 @@ export default function EditServiceScreen() {
         </View>
       </ScrollView>
 
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
+          <Dialog.Title>Eliminar Servicio</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">¿Estás seguro de que deseas eliminar este servicio?</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDeleteDialogVisible(false)}>Cancelar</Button>
+            <Button onPress={confirmDelete} textColor="#D32F2F">Eliminar</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
       <Snackbar
         visible={snackbar.visible}
         onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
