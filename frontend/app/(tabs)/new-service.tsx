@@ -49,6 +49,13 @@ export default function NewServiceScreen() {
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
+  // Función para parsear números en formato europeo
+  const parseEuroNumber = (value: string): number => {
+    // Convierte formato europeo (1.234,56) a formato JS (1234.56)
+    if (!value) return 0;
+    return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+  };
+
   // Calcular importe total automáticamente
   useEffect(() => {
     const calcularTotal = () => {
@@ -73,11 +80,6 @@ export default function NewServiceScreen() {
     } catch (error) {
       console.error('Error loading companies:', error);
     }
-  };
-
-  const parseEuroNumber = (value: string): number => {
-    // Convierte formato europeo (1.234,56) a formato JS (1234.56)
-    return parseFloat(value.replace(/\./g, '').replace(',', '.'));
   };
 
   const validateForm = () => {
