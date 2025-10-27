@@ -34,6 +34,13 @@ export default function ServicesScreen() {
     loadServices();
   }, []);
 
+  // Recargar datos cada vez que se enfoca la pantalla
+  useFocusEffect(
+    React.useCallback(() => {
+      loadServices();
+    }, [])
+  );
+
   useEffect(() => {
     if (syncStatus === 'success') {
       loadServices();
