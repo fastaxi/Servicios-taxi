@@ -38,6 +38,7 @@ export default function NewServiceScreen() {
   const [destino, setDestino] = useState('');
   const [importe, setImporte] = useState('');
   const [importeEspera, setImporteEspera] = useState('');
+  const [importeTotal, setImporteTotal] = useState('0,00');
   const [kilometros, setKilometros] = useState('');
   const [tipo, setTipo] = useState('particular');
   const [empresaId, setEmpresaId] = useState('');
@@ -47,6 +48,17 @@ export default function NewServiceScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
+
+  // Calcular importe total automáticamente
+  useEffect(() => {
+    const calcularTotal = () => {
+      const importeNum = importe ? parseEuroNumber(importe) : 0;
+      const esperaNum = importeEspera ? parseEuroNumber(importeEspera) : 0;
+      const total = importeNum + esperaNum;
+      setImporteTotal(total.toFixed(2).replace('.', ','));
+    };
+    calcularTotal();
+  }, [importe, importeEspera]);
 
   useEffect(() => {
     loadCompanies();
