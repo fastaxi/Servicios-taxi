@@ -450,6 +450,10 @@ async def update_service(service_id: str, service: ServiceCreate, current_user: 
         raise HTTPException(status_code=403, detail="Not authorized to update this service")
     
     service_dict = service.dict()
+    
+    # Calcular importe_total automáticamente
+    service_dict["importe_total"] = service_dict["importe"] + service_dict.get("importe_espera", 0)
+    
     result = await db.services.update_one(
         {"_id": ObjectId(service_id)},
         {"$set": service_dict}
