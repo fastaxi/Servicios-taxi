@@ -102,9 +102,14 @@ export default function ServicesScreen() {
           <Text variant="bodyMedium">{item.kilometros} km</Text>
         </View>
 
+        <View style={styles.detailRow}>
+          <Text variant="bodyMedium" style={styles.label}>Importe del servicio:</Text>
+          <Text variant="bodyMedium">{formatEuro(item.importe)}</Text>
+        </View>
+
         {item.importe_espera > 0 && (
           <View style={styles.detailRow}>
-            <Text variant="bodyMedium" style={styles.label}>Importe espera:</Text>
+            <Text variant="bodyMedium" style={styles.label}>Importe de espera:</Text>
             <Text variant="bodyMedium">{formatEuro(item.importe_espera)}</Text>
           </View>
         )}
