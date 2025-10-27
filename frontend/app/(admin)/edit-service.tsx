@@ -14,6 +14,8 @@ import {
   SegmentedButtons,
   Menu,
   Snackbar,
+  Dialog,
+  Portal,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
