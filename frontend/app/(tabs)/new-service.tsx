@@ -263,6 +263,15 @@ export default function NewServiceScreen() {
             placeholder="0,00"
           />
 
+          <TextInput
+            label="Importe Total (€)"
+            value={importeTotal}
+            mode="outlined"
+            editable={false}
+            style={[styles.input, styles.totalInput]}
+            right={<TextInput.Icon icon="calculator" />}
+          />
+
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Tipo de Servicio
           </Text>
