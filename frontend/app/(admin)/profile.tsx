@@ -182,8 +182,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: '#0066CC',
   },
-  logoutButton: {
+  configButton: {
     margin: 16,
+    marginBottom: 8,
+    paddingVertical: 8,
+  },
+  logoutButton: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    marginTop: 0,
     paddingVertical: 8,
   },
 });
