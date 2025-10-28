@@ -70,7 +70,7 @@ export default function AdminProfileScreen() {
             • Exportar datos en CSV, Excel o PDF
           </Text>
           <Text variant="bodySmall" style={styles.bulletPoint}>
-            • Aplicar filtros por tipo y empresa
+            • Aplicar filtros por tipo y cliente
           </Text>
         </Card.Content>
       </Card>
