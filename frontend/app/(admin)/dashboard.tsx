@@ -360,7 +360,7 @@ export default function DashboardScreen() {
                 setSelectedCompany(null);
                 setMenuVisible(false);
               }}
-              title="Todas las empresas"
+              title="Todos los clientes"
             />
             {companies.map((company) => (
               <Menu.Item
