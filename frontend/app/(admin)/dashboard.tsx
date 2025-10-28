@@ -339,7 +339,7 @@ export default function DashboardScreen() {
           }}
           buttons={[
             { value: 'todos', label: 'Todos' },
-            { value: 'empresa', label: 'Empresa' },
+            { value: 'empresa', label: 'Cliente' },
             { value: 'particular', label: 'Particular' },
           ]}
           style={styles.segmented}
