@@ -101,6 +101,17 @@ export default function AdminProfileScreen() {
 
       <Button
         mode="contained"
+        onPress={() => router.push('/(admin)/config')}
+        style={styles.configButton}
+        buttonColor="#FFD700"
+        textColor="#000"
+        icon="cog"
+      >
+        Configuración
+      </Button>
+
+      <Button
+        mode="contained"
         onPress={handleLogout}
         style={styles.logoutButton}
         buttonColor="#D32F2F"
