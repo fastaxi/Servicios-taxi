@@ -31,7 +31,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="companies"
         options={{
-          title: 'Empresas',
+          title: 'Clientes',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="office-building" size={size} color={color} />
           ),
