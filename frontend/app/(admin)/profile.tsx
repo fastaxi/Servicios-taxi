@@ -61,7 +61,7 @@ export default function AdminProfileScreen() {
             • Ver y gestionar todos los servicios de taxi
           </Text>
           <Text variant="bodySmall" style={styles.bulletPoint}>
-            • Crear y gestionar empresas
+            • Crear y gestionar clientes
           </Text>
           <Text variant="bodySmall" style={styles.bulletPoint}>
             • Crear y gestionar taxistas
