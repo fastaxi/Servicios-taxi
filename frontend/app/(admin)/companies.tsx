@@ -238,7 +238,7 @@ export default function CompaniesScreen() {
           >
             <ScrollView keyboardShouldPersistTaps="handled">
               <Text variant="titleLarge" style={styles.modalTitle}>
-                {editingCompany ? 'Editar Empresa' : 'Nueva Empresa'}
+                {editingCompany ? 'Editar Cliente' : 'Nuevo Cliente'}
               </Text>
 
               <TextInput
