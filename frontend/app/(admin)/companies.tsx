@@ -215,7 +215,7 @@ export default function CompaniesScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text variant="bodyLarge" style={styles.emptyText}>
-              No hay empresas registradas
+              No hay clientes registrados
             </Text>
           </View>
         }
