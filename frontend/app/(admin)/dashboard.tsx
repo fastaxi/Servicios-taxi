@@ -351,7 +351,7 @@ export default function DashboardScreen() {
             onDismiss={() => setMenuVisible(false)}
             anchor={
               <Button mode="outlined" onPress={() => setMenuVisible(true)} icon="office-building">
-                {selectedCompany || 'Todas las empresas'}
+                {selectedCompany || 'Todos los clientes'}
               </Button>
             }
           >
