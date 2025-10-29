@@ -100,9 +100,40 @@ export default function TurnosScreen() {
     setRefreshing(false);
   };
 
+  const loadServiciosTurno = async (turnoId: string) => {
+    try {
+      const response = await axios.get(`${API_URL}/services?turno_id=${turnoId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setServiciosPorTurno(prev => ({ ...prev, [turnoId]: response.data }));
+    } catch (error) {
+      console.error('Error loading servicios:', error);
+    }
+  };
+
+  const toggleTurnoExpanded = (turnoId: string) => {
+    const isExpanding = !expandedTurnos[turnoId];
+    setExpandedTurnos(prev => ({ ...prev, [turnoId]: isExpanding }));
+    
+    // Cargar servicios solo si se está expandiendo y aún no se han cargado
+    if (isExpanding && !serviciosPorTurno[turnoId]) {
+      loadServiciosTurno(turnoId);
+    }
+  };
+
   const handleFinalizarTurno = async () => {
-    if (!kmFin || !turnoActivo) {
-      setSnackbar({ visible: true, message: 'Por favor, ingresa los kilómetros finales' });
+    if (!kmFin || !horaFin || !turnoActivo) {
+      setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
+      return;
+    }
+
+    // Validar formato de hora
+    const horaRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!horaRegex.test(horaFin)) {
+      setSnackbar({ 
+        visible: true, 
+        message: 'Formato de hora inválido. Usa HH:mm (ejemplo: 14:30)' 
+      });
       return;
     }
 
