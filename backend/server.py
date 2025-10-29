@@ -788,7 +788,7 @@ async def export_csv(
     
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Tiempo Espera (min)", "Kilómetros", "Tipo", "Empresa"])
+    writer.writerow(["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Kilómetros", "Tipo", "Empresa"])
     
     for service in services:
         writer.writerow([
@@ -798,7 +798,7 @@ async def export_csv(
             service["origen"],
             service["destino"],
             service["importe"],
-            service["tiempo_espera"],
+            service.get("importe_espera", 0),
             service["kilometros"],
             service["tipo"],
             service.get("empresa_nombre", "")
