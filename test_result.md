@@ -395,6 +395,42 @@ frontend:
         agent: "main"
         comment: "Pantalla informativa de admin con logout. Pendiente de testing."
 
+  - task: "Gestión de Vehículos"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(admin)/vehiculos.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Pantalla CRUD de vehículos integrada en la vista de Taxistas/Vehículos. Incluye campos: matrícula, plazas, marca, modelo, km_iniciales, fecha_compra, activo. Pendiente de testing."
+
+  - task: "Modal Iniciar Turno"
+    implemented: true
+    working: "NA"
+    file: "frontend/components/IniciarTurnoModal.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modal para iniciar turno con campos: fecha_inicio, hora_inicio, km_inicio, selección de vehículo. Se muestra automáticamente cuando el taxista no tiene turno activo. Pendiente de testing."
+
+  - task: "Pantalla Turnos - Gestión completa"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/turnos.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implementación completa de gestión de turnos para taxistas con: 1) Turno activo con resumen en tiempo real (servicios, importes, km), 2) Finalizar turno con entrada manual de hora (formato HH:mm) y km finales, 3) Historial de turnos ordenados del más reciente al más antiguo, 4) Expandir turnos para ver servicios individuales con detalles completos (fecha, hora, origen, destino, importes, tipo). Incluye validación de formato de hora y km. Pendiente de testing."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
