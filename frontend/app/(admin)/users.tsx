@@ -289,22 +289,27 @@ export default function UsersScreen() {
           ]}
         />
       </View>
-      <FlatList
-        data={users}
-        renderItem={renderUser}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text variant="bodyLarge" style={styles.emptyText}>
-              No hay taxistas registrados
-            </Text>
-          </View>
-        }
-      />
+      
+      {activeTab === 'vehiculos' ? (
+        <VehiculosScreen />
+      ) : (
+        <>
+          <FlatList
+            data={users}
+            renderItem={renderUser}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.list}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text variant="bodyLarge" style={styles.emptyText}>
+                  No hay taxistas registrados
+                </Text>
+              </View>
+            }
+          />
 
       <FAB
         icon="plus"
