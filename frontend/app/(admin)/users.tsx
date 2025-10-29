@@ -422,15 +422,17 @@ export default function UsersScreen() {
             </ScrollView>
           </KeyboardAvoidingView>
         </Modal>
-      </Portal>
+          </Portal>
 
-      <Snackbar
-        visible={snackbar.visible}
-        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
-        duration={3000}
-      >
-        {snackbar.message}
-      </Snackbar>
+          <Snackbar
+            visible={snackbar.visible}
+            onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+            duration={3000}
+          >
+            {snackbar.message}
+          </Snackbar>
+        </>
+      )}
     </View>
   );
 }
