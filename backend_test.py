@@ -787,7 +787,7 @@ class TaxiTineoAPITester:
         admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         # Delete test users
-        for user_id in self.created_resources['users']:
+        for user_id in self.created_resources.get('users', []):
             try:
                 response = requests.delete(f"{BASE_URL}/users/{user_id}", headers=admin_headers)
                 if response.status_code == 200:
@@ -798,7 +798,7 @@ class TaxiTineoAPITester:
                 print(f"❌ Exception deleting user {user_id}: {str(e)}")
         
         # Delete test companies
-        for company_id in self.created_resources['companies']:
+        for company_id in self.created_resources.get('companies', []):
             try:
                 response = requests.delete(f"{BASE_URL}/companies/{company_id}", headers=admin_headers)
                 if response.status_code == 200:
@@ -809,7 +809,7 @@ class TaxiTineoAPITester:
                 print(f"❌ Exception deleting company {company_id}: {str(e)}")
         
         # Delete test services
-        for service_id in self.created_resources['services']:
+        for service_id in self.created_resources.get('services', []):
             try:
                 response = requests.delete(f"{BASE_URL}/services/{service_id}", headers=admin_headers)
                 if response.status_code == 200:
@@ -818,6 +818,19 @@ class TaxiTineoAPITester:
                     print(f"❌ Failed to delete service {service_id}: {response.status_code}")
             except Exception as e:
                 print(f"❌ Exception deleting service {service_id}: {str(e)}")
+        
+        # Delete test vehículos
+        for vehiculo_id in self.created_resources.get('vehiculos', []):
+            try:
+                response = requests.delete(f"{BASE_URL}/vehiculos/{vehiculo_id}", headers=admin_headers)
+                if response.status_code == 200:
+                    print(f"✅ Deleted test vehículo: {vehiculo_id}")
+                else:
+                    print(f"❌ Failed to delete vehículo {vehiculo_id}: {response.status_code}")
+            except Exception as e:
+                print(f"❌ Exception deleting vehículo {vehiculo_id}: {str(e)}")
+        
+        # Note: Turnos are not deleted as they are historical records
     
     def run_all_tests(self):
         """Run all tests"""
