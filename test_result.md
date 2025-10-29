@@ -238,6 +238,42 @@ backend:
         agent: "testing"
         comment: "✅ TESTING COMPLETO: GET /services/export/pdf funcionando correctamente. Archivo PDF generado (2326 bytes) con tabla formateada y colores Asturias. Solo admin tiene acceso."
 
+  - task: "CRUD Vehículos"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Endpoints CRUD para vehículos implementados. Incluye validación de matrícula única, campos: matrícula, plazas, marca, modelo, km_iniciales, fecha_compra, activo."
+
+  - task: "CRUD Turnos"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoints CRUD para turnos implementados. Incluye crear turno, obtener turnos con totales calculados, finalizar turno. Validación de turno único activo por taxista. Cálculo automático de totales (clientes, particulares, kilómetros, cantidad servicios)."
+
+  - task: "Filtro turno_id en servicios"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Agregado parámetro turno_id al endpoint GET /services para filtrar servicios por turno. Necesario para mostrar servicios individuales de cada turno en el frontend."
+
 frontend:
   - task: "Login Screen"
     implemented: true
