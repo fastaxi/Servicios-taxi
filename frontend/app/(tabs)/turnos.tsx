@@ -315,6 +315,83 @@ export default function TurnosScreen() {
                       {formatEuro(turno.total_importe_clientes + turno.total_importe_particulares)}
                     </Text>
                   </View>
+
+                  {/* Botón para expandir/contraer servicios */}
+                  <Button
+                    mode="text"
+                    onPress={() => toggleTurnoExpanded(turno.id)}
+                    icon={expandedTurnos[turno.id] ? 'chevron-up' : 'chevron-down'}
+                    style={styles.expandButton}
+                  >
+                    {expandedTurnos[turno.id] ? 'Ocultar servicios' : 'Ver servicios'}
+                  </Button>
+
+                  {/* Lista de servicios expandible */}
+                  {expandedTurnos[turno.id] && (
+                    <View style={styles.serviciosContainer}>
+                      <Divider style={styles.serviciosDivider} />
+                      <Text variant="titleSmall" style={styles.serviciosTitle}>
+                        Servicios del turno
+                      </Text>
+                      
+                      {serviciosPorTurno[turno.id] ? (
+                        serviciosPorTurno[turno.id].length > 0 ? (
+                          serviciosPorTurno[turno.id].map((servicio, index) => (
+                            <View key={servicio.id} style={styles.servicioItem}>
+                              <View style={styles.servicioHeader}>
+                                <Text variant="bodySmall" style={styles.servicioNumero}>
+                                  Servicio #{index + 1}
+                                </Text>
+                                <Chip 
+                                  mode="flat" 
+                                  compact 
+                                  style={servicio.tipo === 'empresa' ? styles.chipEmpresa : styles.chipParticular}
+                                >
+                                  {servicio.tipo === 'empresa' ? 'Cliente' : 'Particular'}
+                                </Chip>
+                              </View>
+                              
+                              <Text variant="bodySmall" style={styles.servicioDetalle}>
+                                📅 {servicio.fecha} {servicio.hora}
+                              </Text>
+                              <Text variant="bodySmall" style={styles.servicioDetalle}>
+                                📍 {servicio.origen} → {servicio.destino}
+                              </Text>
+                              <Text variant="bodySmall" style={styles.servicioDetalle}>
+                                🚗 {servicio.kilometros} km
+                              </Text>
+                              {servicio.empresa_nombre && (
+                                <Text variant="bodySmall" style={styles.servicioDetalle}>
+                                  🏢 {servicio.empresa_nombre}
+                                </Text>
+                              )}
+                              <View style={styles.servicioImportes}>
+                                <Text variant="bodySmall">Servicio: {formatEuro(servicio.importe)}</Text>
+                                {servicio.importe_espera > 0 && (
+                                  <Text variant="bodySmall">Espera: {formatEuro(servicio.importe_espera)}</Text>
+                                )}
+                                <Text variant="bodyMedium" style={styles.servicioTotal}>
+                                  Total: {formatEuro(servicio.importe_total)}
+                                </Text>
+                              </View>
+                              
+                              {index < serviciosPorTurno[turno.id].length - 1 && (
+                                <Divider style={styles.servicioItemDivider} />
+                              )}
+                            </View>
+                          ))
+                        ) : (
+                          <Text variant="bodySmall" style={styles.emptyServiciosText}>
+                            No hay servicios en este turno
+                          </Text>
+                        )
+                      ) : (
+                        <Text variant="bodySmall" style={styles.loadingText}>
+                          Cargando servicios...
+                        </Text>
+                      )}
+                    </View>
+                  )}
                 </Card.Content>
               </Card>
             ))
