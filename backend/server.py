@@ -181,6 +181,47 @@ class VehiculoResponse(VehiculoBase):
     class Config:
         from_attributes = True
 
+# Turno models
+class TurnoBase(BaseModel):
+    taxista_id: str
+    taxista_nombre: str
+    vehiculo_id: str
+    vehiculo_matricula: str
+    fecha_inicio: str  # formato dd/mm/yyyy
+    hora_inicio: str   # formato HH:mm
+    km_inicio: int
+    fecha_fin: Optional[str] = None
+    hora_fin: Optional[str] = None
+    km_fin: Optional[int] = None
+    cerrado: bool = False
+
+class TurnoCreate(BaseModel):
+    taxista_id: str
+    taxista_nombre: str
+    vehiculo_id: str
+    vehiculo_matricula: str
+    fecha_inicio: str
+    hora_inicio: str
+    km_inicio: int
+
+class TurnoUpdate(BaseModel):
+    fecha_fin: str
+    hora_fin: str
+    km_fin: int
+    cerrado: bool = True
+
+class TurnoResponse(TurnoBase):
+    id: str
+    created_at: datetime
+    # Totales calculados
+    total_importe_clientes: Optional[float] = 0
+    total_importe_particulares: Optional[float] = 0
+    total_kilometros: Optional[int] = 0
+    cantidad_servicios: Optional[int] = 0
+
+    class Config:
+        from_attributes = True
+
 # Auth helpers
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
