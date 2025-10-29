@@ -496,6 +496,137 @@ async def delete_vehiculo(vehiculo_id: str, current_user: dict = Depends(get_cur
         raise HTTPException(status_code=404, detail="Vehículo not found")
     return {"message": "Vehículo deleted successfully"}
 
+# Turno endpoints
+@api_router.post("/turnos", response_model=TurnoResponse)
+async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_current_user)):
+    # Validar que no tenga un turno abierto
+    existing_turno = await db.turnos.find_one({
+        "taxista_id": turno.taxista_id,
+        "cerrado": False
+    })
+    if existing_turno:
+        raise HTTPException(status_code=400, detail="Ya tienes un turno abierto. Debes finalizarlo antes de abrir uno nuevo.")
+    
+    turno_dict = turno.dict()
+    turno_dict["created_at"] = datetime.utcnow()
+    turno_dict["cerrado"] = False
+    
+    result = await db.turnos.insert_one(turno_dict)
+    created_turno = await db.turnos.find_one({"_id": result.inserted_id})
+    
+    return TurnoResponse(
+        id=str(created_turno["_id"]),
+        **{k: v for k, v in created_turno.items() if k != "_id"}
+    )
+
+@api_router.get("/turnos", response_model=List[TurnoResponse])
+async def get_turnos(
+    current_user: dict = Depends(get_current_user),
+    taxista_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None)
+):
+    query = {}
+    
+    # Si no es admin, solo sus propios turnos
+    if current_user.get("role") != "admin":
+        query["taxista_id"] = str(current_user["_id"])
+    elif taxista_id:
+        query["taxista_id"] = taxista_id
+    
+    # Filtro por fechas
+    if fecha_inicio:
+        query["fecha_inicio"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha_inicio" in query:
+            query["fecha_inicio"]["$lte"] = fecha_fin
+        else:
+            query["fecha_inicio"] = {"$lte": fecha_fin}
+    
+    turnos = await db.turnos.find(query).sort("created_at", -1).to_list(1000)
+    
+    # Calcular totales para cada turno
+    result = []
+    for turno in turnos:
+        turno_id = str(turno["_id"])
+        
+        # Obtener servicios del turno
+        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+        
+        total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+        total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        
+        result.append(TurnoResponse(
+            id=turno_id,
+            **{k: v for k, v in turno.items() if k != "_id"},
+            total_importe_clientes=total_clientes,
+            total_importe_particulares=total_particulares,
+            total_kilometros=total_km,
+            cantidad_servicios=len(servicios)
+        ))
+    
+    return result
+
+@api_router.get("/turnos/activo")
+async def get_turno_activo(current_user: dict = Depends(get_current_user)):
+    turno = await db.turnos.find_one({
+        "taxista_id": str(current_user["_id"]),
+        "cerrado": False
+    })
+    
+    if not turno:
+        return None
+    
+    turno_id = str(turno["_id"])
+    servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+    
+    total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+    total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+    total_km = sum(s.get("kilometros", 0) for s in servicios)
+    
+    return TurnoResponse(
+        id=turno_id,
+        **{k: v for k, v in turno.items() if k != "_id"},
+        total_importe_clientes=total_clientes,
+        total_importe_particulares=total_particulares,
+        total_kilometros=total_km,
+        cantidad_servicios=len(servicios)
+    )
+
+@api_router.put("/turnos/{turno_id}/finalizar", response_model=TurnoResponse)
+async def finalizar_turno(turno_id: str, turno_update: TurnoUpdate, current_user: dict = Depends(get_current_user)):
+    existing_turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    if not existing_turno:
+        raise HTTPException(status_code=404, detail="Turno not found")
+    
+    # Solo el taxista dueño o admin pueden finalizar
+    if current_user.get("role") != "admin" and existing_turno["taxista_id"] != str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    update_dict = turno_update.dict()
+    await db.turnos.update_one(
+        {"_id": ObjectId(turno_id)},
+        {"$set": update_dict}
+    )
+    
+    updated_turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    
+    # Calcular totales
+    servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+    total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+    total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+    total_km = sum(s.get("kilometros", 0) for s in servicios)
+    
+    return TurnoResponse(
+        id=turno_id,
+        **{k: v for k, v in updated_turno.items() if k != "_id"},
+        total_importe_clientes=total_clientes,
+        total_importe_particulares=total_particulares,
+        total_kilometros=total_km,
+        cantidad_servicios=len(servicios)
+    )
+
 # Service endpoints
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
