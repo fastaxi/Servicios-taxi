@@ -86,6 +86,7 @@ export default function UsersScreen() {
       const response = await axios.get(`${API_URL}/vehiculos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Vehículos cargados:', response.data);
       setVehiculos(response.data);
     } catch (error) {
       console.error('Error loading vehiculos:', error);
