@@ -65,25 +65,6 @@ export default function UsersScreen() {
 
   const { token } = useAuth();
 
-  // Si estamos en la pestaña de vehículos, mostrar ese componente
-  if (activeTab === 'vehiculos') {
-    return (
-      <View style={styles.container}>
-        <View style={styles.tabContainer}>
-          <SegmentedButtons
-            value={activeTab}
-            onValueChange={setActiveTab}
-            buttons={[
-              { value: 'taxistas', label: 'Taxistas' },
-              { value: 'vehiculos', label: 'Vehículos' },
-            ]}
-          />
-        </View>
-        <VehiculosScreen />
-      </View>
-    );
-  }
-
   useEffect(() => {
     loadUsers();
     loadVehiculos();
