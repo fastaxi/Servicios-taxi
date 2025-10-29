@@ -311,13 +311,13 @@ export default function UsersScreen() {
             }
           />
 
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => openModal()}
-      />
+          <FAB
+            icon="plus"
+            style={styles.fab}
+            onPress={() => openModal()}
+          />
 
-      <Portal>
+          <Portal>
         <Modal
           visible={modalVisible}
           onDismiss={closeModal}
