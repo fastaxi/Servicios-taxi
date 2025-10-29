@@ -160,6 +160,14 @@ export default function UsersScreen() {
       }
     }
 
+    // Validar que las contraseñas coincidan
+    if (formData.password && formData.password.trim() !== '') {
+      if (formData.password !== formData.confirmPassword) {
+        setSnackbar({ visible: true, message: 'Las contraseñas no coinciden' });
+        return;
+      }
+    }
+
     try {
       if (editingUser) {
         console.log('Modo EDICIÓN - ID:', editingUser.id);
@@ -173,7 +181,7 @@ export default function UsersScreen() {
           role: 'taxista'
         };
         
-        // Solo incluir contraseña si se proporcionó
+        // Solo incluir contraseña si se proporcionó y coincide
         if (formData.password && formData.password.trim() !== '') {
           updateData.password = formData.password;
         }
