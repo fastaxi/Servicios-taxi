@@ -115,6 +115,7 @@ export default function UsersScreen() {
         username: user.username,
         nombre: user.nombre,
         password: '', // No mostramos la contraseña
+        confirmPassword: '',
         licencia: user.licencia || '',
         vehiculo_id: user.vehiculo_id || '',
         vehiculo_matricula: user.vehiculo_matricula || '',
@@ -126,6 +127,7 @@ export default function UsersScreen() {
         username: '',
         nombre: '',
         password: '',
+        confirmPassword: '',
         licencia: '',
         vehiculo_id: '',
         vehiculo_matricula: '',
