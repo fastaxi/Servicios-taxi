@@ -32,21 +32,34 @@ interface User {
   nombre: string;
   role: string;
   licencia?: string;
+  vehiculo_id?: string;
+  vehiculo_matricula?: string;
+}
+
+interface Vehiculo {
+  id: string;
+  matricula: string;
+  marca: string;
+  modelo: string;
 }
 
 export default function UsersScreen() {
   const [activeTab, setActiveTab] = useState('taxistas');
   const [users, setUsers] = useState<User[]>([]);
+  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
+  const [vehiculoMenuVisible, setVehiculoMenuVisible] = useState(false);
   
   const [formData, setFormData] = useState({
     username: '',
     nombre: '',
     password: '',
     licencia: '',
+    vehiculo_id: '',
+    vehiculo_matricula: '',
   });
 
   const { token } = useAuth();
