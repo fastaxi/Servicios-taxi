@@ -440,6 +440,7 @@ metadata:
 test_plan:
   current_focus:
     - "Backend testing COMPLETADO ✅ - Todos los endpoints funcionando"
+    - "Nuevas funcionalidades de Turnos implementadas - Requiere testing"
     - "Frontend: Pendiente de testing UI (opcional - usuario puede probar manualmente)"
   stuck_tasks: []
   test_all: false
@@ -454,6 +455,9 @@ agent_communication:
       - Filtros avanzados en servicios
       - Exportación en 3 formatos: CSV, Excel, PDF
       - Sincronización batch para offline
+      - **NUEVO**: CRUD Vehículos con validación de matrícula única
+      - **NUEVO**: CRUD Turnos con cálculo automático de totales
+      - **NUEVO**: Filtro turno_id en servicios
       
       Frontend completamente implementado con:
       - Login screen (verificado visualmente)
@@ -462,6 +466,13 @@ agent_communication:
       - Todas las pantallas CRUD
       - Funcionalidad offline-first con NetInfo
       - Diseño con colores Asturias (azul #0066CC y amarillo #FFD700)
+      - **NUEVO**: Gestión de vehículos integrada en admin
+      - **NUEVO**: Modal de iniciar turno con validación
+      - **NUEVO**: Pantalla completa de gestión de turnos con:
+        * Turno activo con resumen en tiempo real
+        * Finalizar turno con entrada manual de hora (HH:mm) y km
+        * Historial ordenado del más reciente al más antiguo
+        * Expandir turnos para ver servicios individuales
       
       Datos de prueba creados:
       - Admin: admin/admin123
@@ -469,7 +480,7 @@ agent_communication:
       - Empresa: Hospital Universitario Central de Asturias
       - Servicio: Tineo -> Oviedo (45.50€)
       
-      Solicito testing completo del backend. El frontend está listo pero no solicito testing UI todavía ya que el usuario puede preferir probarlo manualmente.
+      Solicito testing del backend para las nuevas funcionalidades de turnos y vehículos.
   
   - agent: "testing"
     message: |
