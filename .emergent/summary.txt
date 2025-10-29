@@ -1,41 +1,30 @@
 <analysis>
-The AI engineer successfully built a comprehensive taxi management application, iterating heavily based on user feedback. Initial development focused on establishing a full-stack Expo/FastAPI/MongoDB architecture, including user authentication, service logging, and administrative features like company and user management, along with basic data export. A key challenge involved persistent frontend caching issues and a subtle React rendering bug () that required deep debugging and careful state management in . Backend validation errors due to schema changes and old data also needed addressing by making fields optional and cleaning test data. Subsequent enhancements added critical features such as dynamic app configuration, advanced filtering in the admin panel, and robust service editing capabilities for both taxistas and administrators. The latest task involves refining the Tiempo de espera field to be solely Importe de espera in euros, removing minutes.
+The AI engineer successfully implemented numerous features and fixes for the taxi management application, starting from an existing full-stack Expo/FastAPI/MongoDB setup. Initial work involved resolving frontend rendering issues and backend validation errors. Subsequent efforts focused on refining the Tiempo de espera field to Importe de espera in euros, adding an Importe Total field calculated automatically, and ensuring all monetary values are displayed in European format. Significant attention was given to user experience, including robust deletion confirmation dialogs, consistent data reloading using , and reorganizing UI elements for clarity (e.g., Empresas to Clientes, Configuración moved to admin profile). The most recent substantial work involved implementing a comprehensive Turnos (Shifts) management system, including new backend models (, ), API endpoints, and initial frontend integration with dedicated screens and modals for turn management and vehicle assignment to taxistas. The current state reflects the backend models and endpoints for shifts are in place, and the frontend has placeholder components for shift management.
 </analysis>
 
 <product_requirements>
-The user requires an Android mobile application for the taxi sector in Asturias, Spain.
+The application is an Android mobile app for the taxi sector in Asturias, Spain, facilitating service management for taxistas and comprehensive oversight for administrators.
+
 **Core Features:**
-1.  **Taxista Module:**
-    *   User registration with username/password.
-    *   Record services with: Date, Time, Service Origin, Service Destination, Service Amount (10% IVA included), Waiting Time (initially minutes/euros, then changed to only Importe de espera in euros), Total Kilometers, Company/Particular.
-    *   View and edit their own recorded services.
-    *   Offline functionality: Record services without connection, synchronize later.
-2.  **Administrator Module:**
-    *   Admin user to be created by the system.
-    *   Register and manage other users (taxistas), including assigning a License Number and editable password.
-    *   Manage companies (Name, CIF, Address, Locality, Province, then added Postal Code, Contact Phone, Email).
-    *   View all services performed by all users.
-    *   Filter services by: Company, Particular, Specific Taxista, Date Range (calendar).
-    *   Export filtered data in CSV, Excel, and PDF formats.
-    *   Edit any service, similar to taxistas.
-    *   Personalize the application: Logo, contact details (name, phone, website, address, email).
-3.  **Branding:** Initially requested Asturian flag colors and Taxi Tineo logo/contact info, later evolved to dynamic configuration.
-4.  **Technical:** Mobile app (Expo), FastAPI backend, MongoDB database. JWT for authentication.
+1.  **Taxista Module:** Records services (Date, Time, Origin, Destination, Amount, Importe de Espera (euros), Kilometers, Company/Particular), views/edits own services, and supports offline functionality. Will include Turnos (Shifts) management: starting/ending shifts, associating services to open shifts, and viewing shift summaries.
+2.  **Administrator Module:** Manages taxistas (including license, password with double verification, vehicle assignment) and clients (previously companies - Name, CIF, Address, Contact, Email). Views/filters/exports all services (CSV, Excel, PDF), edits any service. Personalizes app (Logo, contact details). Manages vehicles (Matrícula, plazas, marca, modelo, km_iniciales, fecha_compra).
+3.  **Branding:** Dynamic application configuration (logo, name, contact info).
+4.  **Technical:** Expo (React Native) frontend, FastAPI backend, MongoDB database. JWT for authentication.
 
 **Implementation Status:**
-All core features and requested enhancements have been implemented and tested, including user/company/service CRUD, admin filters, dynamic branding, and offline sync. The Importe de espera field is currently being updated.
+All prior core features (user/client/service CRUD, admin filters, dynamic branding, offline sync) are implemented. The Importe de espera is fully functional. The Importe Total field calculates correctly. Deletion and editing of services/taxistas are functional with UI improvements. The Turnos (Shifts) and Vehículos (Vehicles) management system is currently under development. Backend models and CRUD for Vehículos and Turnos are complete. Frontend for Vehículos management and taxista vehicle assignment is complete. Initial frontend components for Turnos are created and integrated.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack:** Expo (React Native) frontend, FastAPI backend, MongoDB database.
--   **Authentication:** JWT (JSON Web Tokens) for user (admin/taxista) authentication.
--   **Routing:** Expo Router for file-based navigation.
--   **State Management:** React Context API for global configuration and authentication.
--   **Forms:**  for efficient form handling and validation.
--   **UI Library:**  for Material Design components.
--   **Data Persistence:** Asynchronous storage for offline capabilities (implied by ).
--   **Image Handling:**  for selecting and storing images as Base64.
--   **Data Export:** Backend generation of CSV, Excel, PDF.
+-   **Full-stack:** Expo (React Native), FastAPI, MongoDB.
+-   **Authentication:** JWT.
+-   **Routing:** Expo Router.
+-   **State Management:** React Context API, useState.
+-   **Forms:**  (implied by previous analysis, though not explicitly modified for all new inputs),  with manual state.
+-   **UI Library:**  for Material Design components (Dialog, SegmentedButtons, Menu, FAB, Card, TextInput).
+-   **Date/Time:**  for date range selection, JavaScript  objects for comparison.
+-   **Data Persistence:** Asynchronous storage for offline capabilities (implied).
+-   **Image Handling:**  (for dynamic config).
 </key_technical_concepts>
 
 <code_architecture>
@@ -47,84 +36,107 @@ The application uses a standard full-stack structure with a  Expo project and a 
 **Key Files and Changes:**
 
 *   
-    *   **Importance:** Contains the FastAPI backend, MongoDB models, authentication logic, and API endpoints for users, companies, services, and dynamic configuration.
+    *   **Importance:** Central backend logic, API endpoints, and MongoDB models.
     *   **Changes:**
-        *   Initial setup with user (admin/taxista) and company models.
-        *   Added fields to Company model (codigo_postal, telefono, email) and User model (licencia). Made these optional in response models to handle existing data.
-        *   Implemented CRUD endpoints for users, companies, services, and a dedicated endpoint for  (logo, name, contact info).
-        *   Adjusted  model for  and then  (only euros).
-        *   Implemented filtering logic for services by taxista and date range.
-        *   Updated service creation/editing to handle new fields and logic.
-        *   Removed  field, making  a direct float.
+        *   Updated  model to use  (float, optional) and introduced .
+        *   Added  model (matricula, marca, modelo, plazas, km_iniciales, fecha_compra, activo) with CRUD endpoints.
+        *   Added  model (taxista_id, vehiculo_id, fecha_inicio, hora_inicio, km_inicio, fecha_fin, hora_fin, km_fin, cerrado, liquidado) with CRUD endpoints.
+        *   Updated  models (, , , ) to include  and .
+        *   Modified service creation/update logic to automatically calculate  and associate services with an active .
+
+*    (Root Layout)
+    *   **Importance:** Global layout and context providers.
+    *   **Changes:** None recently.
 
 *   
-    *   **Importance:** Main layout for Expo Router, handling global wrappers like  and .
-    *   **Changes:** Wrapped the app with  to make dynamic settings available globally.
-
-*   
-    *   **Importance:** Initial login screen.
-    *   **Changes:** Updated to use dynamic configuration (logo, name, contact info) from .
-
-*   
-    *   **Importance:** Admin screen for managing taxistas (users).
+    *   **Importance:** Admin tab navigation.
     *   **Changes:**
-        *   Added  field for taxistas.
-        *   Enabled editing of taxista details, including optional password change.
-        *   Implemented automatic username generation from name for new taxistas.
-        *   Fixed a critical bug where the FAB button was passing an event object to , causing edit mode to trigger incorrectly.
-        *   Improved error handling for snackbar messages to convert error objects to strings.
-        *   Removed the  input field from the creation form, as it's now auto-generated.
+        *   Renamed Empresas tab to Clientes.
+        *   Renamed Taxistas tab to Taxistas/Vehículos.
+        *   Hid  and  routes from tab navigation ().
+        *   Hid  route from tab navigation ().
 
 *   
-    *   **Importance:** Admin screen for managing companies.
-    *   **Changes:** Added new fields (codigo_postal, telefono, email) to the company creation/edit form.
+    *   **Importance:** Admin management of taxistas.
+    *   **Changes:**
+        *   Implemented  to toggle between Taxistas and Vehículos views internally.
+        *   Added vehicle assignment dropdown in the taxista creation/edit modal.
+        *   Added  field and validation for taxista password creation/edit.
+        *   Refactored  and conditional rendering to adhere to React Hooks rules.
+        *   Updated to display assigned vehicle in taxista cards.
+
+*    (New File)
+    *   **Importance:** Admin management of vehicles.
+    *   **Changes:** Created as a screen to manage (CRUD) vehicle details. Adjusted initial container style to prevent rendering conflicts when used within . Corrected  usage to .
 
 *   
-    *   **Importance:** Admin panel displaying service statistics and list.
-    *   **Changes:** Added filters for taxista and date range, using . Added edit button for services.
+    *   **Importance:** Admin view of all services.
+    *   **Changes:**
+        *   Updated filter text from Empresa to Cliente.
+        *   Added  to ensure data reloads when screen is focused.
+        *   Corrected date filtering logic to compare dates numerically after converting  strings.
+        *   Reorganized service card display order: Date - Kilometers - Service Amount - Importe de Espera.
+        *   Updated to display  in the blue chip.
 
 *   
-    *   **Importance:** New admin screen for managing dynamic application configuration.
-    *   **Changes:** Created to allow admin to upload logo (base64) and edit radio taxi details (name, phone, website, address, email). Uses .
+    *   **Importance:** Admin management of companies.
+    *   **Changes:** Updated terminology from Empresas to Clientes.
+
+*   
+    *   **Importance:** Admin profile screen.
+    *   **Changes:** Added a button to navigate to the Configuración screen.
+
+*   
+    *   **Importance:** Taxista tab navigation and global turn logic.
+    *   **Changes:** Integrated  and logic to check for an active turn on screen focus.
+
+*   
+    *   **Importance:** Taxista form to record a new service.
+    *   **Changes:**
+        *   Updated to use  (euros only).
+        *   Introduced  to handle European comma decimals.
+        *   Changed  to  for amount fields.
+        *   Implemented  calculation and display.
+        *   Corrected  definition scope.
 
 *   
     *   **Importance:** Taxista's view of their own services.
-    *   **Changes:** Added an edit button for each service, navigating to the  screen.
+    *   **Changes:**
+        *   Added  for data reloading.
+        *   Reorganized service card display order.
+        *   Updated to display  in the blue chip.
+
+*    (New File)
+    *   **Importance:** Taxista's view and management of shifts.
+    *   **Changes:** Created as a placeholder screen for shift management.
 
 *   
-    *   **Importance:** Taxista's form to record a new service.
+    *   **Importance:** Shared screen for editing an existing service.
     *   **Changes:**
-        *   Updated to support  (minutes/euros) initially, then changed to just  (euros only, allowing decimals).
-        *   Changed  for  to numeric for better decimal support.
-        *   Updated date format to dd/mm/yyyy.
-        *   Currently being modified to change Tiempo de espera to Importe de espera.
+        *   Updated to use  (euros only) and .
+        *   Implemented  and  for decimal handling.
+        *   Changed  to  for amount fields.
+        *   Improved deletion flow with a confirmation dialog and  for navigation.
+        *   Fixed number formatting when loading service data ().
 
-*    (initially in , moved to root )
-    *   **Importance:** Shared screen for editing an existing service for both taxistas and administrators.
-    *   **Changes:**
-        *   Created to allow editing of service details.
-        *   Updated to support  (euros only, allowing decimals).
-        *   Changed  for  to numeric for better decimal support.
-        *   Updated date format to dd/mm/yyyy.
-        *   Currently being modified to change Tiempo de espera to Importe de espera.
-
-*   
-    *   **Importance:** React Context for managing and providing dynamic application configuration throughout the frontend.
-    *   **Changes:** Created to fetch and provide  data (logo, name, contact info) to all components.
+*    (New File)
+    *   **Importance:** Modal for taxistas to open a new shift.
+    *   **Changes:** Created with input fields for , , , and a vehicle dropdown.
 </code_architecture>
 
 <pending_tasks>
--   Frontend updates for Importe de espera in  and admin dashboard.
--   Final verification of the Importe de espera change across all relevant frontend components.
+-   Complete the UI and logic within  for displaying, opening, and closing shifts.
+-   Implement the summary calculations (total importes cobrados a clientes/particulares, total kilómetros del turno) on turn finalization.
+-   Implement editing/filtering for shifts in both taxista and admin profiles.
 </pending_tasks>
 
 <current_work>
-The AI engineer is currently in the process of updating the application to change the Tiempo de espera field to Importe de espera, and to ensure it is exclusively in euros, removing the option for minutes. This involves changes in both the backend and frontend.
+The AI engineer is currently in the process of implementing a comprehensive Turnos (Shifts) management system.
+The backend () has been updated with new  and  models, including CRUD endpoints for both, and the  model now includes a . The service creation endpoint has been modified to automatically associate a new service with the taxista's active turn.
 
-So far, the backend () has been updated to reflect this change ().
-On the frontend, the  file has been partially updated to remove the minutes option (, ). The work is ongoing, as indicated by the final chat message being an edit to . The full scope of this change will involve updating  and potentially the dashboard to reflect Importe de espera only.
+On the frontend, a new modal component  has been created to allow taxistas to open a new shift, collecting , , , and assigning a vehicle. This modal is integrated into the  to automatically prompt the taxista to open a turn upon login if no active turn is found. Additionally, a new screen  has been created, which is intended to display and manage the taxista's shifts. This file currently serves as a placeholder for the main shift management UI. The most recent action was restarting both backend and frontend services after the creation of , indicating that the setup for the Turnos feature is largely complete on the structural level, and the next step is to build out the UI and logic within the  screen itself.
 </current_work>
 
 <optional_next_step>
-Update the  file in the frontend to change Tiempo de espera to Importe de espera (euros only).
+Implement the UI and logic within  to display, open, and close turns.
 </optional_next_step>
