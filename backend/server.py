@@ -671,6 +671,335 @@ async def update_turno(turno_id: str, turno_update: TurnoUpdate, current_user: d
         cantidad_servicios=len(servicios)
     )
 
+# Exportación de Turnos
+@api_router.get("/turnos/export/csv")
+async def export_turnos_csv(
+    current_user: dict = Depends(get_current_admin),
+    taxista_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None),
+    cerrado: Optional[bool] = Query(None),
+    liquidado: Optional[bool] = Query(None)
+):
+    query = {}
+    if taxista_id:
+        query["taxista_id"] = taxista_id
+    if fecha_inicio:
+        query["fecha_inicio"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha_inicio" in query:
+            query["fecha_inicio"]["$lte"] = fecha_fin
+        else:
+            query["fecha_inicio"] = {"$lte": fecha_fin}
+    if cerrado is not None:
+        query["cerrado"] = cerrado
+    if liquidado is not None:
+        query["liquidado"] = liquidado
+    
+    turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
+    
+    # Calcular totales para cada turno
+    turnos_con_totales = []
+    for turno in turnos:
+        turno_id = str(turno["_id"])
+        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+        total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+        total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        
+        turnos_con_totales.append({
+            **turno,
+            "total_clientes": total_clientes,
+            "total_particulares": total_particulares,
+            "total_km": total_km,
+            "cantidad_servicios": len(servicios)
+        })
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Taxista", "Vehículo", "Fecha Inicio", "Hora Inicio", "KM Inicio",
+        "Fecha Fin", "Hora Fin", "KM Fin", "Total KM",
+        "Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
+        "Cerrado", "Liquidado"
+    ])
+    
+    for turno in turnos_con_totales:
+        writer.writerow([
+            turno["taxista_nombre"],
+            turno["vehiculo_matricula"],
+            turno["fecha_inicio"],
+            turno["hora_inicio"],
+            turno["km_inicio"],
+            turno.get("fecha_fin", ""),
+            turno.get("hora_fin", ""),
+            turno.get("km_fin", ""),
+            turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0,
+            turno["cantidad_servicios"],
+            turno["total_clientes"],
+            turno["total_particulares"],
+            turno["total_clientes"] + turno["total_particulares"],
+            "Sí" if turno.get("cerrado") else "No",
+            "Sí" if turno.get("liquidado") else "No"
+        ])
+    
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=turnos.csv"}
+    )
+
+@api_router.get("/turnos/export/excel")
+async def export_turnos_excel(
+    current_user: dict = Depends(get_current_admin),
+    taxista_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None),
+    cerrado: Optional[bool] = Query(None),
+    liquidado: Optional[bool] = Query(None)
+):
+    query = {}
+    if taxista_id:
+        query["taxista_id"] = taxista_id
+    if fecha_inicio:
+        query["fecha_inicio"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha_inicio" in query:
+            query["fecha_inicio"]["$lte"] = fecha_fin
+        else:
+            query["fecha_inicio"] = {"$lte": fecha_fin}
+    if cerrado is not None:
+        query["cerrado"] = cerrado
+    if liquidado is not None:
+        query["liquidado"] = liquidado
+    
+    turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
+    
+    # Calcular totales
+    turnos_con_totales = []
+    for turno in turnos:
+        turno_id = str(turno["_id"])
+        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+        total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+        total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        
+        turnos_con_totales.append({
+            **turno,
+            "total_clientes": total_clientes,
+            "total_particulares": total_particulares,
+            "total_km": total_km,
+            "cantidad_servicios": len(servicios)
+        })
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Turnos"
+    
+    # Header styling
+    header_fill = PatternFill(start_color="0066CC", end_color="0066CC", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)
+    
+    headers = [
+        "Taxista", "Vehículo", "Fecha Inicio", "Hora Inicio", "KM Inicio",
+        "Fecha Fin", "Hora Fin", "KM Fin", "Total KM",
+        "Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
+        "Cerrado", "Liquidado"
+    ]
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    # Data
+    for row_idx, turno in enumerate(turnos_con_totales, 2):
+        ws.cell(row=row_idx, column=1, value=turno["taxista_nombre"])
+        ws.cell(row=row_idx, column=2, value=turno["vehiculo_matricula"])
+        ws.cell(row=row_idx, column=3, value=turno["fecha_inicio"])
+        ws.cell(row=row_idx, column=4, value=turno["hora_inicio"])
+        ws.cell(row=row_idx, column=5, value=turno["km_inicio"])
+        ws.cell(row=row_idx, column=6, value=turno.get("fecha_fin", ""))
+        ws.cell(row=row_idx, column=7, value=turno.get("hora_fin", ""))
+        ws.cell(row=row_idx, column=8, value=turno.get("km_fin", ""))
+        ws.cell(row=row_idx, column=9, value=turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0)
+        ws.cell(row=row_idx, column=10, value=turno["cantidad_servicios"])
+        ws.cell(row=row_idx, column=11, value=turno["total_clientes"])
+        ws.cell(row=row_idx, column=12, value=turno["total_particulares"])
+        ws.cell(row=row_idx, column=13, value=turno["total_clientes"] + turno["total_particulares"])
+        ws.cell(row=row_idx, column=14, value="Sí" if turno.get("cerrado") else "No")
+        ws.cell(row=row_idx, column=15, value="Sí" if turno.get("liquidado") else "No")
+    
+    # Auto-adjust column widths
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column].width = adjusted_width
+    
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=turnos.xlsx"}
+    )
+
+@api_router.get("/turnos/export/pdf")
+async def export_turnos_pdf(
+    current_user: dict = Depends(get_current_admin),
+    taxista_id: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None),
+    cerrado: Optional[bool] = Query(None),
+    liquidado: Optional[bool] = Query(None)
+):
+    query = {}
+    if taxista_id:
+        query["taxista_id"] = taxista_id
+    if fecha_inicio:
+        query["fecha_inicio"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha_inicio" in query:
+            query["fecha_inicio"]["$lte"] = fecha_fin
+        else:
+            query["fecha_inicio"] = {"$lte": fecha_fin}
+    if cerrado is not None:
+        query["cerrado"] = cerrado
+    if liquidado is not None:
+        query["liquidado"] = liquidado
+    
+    turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
+    
+    # Calcular totales
+    turnos_con_totales = []
+    for turno in turnos:
+        turno_id = str(turno["_id"])
+        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+        total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+        total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        
+        turnos_con_totales.append({
+            **turno,
+            "total_clientes": total_clientes,
+            "total_particulares": total_particulares,
+            "total_km": total_km,
+            "cantidad_servicios": len(servicios)
+        })
+    
+    output = io.BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=A4)
+    elements = []
+    
+    styles = getSampleStyleSheet()
+    title = Paragraph("<b>Turnos - Taxi Tineo</b>", styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Table data
+    data = [["Taxista", "Vehículo", "Fecha", "KM", "Servicios", "Total €", "Estado"]]
+    
+    for turno in turnos_con_totales:
+        estado = []
+        if turno.get("cerrado"):
+            estado.append("C")
+        if turno.get("liquidado"):
+            estado.append("L")
+        
+        data.append([
+            turno["taxista_nombre"][:15],
+            turno["vehiculo_matricula"],
+            turno["fecha_inicio"],
+            str(turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0),
+            turno["cantidad_servicios"],
+            f"{turno['total_clientes'] + turno['total_particulares']:.2f}€",
+            "/".join(estado) if estado else "A"
+        ])
+    
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0066CC')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+    ]))
+    
+    elements.append(table)
+    elements.append(Spacer(1, 0.2*inch))
+    elements.append(Paragraph("<i>Estados: A=Activo, C=Cerrado, L=Liquidado</i>", styles['Normal']))
+    doc.build(elements)
+    
+    output.seek(0)
+    return StreamingResponse(
+        output,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=turnos.pdf"}
+    )
+
+# Estadísticas de turnos
+@api_router.get("/turnos/estadisticas")
+async def get_turnos_estadisticas(
+    current_user: dict = Depends(get_current_admin),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None)
+):
+    query = {}
+    if fecha_inicio:
+        query["fecha_inicio"] = {"$gte": fecha_inicio}
+    if fecha_fin:
+        if "fecha_inicio" in query:
+            query["fecha_inicio"]["$lte"] = fecha_fin
+        else:
+            query["fecha_inicio"] = {"$lte": fecha_fin}
+    
+    turnos = await db.turnos.find(query).to_list(10000)
+    
+    total_turnos = len(turnos)
+    turnos_cerrados = sum(1 for t in turnos if t.get("cerrado"))
+    turnos_liquidados = sum(1 for t in turnos if t.get("liquidado"))
+    turnos_activos = total_turnos - turnos_cerrados
+    
+    # Calcular totales globales
+    total_importe = 0
+    total_km = 0
+    total_servicios = 0
+    
+    for turno in turnos:
+        turno_id = str(turno["_id"])
+        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+        for servicio in servicios:
+            total_importe += servicio.get("importe_total", servicio.get("importe", 0))
+            total_km += servicio.get("kilometros", 0)
+        total_servicios += len(servicios)
+    
+    return {
+        "total_turnos": total_turnos,
+        "turnos_activos": turnos_activos,
+        "turnos_cerrados": turnos_cerrados,
+        "turnos_liquidados": turnos_liquidados,
+        "turnos_pendiente_liquidacion": turnos_cerrados - turnos_liquidados,
+        "total_importe": round(total_importe, 2),
+        "total_kilometros": round(total_km, 2),
+        "total_servicios": total_servicios,
+        "promedio_importe_por_turno": round(total_importe / total_turnos, 2) if total_turnos > 0 else 0,
+        "promedio_servicios_por_turno": round(total_servicios / total_turnos, 2) if total_turnos > 0 else 0
+    }
+
 # Service endpoints
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
