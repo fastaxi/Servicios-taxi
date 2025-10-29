@@ -270,6 +270,11 @@ export default function UsersScreen() {
                 Licencia: {item.licencia}
               </Text>
             )}
+            {item.vehiculo_matricula && (
+              <Text variant="bodySmall" style={styles.vehiculo}>
+                🚗 {item.vehiculo_matricula}
+              </Text>
+            )}
           </View>
           <View style={styles.actions}>
             <IconButton
