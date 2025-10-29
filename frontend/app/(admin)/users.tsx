@@ -259,6 +259,16 @@ export default function UsersScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.tabContainer}>
+        <SegmentedButtons
+          value={activeTab}
+          onValueChange={setActiveTab}
+          buttons={[
+            { value: 'taxistas', label: 'Taxistas' },
+            { value: 'vehiculos', label: 'Vehículos' },
+          ]}
+        />
+      </View>
       <FlatList
         data={users}
         renderItem={renderUser}
