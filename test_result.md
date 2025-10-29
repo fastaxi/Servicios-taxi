@@ -280,6 +280,78 @@ backend:
         agent: "testing"
         comment: "✅ TESTING COMPLETO: GET /services?turno_id={turno_id} funcionando correctamente. Filtra servicios por turno específico. Integrado con funcionalidad de turnos - servicios se asignan automáticamente al turno activo del taxista."
 
+  - task: "Campo liquidado en turnos"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Agregado campo 'liquidado' (bool) al modelo Turno. Permite marcar turnos como liquidados por el admin."
+
+  - task: "Endpoint editar turno (admin)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nuevo endpoint PUT /turnos/{id} (solo admin) para editar cualquier campo del turno: fecha_inicio, hora_inicio, km_inicio, fecha_fin, hora_fin, km_fin, cerrado, liquidado."
+
+  - task: "Exportación de turnos CSV"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint GET /turnos/export/csv con filtros (taxista, fechas, cerrado, liquidado). Incluye totales calculados automáticamente para cada turno."
+
+  - task: "Exportación de turnos Excel"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint GET /turnos/export/excel con estilos y formato. Incluye totales calculados, cabeceras con colores Asturias."
+
+  - task: "Exportación de turnos PDF"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint GET /turnos/export/pdf con tabla formateada. Estados abreviados (A=Activo, C=Cerrado, L=Liquidado)."
+
+  - task: "Estadísticas de turnos"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint GET /turnos/estadisticas con cálculos globales: total turnos, activos, cerrados, liquidados, pendientes liquidación, totales (importe, km, servicios), promedios por turno."
+
 frontend:
   - task: "Login Screen"
     implemented: true
