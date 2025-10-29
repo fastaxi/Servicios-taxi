@@ -390,6 +390,16 @@ export default function UsersScreen() {
               />
 
               <TextInput
+                label={editingUser ? "Confirmar Contraseña" : "Confirmar Contraseña *"}
+                value={formData.confirmPassword}
+                onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+                mode="outlined"
+                secureTextEntry
+                style={styles.input}
+                placeholder="Vuelve a escribir la contraseña"
+              />
+
+              <TextInput
                 label="Licencia Nº *"
                 value={formData.licencia}
                 onChangeText={(text) => setFormData({ ...formData, licencia: text })}
