@@ -58,6 +58,7 @@ export default function UsersScreen() {
     username: '',
     nombre: '',
     password: '',
+    confirmPassword: '',
     licencia: '',
     vehiculo_id: '',
     vehiculo_matricula: '',
