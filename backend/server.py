@@ -195,6 +195,7 @@ class TurnoBase(BaseModel):
     hora_fin: Optional[str] = None
     km_fin: Optional[int] = None
     cerrado: bool = False
+    liquidado: bool = False
 
 class TurnoCreate(BaseModel):
     taxista_id: str
@@ -206,6 +207,16 @@ class TurnoCreate(BaseModel):
     km_inicio: int
 
 class TurnoUpdate(BaseModel):
+    fecha_inicio: Optional[str] = None
+    hora_inicio: Optional[str] = None
+    km_inicio: Optional[int] = None
+    fecha_fin: Optional[str] = None
+    hora_fin: Optional[str] = None
+    km_fin: Optional[int] = None
+    cerrado: Optional[bool] = None
+    liquidado: Optional[bool] = None
+
+class TurnoFinalizarUpdate(BaseModel):
     fecha_fin: str
     hora_fin: str
     km_fin: int
