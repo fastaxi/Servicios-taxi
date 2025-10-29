@@ -397,24 +397,24 @@ class TaxiTineoAPITester:
         sync_data = {
             "services": [
                 {
-                    "fecha": "2025-01-21",
+                    "fecha": "21/12/2024",
                     "hora": "09:00",
                     "origen": "Tineo",
                     "destino": "Oviedo",
                     "importe": 45.50,
-                    "tiempo_espera": 0,
+                    "importe_espera": 0.0,
                     "kilometros": 35.0,
                     "tipo": "empresa",
                     "empresa_id": "68f9bf6639ddad8a39451da0",
                     "empresa_nombre": "Hospital Universitario Central de Asturias"
                 },
                 {
-                    "fecha": "2025-01-21",
+                    "fecha": "21/12/2024",
                     "hora": "11:30",
                     "origen": "Oviedo",
                     "destino": "Tineo",
                     "importe": 45.50,
-                    "tiempo_espera": 10,
+                    "importe_espera": 10.0,
                     "kilometros": 35.0,
                     "tipo": "particular"
                 }
