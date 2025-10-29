@@ -538,7 +538,9 @@ async def get_turnos(
     current_user: dict = Depends(get_current_user),
     taxista_id: Optional[str] = Query(None),
     fecha_inicio: Optional[str] = Query(None),
-    fecha_fin: Optional[str] = Query(None)
+    fecha_fin: Optional[str] = Query(None),
+    cerrado: Optional[bool] = Query(None),
+    liquidado: Optional[bool] = Query(None)
 ):
     query = {}
     
@@ -556,6 +558,12 @@ async def get_turnos(
             query["fecha_inicio"]["$lte"] = fecha_fin
         else:
             query["fecha_inicio"] = {"$lte": fecha_fin}
+    
+    # Filtros por estado
+    if cerrado is not None:
+        query["cerrado"] = cerrado
+    if liquidado is not None:
+        query["liquidado"] = liquidado
     
     turnos = await db.turnos.find(query).sort("created_at", -1).to_list(1000)
     
