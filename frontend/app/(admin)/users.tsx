@@ -378,6 +378,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  tabContainer: {
+    padding: 16,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
   list: {
     padding: 16,
   },
