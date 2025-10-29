@@ -630,11 +630,28 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoUpdate, current_user
 # Service endpoints
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
+    # Si no es admin, buscar turno activo y asignar automáticamente
+    if current_user.get("role") != "admin":
+        turno_activo = await db.turnos.find_one({
+            "taxista_id": str(current_user["_id"]),
+            "cerrado": False
+        })
+        
+        if not turno_activo:
+            raise HTTPException(
+                status_code=400, 
+                detail="Debes iniciar un turno antes de registrar servicios"
+            )
+    
     service_dict = service.dict()
     service_dict["taxista_id"] = str(current_user["_id"])
     service_dict["taxista_nombre"] = current_user["nombre"]
     service_dict["created_at"] = datetime.utcnow()
     service_dict["synced"] = True
+    
+    # Asignar turno_id automáticamente si no es admin
+    if current_user.get("role") != "admin" and "turno_activo" in locals():
+        service_dict["turno_id"] = str(turno_activo["_id"])
     
     # Calcular importe_total automáticamente
     service_dict["importe_total"] = service_dict["importe"] + service_dict.get("importe_espera", 0)
