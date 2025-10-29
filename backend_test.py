@@ -855,6 +855,9 @@ class TaxiTineoAPITester:
         self.test_batch_sync()
         self.test_export_endpoints()
         
+        # NEW: Test Turnos and Vehículos functionality
+        self.test_turnos_crud()
+        
         # Cleanup
         self.cleanup_resources()
         
