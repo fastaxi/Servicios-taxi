@@ -14,9 +14,8 @@ import {
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || 'http://localhost:8001/api';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
 interface Vehiculo {
   id: string;
