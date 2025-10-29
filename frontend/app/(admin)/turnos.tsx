@@ -148,9 +148,18 @@ export default function AdminTurnosScreen() {
     try {
       const params: any = {};
       if (filtroTaxista) params.taxista_id = filtroTaxista;
-      if (filtroEstado === 'activos') params.cerrado = false;
-      if (filtroEstado === 'cerrados') params.cerrado = true;
-      if (filtroEstado === 'liquidados') params.liquidado = true;
+      
+      // Filtros por estado
+      if (filtroEstado === 'activos') {
+        params.cerrado = false;
+      } else if (filtroEstado === 'cerrados') {
+        params.cerrado = true;
+        params.liquidado = false;  // Solo cerrados pero no liquidados
+      } else if (filtroEstado === 'liquidados') {
+        params.cerrado = true;
+        params.liquidado = true;
+      }
+      // Si filtroEstado === 'todos', no agregar ningún filtro de estado
       
       const response = await axios.get(`${API_URL}/turnos`, {
         headers: { Authorization: `Bearer ${token}` },
