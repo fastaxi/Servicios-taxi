@@ -378,6 +378,43 @@ export default function UsersScreen() {
                 style={styles.input}
               />
 
+              <Menu
+                visible={vehiculoMenuVisible}
+                onDismiss={() => setVehiculoMenuVisible(false)}
+                anchor={
+                  <Button
+                    mode="outlined"
+                    onPress={() => setVehiculoMenuVisible(true)}
+                    icon="car"
+                    style={styles.input}
+                  >
+                    {formData.vehiculo_matricula || 'Sin vehículo asignado'}
+                  </Button>
+                }
+              >
+                <Menu.Item
+                  onPress={() => {
+                    setFormData({ ...formData, vehiculo_id: '', vehiculo_matricula: '' });
+                    setVehiculoMenuVisible(false);
+                  }}
+                  title="Sin vehículo"
+                />
+                {vehiculos.map((vehiculo) => (
+                  <Menu.Item
+                    key={vehiculo.id}
+                    onPress={() => {
+                      setFormData({
+                        ...formData,
+                        vehiculo_id: vehiculo.id,
+                        vehiculo_matricula: vehiculo.matricula,
+                      });
+                      setVehiculoMenuVisible(false);
+                    }}
+                    title={`${vehiculo.matricula} - ${vehiculo.marca} ${vehiculo.modelo}`}
+                  />
+                ))}
+              </Menu>
+
               <View style={styles.modalActions}>
                 <Button mode="outlined" onPress={closeModal} style={styles.modalButton}>
                   Cancelar
