@@ -9,6 +9,8 @@ import {
   TextInput,
   Chip,
   Snackbar,
+  List,
+  Divider,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
@@ -16,6 +18,20 @@ import axios from 'axios';
 import { format } from 'date-fns';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+
+interface Servicio {
+  id: string;
+  fecha: string;
+  hora: string;
+  origen: string;
+  destino: string;
+  importe: number;
+  importe_espera: number;
+  importe_total: number;
+  kilometros: number;
+  tipo: string;
+  empresa_nombre?: string;
+}
 
 interface Turno {
   id: string;
