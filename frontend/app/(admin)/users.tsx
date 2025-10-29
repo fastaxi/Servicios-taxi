@@ -18,9 +18,11 @@ import {
   Button,
   IconButton,
   Snackbar,
+  SegmentedButtons,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
+import VehiculosScreen from './vehiculos';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
