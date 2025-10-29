@@ -57,6 +57,9 @@ export default function TurnosScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [finalizarModalVisible, setFinalizarModalVisible] = useState(false);
   const [kmFin, setKmFin] = useState('');
+  const [horaFin, setHoraFin] = useState('');
+  const [expandedTurnos, setExpandedTurnos] = useState<{ [key: string]: boolean }>({});
+  const [serviciosPorTurno, setServiciosPorTurno] = useState<{ [key: string]: Servicio[] }>({});
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
   useEffect(() => {
