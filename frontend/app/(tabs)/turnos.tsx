@@ -151,7 +151,7 @@ export default function TurnosScreen() {
         `${API_URL}/turnos/${turnoActivo.id}/finalizar`,
         {
           fecha_fin: format(new Date(), 'dd/MM/yyyy'),
-          hora_fin: format(new Date(), 'HH:mm'),
+          hora_fin: horaFin,
           km_fin: kmNum,
           cerrado: true,
         },
@@ -160,6 +160,7 @@ export default function TurnosScreen() {
 
       setFinalizarModalVisible(false);
       setKmFin('');
+      setHoraFin('');
       setSnackbar({ visible: true, message: 'Turno finalizado correctamente' });
       loadTurnos();
     } catch (error: any) {
