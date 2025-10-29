@@ -40,9 +40,9 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="users"
         options={{
-          title: 'Taxistas',
+          title: 'Taxistas/Vehículos',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-group" size={size} color={color} />
+            <MaterialCommunityIcons name="car-multiple" size={size} color={color} />
           ),
         }}
       />
