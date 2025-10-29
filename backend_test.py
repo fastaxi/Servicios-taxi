@@ -270,12 +270,12 @@ class TaxiTineoAPITester:
         
         # Test create service as taxista
         test_service = {
-            "fecha": "2025-01-20",
+            "fecha": "20/12/2024",
             "hora": "14:30",
             "origen": "Tineo Centro",
             "destino": "Hospital de Cangas",
             "importe": 25.50,
-            "tiempo_espera": 5,
+            "importe_espera": 5.0,
             "kilometros": 18.2,
             "tipo": "particular"
         }
