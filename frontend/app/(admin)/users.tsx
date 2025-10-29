@@ -102,6 +102,11 @@ export default function UsersScreen() {
   const openModal = (user?: User) => {
     console.log('=== openModal llamado ===');
     console.log('user recibido:', user);
+    console.log('Vehículos disponibles:', vehiculos);
+    
+    // Recargar vehículos para asegurar que tenemos la lista actualizada
+    loadVehiculos();
+    
     if (user) {
       console.log('MODO EDICIÓN - Seteando editingUser:', user);
       setEditingUser(user);
