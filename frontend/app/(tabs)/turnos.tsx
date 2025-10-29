@@ -80,7 +80,15 @@ export default function TurnosScreen() {
       
       const activo = response.data.find((t: Turno) => !t.cerrado);
       setTurnoActivo(activo || null);
-      setTurnos(response.data);
+      
+      // Ordenar turnos del más reciente al más antiguo
+      const turnosOrdenados = response.data.sort((a: Turno, b: Turno) => {
+        const fechaHoraA = `${a.fecha_inicio} ${a.hora_inicio}`;
+        const fechaHoraB = `${b.fecha_inicio} ${b.hora_inicio}`;
+        return fechaHoraB.localeCompare(fechaHoraA);
+      });
+      
+      setTurnos(turnosOrdenados);
     } catch (error) {
       console.error('Error loading turnos:', error);
     }
