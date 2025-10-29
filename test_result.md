@@ -437,6 +437,18 @@ frontend:
         agent: "main"
         comment: "Implementación completa de gestión de turnos para taxistas con: 1) Turno activo con resumen en tiempo real (servicios, importes, km), 2) Finalizar turno con entrada manual de hora (formato HH:mm) y km finales, 3) Historial de turnos ordenados del más reciente al más antiguo, 4) Expandir turnos para ver servicios individuales con detalles completos (fecha, hora, origen, destino, importes, tipo). Incluye validación de formato de hora y km. Pendiente de testing."
 
+  - task: "Pantalla Admin Turnos - Gestión completa"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(admin)/turnos.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implementación completa del panel de administrador para turnos con: 1) Nueva pestaña 'Turnos' en navigation, 2) Filtros avanzados (taxista, estado: activos/cerrados/liquidados), 3) Tres vistas: Lista con cards expandibles, Tabla comparativa, Estadísticas globales, 4) Editar turnos (admin puede modificar cualquier campo), 5) Cerrar turnos de taxistas, 6) Marcar/desmarcar turnos como liquidados, 7) Ver servicios individuales expandibles por turno, 8) Botones de exportación (CSV/Excel/PDF), 9) Estadísticas: totales, promedios, turnos pendientes de liquidación. Pendiente de testing."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
