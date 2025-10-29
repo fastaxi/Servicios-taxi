@@ -63,6 +63,13 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="vehiculos"
+        options={{
+          href: null,
+          title: 'Vehículos',
+        }}
+      />
+      <Tabs.Screen
         name="edit-service"
         options={{
           href: null,
