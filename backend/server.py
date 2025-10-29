@@ -217,7 +217,7 @@ class TurnoResponse(TurnoBase):
     # Totales calculados
     total_importe_clientes: Optional[float] = 0
     total_importe_particulares: Optional[float] = 0
-    total_kilometros: Optional[int] = 0
+    total_kilometros: Optional[float] = 0
     cantidad_servicios: Optional[int] = 0
 
     class Config:
