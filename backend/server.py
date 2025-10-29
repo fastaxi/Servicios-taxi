@@ -304,6 +304,8 @@ class UserUpdate(BaseModel):
     nombre: str
     role: str = "taxista"
     licencia: Optional[str] = None
+    vehiculo_id: Optional[str] = None
+    vehiculo_matricula: Optional[str] = None
     password: Optional[str] = None
 
 @api_router.put("/users/{user_id}", response_model=UserResponse)
