@@ -634,6 +634,7 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoUpdate, current_user
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
     # Si no es admin, buscar turno activo y asignar automáticamente
+    turno_activo = None
     if current_user.get("role") != "admin":
         turno_activo = await db.turnos.find_one({
             "taxista_id": str(current_user["_id"]),
@@ -652,8 +653,8 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
     service_dict["created_at"] = datetime.utcnow()
     service_dict["synced"] = True
     
-    # Asignar turno_id automáticamente si no es admin
-    if current_user.get("role") != "admin" and "turno_activo" in locals():
+    # Asignar turno_id automáticamente si no es admin y hay turno activo
+    if turno_activo:
         service_dict["turno_id"] = str(turno_activo["_id"])
     
     # Calcular importe_total automáticamente
