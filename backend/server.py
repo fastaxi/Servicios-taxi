@@ -325,6 +325,8 @@ async def update_user(user_id: str, user: UserUpdate, current_user: dict = Depen
         nombre=updated_user["nombre"],
         role=updated_user["role"],
         licencia=updated_user.get("licencia"),
+        vehiculo_id=updated_user.get("vehiculo_id"),
+        vehiculo_matricula=updated_user.get("vehiculo_matricula"),
         created_at=updated_user["created_at"]
     )
 
