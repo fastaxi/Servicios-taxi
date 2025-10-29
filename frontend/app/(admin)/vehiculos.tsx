@@ -281,7 +281,7 @@ export default function VehiculosScreen() {
       >
         {snackbar.message}
       </Snackbar>
-    </View>
+    </>
   );
 }
 
