@@ -403,8 +403,17 @@ export default function TurnosScreen() {
           <Dialog.Title>Finalizar Turno</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium" style={styles.dialogText}>
-              Ingresa los kilómetros finales del vehículo
+              Ingresa la hora de finalización y los kilómetros finales del vehículo
             </Text>
+            <TextInput
+              label="Hora de finalización (HH:mm) *"
+              value={horaFin}
+              onChangeText={setHoraFin}
+              mode="outlined"
+              keyboardType="default"
+              placeholder="Ejemplo: 14:30"
+              style={styles.input}
+            />
             <TextInput
               label="Kilómetros finales *"
               value={kmFin}
