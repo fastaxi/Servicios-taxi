@@ -504,6 +504,278 @@ class TaxiTineoAPITester:
                     self.log_result("Export Access (Taxista - Should Fail)", False, f"Expected 403, got {response.status_code}")
             except Exception as e:
                 self.log_result("Export Access (Taxista - Should Fail)", False, f"Exception: {str(e)}")
+
+    def test_vehiculos_crud(self):
+        """Test vehículos CRUD operations"""
+        print("\n=== TESTING VEHÍCULOS CRUD ===")
+        
+        if not self.admin_token:
+            self.log_result("Vehículos CRUD Setup", False, "No admin token available")
+            return
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test create vehículo (admin only)
+        test_vehiculo = {
+            "matricula": f"AS-{datetime.now().strftime('%H%M')}-BC",
+            "plazas": 4,
+            "marca": "Toyota",
+            "modelo": "Prius",
+            "km_iniciales": 50000,
+            "fecha_compra": "15/01/2020",
+            "activo": True
+        }
+        
+        vehiculo_id = None
+        try:
+            response = requests.post(f"{BASE_URL}/vehiculos", json=test_vehiculo, headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                vehiculo_id = data['id']
+                self.created_resources.setdefault('vehiculos', []).append(vehiculo_id)
+                self.log_result("Create Vehículo (Admin)", True, f"Vehículo created with ID: {vehiculo_id}, Matrícula: {data['matricula']}")
+            else:
+                self.log_result("Create Vehículo (Admin)", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Create Vehículo (Admin)", False, f"Exception: {str(e)}")
+        
+        # Test unique matricula validation
+        try:
+            response = requests.post(f"{BASE_URL}/vehiculos", json=test_vehiculo, headers=admin_headers)
+            if response.status_code == 400:
+                self.log_result("Unique Matrícula Validation", True, "Correctly rejected duplicate matricula")
+            else:
+                self.log_result("Unique Matrícula Validation", False, f"Should have failed with 400, got: {response.status_code}")
+        except Exception as e:
+            self.log_result("Unique Matrícula Validation", False, f"Exception: {str(e)}")
+        
+        # Test list vehículos (both admin and taxista should work)
+        try:
+            response = requests.get(f"{BASE_URL}/vehiculos", headers=admin_headers)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result("List Vehículos (Admin)", True, f"Retrieved {len(data)} vehículos")
+            else:
+                self.log_result("List Vehículos (Admin)", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("List Vehículos (Admin)", False, f"Exception: {str(e)}")
+        
+        if self.taxista_token:
+            taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+            try:
+                response = requests.get(f"{BASE_URL}/vehiculos", headers=taxista_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.log_result("List Vehículos (Taxista)", True, f"Retrieved {len(data)} vehículos")
+                else:
+                    self.log_result("List Vehículos (Taxista)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("List Vehículos (Taxista)", False, f"Exception: {str(e)}")
+        
+        # Test update vehículo (admin only)
+        if vehiculo_id:
+            updated_vehiculo = test_vehiculo.copy()
+            updated_vehiculo["km_iniciales"] = 55000
+            
+            try:
+                response = requests.put(f"{BASE_URL}/vehiculos/{vehiculo_id}", json=updated_vehiculo, headers=admin_headers)
+                if response.status_code == 200:
+                    self.log_result("Update Vehículo (Admin)", True, "Vehículo updated successfully")
+                else:
+                    self.log_result("Update Vehículo (Admin)", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("Update Vehículo (Admin)", False, f"Exception: {str(e)}")
+        
+        return vehiculo_id
+
+    def test_turnos_crud(self):
+        """Test turnos CRUD operations and workflow"""
+        print("\n=== TESTING TURNOS CRUD & WORKFLOW ===")
+        
+        if not self.taxista_token:
+            self.log_result("Turnos CRUD Setup", False, "No taxista token available")
+            return
+        
+        # First create a vehículo to use
+        vehiculo_id = self.test_vehiculos_crud()
+        if not vehiculo_id:
+            self.log_result("Turnos Setup", False, "Could not create vehículo for turno testing")
+            return
+        
+        taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+        
+        # Test create turno
+        test_turno = {
+            "taxista_id": "test_taxista_id",  # Will be overridden by backend
+            "taxista_nombre": "Taxista Test",
+            "vehiculo_id": vehiculo_id,
+            "vehiculo_matricula": f"AS-{datetime.now().strftime('%H%M')}-BC",
+            "fecha_inicio": "20/12/2024",
+            "hora_inicio": "08:00",
+            "km_inicio": 52000
+        }
+        
+        turno_id = None
+        try:
+            response = requests.post(f"{BASE_URL}/turnos", json=test_turno, headers=taxista_headers)
+            if response.status_code == 200:
+                data = response.json()
+                turno_id = data['id']
+                self.created_resources.setdefault('turnos', []).append(turno_id)
+                self.log_result("Create Turno", True, f"Turno created with ID: {turno_id}")
+            else:
+                self.log_result("Create Turno", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Create Turno", False, f"Exception: {str(e)}")
+        
+        # Test get active turno
+        try:
+            response = requests.get(f"{BASE_URL}/turnos/activo", headers=taxista_headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data and data.get('id') == turno_id:
+                    self.log_result("Get Turno Activo", True, f"Active turno retrieved: {data['id']}")
+                else:
+                    self.log_result("Get Turno Activo", False, f"Expected turno {turno_id}, got: {data}")
+            else:
+                self.log_result("Get Turno Activo", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("Get Turno Activo", False, f"Exception: {str(e)}")
+        
+        # Test duplicate turno prevention
+        try:
+            response = requests.post(f"{BASE_URL}/turnos", json=test_turno, headers=taxista_headers)
+            if response.status_code == 400:
+                self.log_result("Duplicate Turno Prevention", True, "Correctly prevented duplicate active turno")
+            else:
+                self.log_result("Duplicate Turno Prevention", False, f"Should have failed with 400, got: {response.status_code}")
+        except Exception as e:
+            self.log_result("Duplicate Turno Prevention", False, f"Exception: {str(e)}")
+        
+        # Create services that should auto-assign to active turno
+        services_created = self.create_services_for_turno(turno_id)
+        
+        # Test services filter by turno_id
+        if services_created:
+            try:
+                response = requests.get(f"{BASE_URL}/services?turno_id={turno_id}", headers=taxista_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    if len(data) >= 2:  # Should have at least the services we created
+                        all_correct_turno = all(service.get("turno_id") == turno_id for service in data)
+                        if all_correct_turno:
+                            self.log_result("Filter Services by Turno", True, f"Found {len(data)} services correctly assigned to turno")
+                        else:
+                            self.log_result("Filter Services by Turno", False, "Some services have incorrect turno_id")
+                    else:
+                        self.log_result("Filter Services by Turno", False, f"Expected at least 2 services, got {len(data)}")
+                else:
+                    self.log_result("Filter Services by Turno", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result("Filter Services by Turno", False, f"Exception: {str(e)}")
+        
+        # Test finalize turno
+        if turno_id:
+            finalize_data = {
+                "fecha_fin": "20/12/2024",
+                "hora_fin": "16:30",
+                "km_fin": 52150,
+                "cerrado": True
+            }
+            
+            try:
+                response = requests.put(f"{BASE_URL}/turnos/{turno_id}/finalizar", json=finalize_data, headers=taxista_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Verify totals calculation
+                    has_totals = (
+                        'total_importe_particulares' in data and
+                        'total_importe_clientes' in data and
+                        'total_kilometros' in data and
+                        'cantidad_servicios' in data
+                    )
+                    
+                    if has_totals and data.get('cerrado'):
+                        self.log_result("Finalize Turno", True, f"Turno finalized with totals: Particulares={data.get('total_importe_particulares')}€, Empresas={data.get('total_importe_clientes')}€, KM={data.get('total_kilometros')}, Servicios={data.get('cantidad_servicios')}")
+                    else:
+                        self.log_result("Finalize Turno", False, f"Missing totals or not marked as closed: {data}")
+                else:
+                    self.log_result("Finalize Turno", False, f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_result("Finalize Turno", False, f"Exception: {str(e)}")
+        
+        # Test list turnos (should include our closed turno)
+        try:
+            response = requests.get(f"{BASE_URL}/turnos", headers=taxista_headers)
+            if response.status_code == 200:
+                data = response.json()
+                our_turno = next((t for t in data if t.get('id') == turno_id), None)
+                if our_turno and our_turno.get('cerrado'):
+                    self.log_result("List Turnos", True, f"Retrieved {len(data)} turnos, including our closed turno")
+                else:
+                    self.log_result("List Turnos", False, "Our turno not found in list or not marked as closed")
+            else:
+                self.log_result("List Turnos", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("List Turnos", False, f"Exception: {str(e)}")
+
+    def create_services_for_turno(self, turno_id):
+        """Create test services that should be assigned to the active turno"""
+        if not self.taxista_token:
+            return False
+        
+        taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
+        
+        services_data = [
+            {
+                "fecha": "20/12/2024",
+                "hora": "09:30",
+                "origen": "Tineo Centro",
+                "destino": "Hospital de Cangas",
+                "importe": 25.50,
+                "importe_espera": 5.00,
+                "kilometros": 15.2,
+                "tipo": "particular"
+            },
+            {
+                "fecha": "20/12/2024",
+                "hora": "11:15",
+                "origen": "Hospital de Cangas",
+                "destino": "Oviedo HUCA",
+                "importe": 45.00,
+                "importe_espera": 0.00,
+                "kilometros": 32.5,
+                "tipo": "empresa",
+                "empresa_nombre": "Hospital Universitario Central de Asturias"
+            }
+        ]
+        
+        success_count = 0
+        for i, service_data in enumerate(services_data):
+            try:
+                response = requests.post(f"{BASE_URL}/services", json=service_data, headers=taxista_headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.created_resources['services'].append(data['id'])
+                    success_count += 1
+                    
+                    # Verify turno assignment
+                    if data.get('turno_id') == turno_id:
+                        self.log_result(f"Service {i+1} Turno Assignment", True, f"Service correctly assigned to turno {turno_id}")
+                    else:
+                        self.log_result(f"Service {i+1} Turno Assignment", False, f"Expected turno {turno_id}, got {data.get('turno_id')}")
+                else:
+                    self.log_result(f"Create Service {i+1} for Turno", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_result(f"Create Service {i+1} for Turno", False, f"Exception: {str(e)}")
+        
+        if success_count == len(services_data):
+            self.log_result("Create Services for Turno", True, f"Created {success_count} services for turno testing")
+            return True
+        else:
+            self.log_result("Create Services for Turno", False, f"Only {success_count}/{len(services_data)} services created")
+            return False
     
     def cleanup_resources(self):
         """Clean up created test resources"""
