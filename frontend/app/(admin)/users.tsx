@@ -127,6 +127,8 @@ export default function UsersScreen() {
         nombre: user.nombre,
         password: '', // No mostramos la contraseña
         licencia: user.licencia || '',
+        vehiculo_id: user.vehiculo_id || '',
+        vehiculo_matricula: user.vehiculo_matricula || '',
       });
     } else {
       console.log('MODO CREACIÓN - Limpiando editingUser a null');
@@ -136,6 +138,8 @@ export default function UsersScreen() {
         nombre: '',
         password: '',
         licencia: '',
+        vehiculo_id: '',
+        vehiculo_matricula: '',
       });
     }
     setModalVisible(true);
