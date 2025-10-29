@@ -160,6 +160,25 @@ class ConfigResponse(ConfigBase):
 class ServiceSync(BaseModel):
     services: List[ServiceBase]
 
+# Vehículo models
+class VehiculoBase(BaseModel):
+    matricula: str
+    plazas: int
+    marca: str
+    modelo: str
+    km_iniciales: int
+    fecha_compra: str  # formato dd/mm/yyyy
+    activo: bool = True
+
+class VehiculoCreate(VehiculoBase):
+    pass
+
+class VehiculoResponse(VehiculoBase):
+    id: str
+
+    class Config:
+        from_attributes = True
+
 # Auth helpers
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
