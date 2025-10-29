@@ -501,13 +501,16 @@ async def delete_vehiculo(vehiculo_id: str, current_user: dict = Depends(get_cur
 async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_current_user)):
     # Validar que no tenga un turno abierto
     existing_turno = await db.turnos.find_one({
-        "taxista_id": turno.taxista_id,
+        "taxista_id": str(current_user["_id"]),
         "cerrado": False
     })
     if existing_turno:
         raise HTTPException(status_code=400, detail="Ya tienes un turno abierto. Debes finalizarlo antes de abrir uno nuevo.")
     
     turno_dict = turno.dict()
+    # Override taxista info with current user
+    turno_dict["taxista_id"] = str(current_user["_id"])
+    turno_dict["taxista_nombre"] = current_user["nombre"]
     turno_dict["created_at"] = datetime.utcnow()
     turno_dict["cerrado"] = False
     
