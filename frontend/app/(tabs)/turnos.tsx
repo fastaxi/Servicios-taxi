@@ -520,4 +520,74 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  expandButton: {
+    marginTop: 12,
+  },
+  serviciosContainer: {
+    marginTop: 8,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 8,
+    padding: 12,
+  },
+  serviciosDivider: {
+    marginBottom: 12,
+    backgroundColor: '#0066CC',
+    height: 2,
+  },
+  serviciosTitle: {
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#0066CC',
+  },
+  servicioItem: {
+    marginBottom: 8,
+  },
+  servicioHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  servicioNumero: {
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  chipEmpresa: {
+    backgroundColor: '#E3F2FD',
+  },
+  chipParticular: {
+    backgroundColor: '#FFF9C4',
+  },
+  servicioDetalle: {
+    marginTop: 4,
+    color: '#666',
+  },
+  servicioImportes: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: '#0066CC',
+  },
+  servicioTotal: {
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginTop: 4,
+  },
+  servicioItemDivider: {
+    marginTop: 12,
+    marginBottom: 8,
+    backgroundColor: '#E0E0E0',
+  },
+  emptyServiciosText: {
+    textAlign: 'center',
+    color: '#999',
+    padding: 16,
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: '#666',
+    padding: 16,
+  },
 });
