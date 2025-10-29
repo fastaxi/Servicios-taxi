@@ -487,6 +487,11 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
+  vehiculo: {
+    color: '#0066CC',
+    marginTop: 4,
+    fontWeight: '600',
+  },
   actions: {
     flexDirection: 'row',
   },
