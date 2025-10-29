@@ -212,6 +212,8 @@ export default function UsersScreen() {
             nombre: formData.nombre,
             password: formData.password,
             licencia: formData.licencia,
+            vehiculo_id: formData.vehiculo_id || null,
+            vehiculo_matricula: formData.vehiculo_matricula || null,
             role: 'taxista' 
           },
           { headers: { Authorization: `Bearer ${token}` } }
