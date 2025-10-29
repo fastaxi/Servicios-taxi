@@ -175,6 +175,12 @@ export default function UsersScreen() {
           updateData.password = formData.password;
         }
         
+        console.log('=== Actualizando usuario ===');
+        console.log('User ID:', editingUser?.id);
+        console.log('Datos a enviar:', updateData);
+        console.log('vehiculo_id:', updateData.vehiculo_id);
+        console.log('vehiculo_matricula:', updateData.vehiculo_matricula);
+        
         await axios.put(
           `${API_URL}/users/${editingUser.id}`,
           updateData,
