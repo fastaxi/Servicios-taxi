@@ -685,6 +685,7 @@ async def get_services(
     tipo: Optional[str] = Query(None),
     empresa_id: Optional[str] = Query(None),
     taxista_id: Optional[str] = Query(None),
+    turno_id: Optional[str] = Query(None),
     fecha_inicio: Optional[str] = Query(None),
     fecha_fin: Optional[str] = Query(None)
 ):
@@ -703,6 +704,8 @@ async def get_services(
         query["tipo"] = tipo
     if empresa_id:
         query["empresa_id"] = empresa_id
+    if turno_id:
+        query["turno_id"] = turno_id
     if fecha_inicio:
         query["fecha"] = {"$gte": fecha_inicio}
     if fecha_fin:
