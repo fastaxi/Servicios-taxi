@@ -119,6 +119,7 @@ class ServiceBase(BaseModel):
     tipo: str  # "empresa" or "particular"
     empresa_id: Optional[str] = None
     empresa_nombre: Optional[str] = None
+    turno_id: Optional[str] = None  # ID del turno asociado
 
 class ServiceCreate(ServiceBase):
     pass
