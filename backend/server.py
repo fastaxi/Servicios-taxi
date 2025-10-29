@@ -65,6 +65,8 @@ class UserBase(BaseModel):
     nombre: str
     role: str = "taxista"  # admin or taxista
     licencia: Optional[str] = None
+    vehiculo_id: Optional[str] = None
+    vehiculo_matricula: Optional[str] = None  # Para mostrar sin hacer joins
 
 class UserCreate(UserBase):
     password: str
