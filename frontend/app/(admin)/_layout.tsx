@@ -47,6 +47,15 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="turnos"
+        options={{
+          title: 'Turnos',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="clock-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="config"
         options={{
           href: null,
