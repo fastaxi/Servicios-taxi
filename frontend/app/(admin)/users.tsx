@@ -85,6 +85,7 @@ export default function UsersScreen() {
 
   useEffect(() => {
     loadUsers();
+    loadVehiculos();
   }, []);
 
   const loadUsers = async () => {
@@ -95,6 +96,17 @@ export default function UsersScreen() {
       setUsers(response.data);
     } catch (error) {
       console.error('Error loading users:', error);
+    }
+  };
+
+  const loadVehiculos = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/vehiculos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setVehiculos(response.data);
+    } catch (error) {
+      console.error('Error loading vehiculos:', error);
     }
   };
 
