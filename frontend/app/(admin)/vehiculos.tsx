@@ -149,7 +149,7 @@ export default function VehiculosScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <>
       <ScrollView style={styles.scrollView}>
         {vehiculos.length === 0 ? (
           <View style={styles.emptyContainer}>
