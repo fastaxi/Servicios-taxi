@@ -256,11 +256,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoints CRUD para turnos implementados. Incluye crear turno, obtener turnos con totales calculados, finalizar turno. Validación de turno único activo por taxista. Cálculo automático de totales (clientes, particulares, kilómetros, cantidad servicios)."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: POST /turnos (crear turno ✓), GET /turnos/activo (obtener turno activo ✓), PUT /turnos/{id}/finalizar (finalizar con totales correctos ✓), GET /turnos (historial ✓). Validación de turno único activo funcionando. Totales calculados correctamente: Particulares=30.5€, Empresas=45.0€, KM=47.7, Servicios=2. Servicios se asignan automáticamente al turno activo."
 
   - task: "Filtro turno_id en servicios"
     implemented: true
@@ -268,11 +271,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Agregado parámetro turno_id al endpoint GET /services para filtrar servicios por turno. Necesario para mostrar servicios individuales de cada turno en el frontend."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /services?turno_id={turno_id} funcionando correctamente. Filtra servicios por turno específico. Integrado con funcionalidad de turnos - servicios se asignan automáticamente al turno activo del taxista."
 
 frontend:
   - task: "Login Screen"
