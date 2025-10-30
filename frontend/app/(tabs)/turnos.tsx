@@ -11,11 +11,13 @@ import {
   Snackbar,
   List,
   Divider,
+  FAB,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import { format } from 'date-fns';
+import IniciarTurnoModal from '../../components/IniciarTurnoModal';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
