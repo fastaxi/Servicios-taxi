@@ -120,6 +120,8 @@ class ServiceBase(BaseModel):
     empresa_id: Optional[str] = None
     empresa_nombre: Optional[str] = None
     turno_id: Optional[str] = None  # ID del turno asociado
+    cobrado: bool = False
+    facturar: bool = False
 
 class ServiceCreate(ServiceBase):
     pass
@@ -139,6 +141,9 @@ class ServiceResponse(BaseModel):
     tipo: str
     empresa_id: Optional[str] = None
     empresa_nombre: Optional[str] = None
+    turno_id: Optional[str] = None
+    cobrado: Optional[bool] = False
+    facturar: Optional[bool] = False
     created_at: datetime
     synced: bool = True
 
