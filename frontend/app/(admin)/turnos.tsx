@@ -34,6 +34,8 @@ interface Servicio {
   kilometros: number;
   tipo: string;
   empresa_nombre?: string;
+  cobrado?: boolean;
+  facturar?: boolean;
 }
 
 interface Turno {
