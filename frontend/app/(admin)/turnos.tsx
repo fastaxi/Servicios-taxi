@@ -214,9 +214,11 @@ export default function AdminTurnosScreen() {
 
   const loadServiciosTurno = async (turnoId: string) => {
     try {
+      console.log('Cargando servicios para turno:', turnoId);
       const response = await axios.get(`${API_URL}/services?turno_id=${turnoId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Servicios recibidos:', response.data.length);
       setServiciosPorTurno(prev => ({ ...prev, [turnoId]: response.data }));
     } catch (error) {
       console.error('Error loading servicios:', error);
