@@ -96,6 +96,9 @@ class CompanyBase(BaseModel):
     provincia: str
     telefono: Optional[str] = ""
     email: Optional[str] = ""
+    numero_cliente: Optional[str] = None
+    fecha_alta: Optional[str] = None  # formato dd/mm/yyyy
+    notas: Optional[str] = ""
 
 class CompanyCreate(CompanyBase):
     pass
