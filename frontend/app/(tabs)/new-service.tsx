@@ -142,6 +142,8 @@ export default function NewServiceScreen() {
       tipo,
       empresa_id: tipo === 'empresa' ? empresaId : null,
       empresa_nombre: tipo === 'empresa' ? empresaNombre : null,
+      cobrado,
+      facturar,
     };
 
     try {
