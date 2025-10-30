@@ -602,7 +602,12 @@ async def get_turnos(
         
         total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
         total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
-        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        
+        # Calcular km del turno: usar km_fin si existe, sino usar suma de km de servicios
+        if turno.get("km_fin") is not None:
+            total_km = turno["km_fin"] - turno["km_inicio"]
+        else:
+            total_km = sum(s.get("kilometros", 0) for s in servicios)
         
         result.append(TurnoResponse(
             id=turno_id,
