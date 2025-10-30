@@ -341,6 +341,23 @@ export default function EditServiceScreen() {
             </Menu>
           )}
 
+          <View style={styles.checkboxContainer}>
+            <Checkbox.Item
+              label="Cobrado"
+              status={cobrado ? 'checked' : 'unchecked'}
+              onPress={() => setCobrado(!cobrado)}
+              position="leading"
+              labelStyle={styles.checkboxLabel}
+            />
+            <Checkbox.Item
+              label="Facturar"
+              status={facturar ? 'checked' : 'unchecked'}
+              onPress={() => setFacturar(!facturar)}
+              position="leading"
+              labelStyle={styles.checkboxLabel}
+            />
+          </View>
+
           <Button
             mode="contained"
             onPress={handleSubmit}
