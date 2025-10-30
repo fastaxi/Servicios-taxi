@@ -103,15 +103,21 @@ export default function IniciarTurnoModal({
     }
   };
 
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
+  };
+
   return (
     <Portal>
-      <Dialog visible={visible} dismissable={false}>
+      <Dialog visible={visible} onDismiss={handleCancel} dismissable={true}>
         <Dialog.Title>Iniciar Turno</Dialog.Title>
         <Dialog.ScrollArea>
           <ScrollView>
             <View style={styles.content}>
               <Text variant="bodyMedium" style={styles.subtitle}>
-                Debes iniciar un turno antes de registrar servicios
+                Completa los datos para iniciar tu turno
               </Text>
 
               <TextInput
