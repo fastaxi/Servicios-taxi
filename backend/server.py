@@ -439,6 +439,16 @@ async def get_companies(current_user: dict = Depends(get_current_user)):
 @api_router.put("/companies/{company_id}", response_model=CompanyResponse)
 async def update_company(company_id: str, company: CompanyCreate, current_user: dict = Depends(get_current_admin)):
     company_dict = company.dict()
+    
+    # Validar numero_cliente único si se proporciona (excepto el actual)
+    if company_dict.get("numero_cliente"):
+        existing = await db.companies.find_one({
+            "numero_cliente": company_dict["numero_cliente"],
+            "_id": {"$ne": ObjectId(company_id)}
+        })
+        if existing:
+            raise HTTPException(status_code=400, detail="Número de cliente ya existe")
+    
     result = await db.companies.update_one(
         {"_id": ObjectId(company_id)},
         {"$set": company_dict}
