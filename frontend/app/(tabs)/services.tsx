@@ -23,6 +23,7 @@ interface Service {
   empresa_nombre?: string;
   cobrado?: boolean;
   facturar?: boolean;
+  turno_id?: string;
 }
 
 export default function ServicesScreen() {
