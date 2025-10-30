@@ -87,14 +87,21 @@ export default function CompaniesScreen() {
         nombre: company.nombre,
         cif: company.cif,
         direccion: company.direccion,
-        codigo_postal: company.codigo_postal,
+        codigo_postal: company.codigo_postal || '',
         localidad: company.localidad,
         provincia: company.provincia,
-        telefono: company.telefono,
-        email: company.email,
+        telefono: company.telefono || '',
+        email: company.email || '',
+        numero_cliente: company.numero_cliente || '',
+        fecha_alta: company.fecha_alta || '',
+        notas: company.notas || '',
       });
     } else {
       setEditingCompany(null);
+      // Auto-generar fecha de alta con fecha actual
+      const today = new Date();
+      const fechaAlta = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+      
       setFormData({
         nombre: '',
         cif: '',
@@ -104,6 +111,9 @@ export default function CompaniesScreen() {
         provincia: 'Asturias',
         telefono: '',
         email: '',
+        numero_cliente: '',
+        fecha_alta: fechaAlta,
+        notas: '',
       });
     }
     setModalVisible(true);
