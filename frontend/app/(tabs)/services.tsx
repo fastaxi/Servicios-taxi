@@ -21,6 +21,8 @@ interface Service {
   kilometros: number;
   tipo: string;
   empresa_nombre?: string;
+  cobrado?: boolean;
+  facturar?: boolean;
 }
 
 export default function ServicesScreen() {
