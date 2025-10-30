@@ -52,6 +52,9 @@ export default function CompaniesScreen() {
     provincia: 'Asturias',
     telefono: '',
     email: '',
+    numero_cliente: '',
+    fecha_alta: '',
+    notas: '',
   });
 
   const { token } = useAuth();
