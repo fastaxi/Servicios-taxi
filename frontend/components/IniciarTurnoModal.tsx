@@ -26,6 +26,7 @@ interface IniciarTurnoModalProps {
   userName: string;
   token: string;
   onTurnoIniciado: () => void;
+  onCancel?: () => void;
 }
 
 export default function IniciarTurnoModal({
@@ -34,6 +35,7 @@ export default function IniciarTurnoModal({
   userName,
   token,
   onTurnoIniciado,
+  onCancel,
 }: IniciarTurnoModalProps) {
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [vehiculoMenuVisible, setVehiculoMenuVisible] = useState(false);
