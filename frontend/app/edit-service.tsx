@@ -456,6 +456,16 @@ const styles = StyleSheet.create({
   segmented: {
     marginBottom: 16,
   },
+  checkboxContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 8,
+    padding: 4,
+  },
+  checkboxLabel: {
+    fontSize: 16,
+  },
   submitButton: {
     marginTop: 24,
     paddingVertical: 8,
