@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { Text, Card, Chip, FAB, IconButton } from 'react-native-paper';
+import { Text, Card, Chip, FAB, IconButton, Button } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
 import { useRouter, useFocusEffect } from 'expo-router';
