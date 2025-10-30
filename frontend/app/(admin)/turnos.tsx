@@ -215,10 +215,35 @@ export default function AdminTurnosScreen() {
   const loadServiciosTurno = async (turnoId: string) => {
     try {
       console.log('Cargando servicios para turno:', turnoId);
-      const response = await axios.get(`${API_URL}/services?turno_id=${turnoId}`, {
+      
+      // Primero intentar con turno_id
+      let response = await axios.get(`${API_URL}/services?turno_id=${turnoId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Servicios recibidos:', response.data.length);
+      
+      console.log('Servicios con turno_id:', response.data.length);
+      
+      // Si no hay servicios con turno_id, buscar por taxista y fecha
+      if (response.data.length === 0) {
+        const turno = turnos.find(t => t.id === turnoId);
+        if (turno) {
+          console.log('Buscando servicios por taxista y fecha:', turno.taxista_id, turno.fecha_inicio);
+          response = await axios.get(
+            `${API_URL}/services?taxista_id=${turno.taxista_id}`, 
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          
+          // Filtrar manualmente por fecha del turno
+          const serviciosFiltrados = response.data.filter((s: Servicio) => {
+            return s.fecha === turno.fecha_inicio;
+          });
+          
+          console.log('Servicios filtrados por fecha:', serviciosFiltrados.length);
+          setServiciosPorTurno(prev => ({ ...prev, [turnoId]: serviciosFiltrados }));
+          return;
+        }
+      }
+      
       setServiciosPorTurno(prev => ({ ...prev, [turnoId]: response.data }));
     } catch (error) {
       console.error('Error loading servicios:', error);
