@@ -189,6 +189,8 @@ export default function NewServiceScreen() {
     setTipo('particular');
     setEmpresaId('');
     setEmpresaNombre('');
+    setCobrado(false);
+    setFacturar(false);
   };
 
   return (
