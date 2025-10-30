@@ -21,6 +21,7 @@ import { useSync } from '../../contexts/SyncContext';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { useRouter } from 'expo-router';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
