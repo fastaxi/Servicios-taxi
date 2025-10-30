@@ -31,6 +31,9 @@ interface Company {
   direccion: string;
   localidad: string;
   provincia: string;
+  numero_cliente?: string;
+  fecha_alta?: string;
+  notas?: string;
 }
 
 export default function CompaniesScreen() {
