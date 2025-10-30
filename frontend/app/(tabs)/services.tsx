@@ -27,6 +27,8 @@ interface Service {
 
 export default function ServicesScreen() {
   const [services, setServices] = useState<Service[]>([]);
+  const [turnoActivo, setTurnoActivo] = useState<any>(null);
+  const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { token } = useAuth();
   const { pendingServices, syncStatus, syncServices } = useSync();
