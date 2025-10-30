@@ -595,6 +595,34 @@ export default function AdminTurnosScreen() {
                       </Text>
                     </View>
                     
+                    {/* Chips de estado del servicio */}
+                    {(servicio.cobrado || servicio.facturar) && (
+                      <View style={styles.servicioEstadoChips}>
+                        {servicio.cobrado && (
+                          <Chip 
+                            mode="flat" 
+                            compact 
+                            icon="cash-check"
+                            style={styles.servicioChipCobrado}
+                            textStyle={styles.servicioChipText}
+                          >
+                            Cobrado
+                          </Chip>
+                        )}
+                        {servicio.facturar && (
+                          <Chip 
+                            mode="flat" 
+                            compact 
+                            icon="file-document"
+                            style={styles.servicioChipFacturar}
+                            textStyle={styles.servicioChipText}
+                          >
+                            Facturar
+                          </Chip>
+                        )}
+                      </View>
+                    )}
+                    
                     {index < serviciosPorTurno[turno.id].length - 1 && (
                       <Divider style={styles.servicioItemDivider} />
                     )}
