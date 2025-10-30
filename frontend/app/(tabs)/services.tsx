@@ -55,6 +55,23 @@ export default function ServicesScreen() {
     try {
       console.log('=== Cargando servicios del taxista ===');
       console.log('Token:', token ? 'Presente' : 'Ausente');
+      
+      // Cargar turno activo
+      try {
+        const turnoResponse = await axios.get(`${API_URL}/turnos/activo`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setTurnoActivo(turnoResponse.data);
+        console.log('Turno activo encontrado:', turnoResponse.data?.id);
+      } catch (error: any) {
+        if (error.response?.status !== 404) {
+          console.error('Error cargando turno activo:', error);
+        }
+        setTurnoActivo(null);
+        console.log('No hay turno activo');
+      }
+      
+      // Cargar todos los servicios
       const response = await axios.get(`${API_URL}/services`, {
         headers: { Authorization: `Bearer ${token}` },
       });
