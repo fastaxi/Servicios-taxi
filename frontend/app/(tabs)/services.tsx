@@ -268,6 +268,29 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '600',
   },
+  turnoInfoBanner: {
+    backgroundColor: '#E3F2FD',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#0066CC',
+  },
+  turnoInfoText: {
+    color: '#0066CC',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  turnoInfoSubtext: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  historialButtonContainer: {
+    padding: 12,
+    backgroundColor: '#F5F5F5',
+  },
+  historialButton: {
+    borderColor: '#0066CC',
+  },
   list: {
     padding: 16,
   },
