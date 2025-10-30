@@ -465,6 +465,7 @@ export default function TurnosScreen() {
         userName={user?.nombre || ''}
         token={token || ''}
         onTurnoIniciado={handleTurnoIniciado}
+        onCancel={() => setIniciarTurnoModalVisible(false)}
       />
 
       <Snackbar
