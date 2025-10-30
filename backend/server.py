@@ -1043,6 +1043,57 @@ async def get_turnos_estadisticas(
         "promedio_servicios_por_turno": round(total_servicios / total_turnos, 2) if total_turnos > 0 else 0
     }
 
+# Reporte diario por taxista
+@api_router.get("/reportes/diario")
+async def get_reporte_diario(
+    fecha: str = Query(..., description="Fecha en formato dd/mm/yyyy"),
+    current_user: dict = Depends(get_current_admin)
+):
+    """
+    Obtiene un reporte diario de todos los taxistas con sus totales del día.
+    Entrada: fecha (dd/mm/yyyy)
+    Salida: Lista de taxistas con sus totales del día
+    """
+    
+    # Obtener todos los taxistas
+    taxistas = await db.users.find({"role": "taxista"}).to_list(1000)
+    
+    reporte = []
+    
+    for taxista in taxistas:
+        taxista_id = str(taxista["_id"])
+        
+        # Obtener servicios del taxista en la fecha específica
+        servicios = await db.services.find({
+            "taxista_id": taxista_id,
+            "fecha": fecha
+        }).to_list(1000)
+        
+        if len(servicios) == 0:
+            continue  # Omitir taxistas sin servicios ese día
+        
+        # Calcular totales
+        total_servicios = len(servicios)
+        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        rec_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+        rec_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+        
+        reporte.append({
+            "taxista_id": taxista_id,
+            "taxista_nombre": taxista.get("nombre", "Sin nombre"),
+            "fecha": fecha,
+            "n_servicios": total_servicios,
+            "km_totales": round(total_km, 2),
+            "rec_clientes": round(rec_clientes, 2),
+            "rec_particulares": round(rec_particulares, 2),
+            "total": round(rec_clientes + rec_particulares, 2)
+        })
+    
+    # Ordenar por total descendente
+    reporte.sort(key=lambda x: x["total"], reverse=True)
+    
+    return reporte
+
 # Service endpoints
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
