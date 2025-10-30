@@ -236,6 +236,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#666',
   },
+  statusChipsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    flexWrap: 'wrap',
+  },
+  chipCobrado: {
+    backgroundColor: '#4CAF50',
+  },
+  chipFacturar: {
+    backgroundColor: '#FF9800',
+  },
+  chipText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
