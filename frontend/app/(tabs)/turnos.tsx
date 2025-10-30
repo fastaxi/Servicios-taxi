@@ -483,6 +483,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  sinTurnoBanner: {
+    backgroundColor: '#FFF3E0',
+    padding: 20,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#FF9800',
+  },
+  sinTurnoText: {
+    color: '#E65100',
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  sinTurnoSubtext: {
+    color: '#666',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  iniciarTurnoButton: {
+    marginTop: 8,
+    backgroundColor: '#FF9800',
+  },
   scrollView: {
     flex: 1,
   },
