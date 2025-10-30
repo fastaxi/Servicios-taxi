@@ -97,6 +97,8 @@ export default function EditServiceScreen() {
         setTipo(service.tipo);
         setEmpresaId(service.empresa_id || '');
         setEmpresaNombre(service.empresa_nombre || '');
+        setCobrado(service.cobrado || false);
+        setFacturar(service.facturar || false);
       }
     } catch (error) {
       console.error('Error loading service:', error);
