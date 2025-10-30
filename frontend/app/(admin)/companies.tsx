@@ -444,6 +444,10 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
   },
+  notasInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
