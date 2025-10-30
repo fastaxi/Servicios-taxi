@@ -14,6 +14,7 @@ import {
   SegmentedButtons,
   Menu,
   Snackbar,
+  Checkbox,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
