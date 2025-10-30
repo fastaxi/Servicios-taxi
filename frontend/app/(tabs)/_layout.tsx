@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Portal, Dialog, Button, Text } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import IniciarTurnoModal from '../../components/IniciarTurnoModal';
 import axios from 'axios';
@@ -11,7 +12,9 @@ export default function TabsLayout() {
   const { user, token } = useAuth();
   const [turnoActivo, setTurnoActivo] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [confirmarTurnoVisible, setConfirmarTurnoVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [yaPreguntoIniciarTurno, setYaPreguntoIniciarTurno] = useState(false);
 
   useEffect(() => {
     checkTurnoActivo();
@@ -26,15 +29,33 @@ export default function TabsLayout() {
       if (response.data) {
         setTurnoActivo(response.data);
         setModalVisible(false);
+        setConfirmarTurnoVisible(false);
       } else {
-        setModalVisible(true);
+        // No hay turno activo, preguntar si quiere iniciar
+        if (!yaPreguntoIniciarTurno) {
+          setConfirmarTurnoVisible(true);
+          setYaPreguntoIniciarTurno(true);
+        }
       }
     } catch (error) {
       console.error('Error checking turno activo:', error);
-      setModalVisible(true);
+      if (!yaPreguntoIniciarTurno) {
+        setConfirmarTurnoVisible(true);
+        setYaPreguntoIniciarTurno(true);
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleIniciarTurnoSi = () => {
+    setConfirmarTurnoVisible(false);
+    setModalVisible(true);
+  };
+
+  const handleIniciarTurnoNo = () => {
+    setConfirmarTurnoVisible(false);
+    setModalVisible(false);
   };
 
   const handleTurnoIniciado = () => {
