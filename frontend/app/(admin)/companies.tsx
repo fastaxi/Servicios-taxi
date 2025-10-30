@@ -325,6 +325,35 @@ export default function CompaniesScreen() {
                 style={styles.input}
               />
 
+              <TextInput
+                label="Número de Cliente"
+                value={formData.numero_cliente}
+                onChangeText={(text) => setFormData({ ...formData, numero_cliente: text })}
+                mode="outlined"
+                style={styles.input}
+                placeholder="Ej: C001"
+              />
+
+              <TextInput
+                label="Fecha de Alta"
+                value={formData.fecha_alta}
+                onChangeText={(text) => setFormData({ ...formData, fecha_alta: text })}
+                mode="outlined"
+                style={styles.input}
+                placeholder="dd/mm/yyyy"
+              />
+
+              <TextInput
+                label="Notas"
+                value={formData.notas}
+                onChangeText={(text) => setFormData({ ...formData, notas: text })}
+                mode="outlined"
+                multiline
+                numberOfLines={4}
+                style={[styles.input, styles.notasInput]}
+                placeholder="Observaciones adicionales sobre el cliente..."
+              />
+
               <View style={styles.modalActions}>
                 <Button mode="outlined" onPress={closeModal} style={styles.modalButton}>
                   Cancelar
