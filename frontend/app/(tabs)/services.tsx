@@ -93,6 +93,24 @@ export default function ServicesScreen() {
     return amount.toFixed(2).replace('.', ',') + ' €';
   };
 
+  // Filtrar servicios según si se muestra historial o no
+  const getServiciosFiltrados = () => {
+    if (mostrarHistorial) {
+      return services; // Mostrar todos
+    }
+    
+    // Mostrar solo del turno activo
+    if (turnoActivo) {
+      return services.filter(s => s.turno_id === turnoActivo.id);
+    }
+    
+    // Si no hay turno activo, mostrar todos (para compatibilidad)
+    return services;
+  };
+
+  const serviciosTurnoActivo = turnoActivo ? services.filter(s => s.turno_id === turnoActivo.id).length : 0;
+  const serviciosArchivados = services.length - serviciosTurnoActivo;
+
   const renderService = ({ item }: { item: Service }) => (
     <Card style={styles.card}>
       <Card.Content>
