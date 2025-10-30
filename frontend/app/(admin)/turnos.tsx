@@ -1179,6 +1179,23 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     marginTop: 4,
   },
+  servicioEstadoChips: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+    flexWrap: 'wrap',
+  },
+  servicioChipCobrado: {
+    backgroundColor: '#4CAF50',
+  },
+  servicioChipFacturar: {
+    backgroundColor: '#FF9800',
+  },
+  servicioChipText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 12,
+  },
   servicioItemDivider: {
     marginTop: 12,
     marginBottom: 8,
