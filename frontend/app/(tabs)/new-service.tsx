@@ -43,6 +43,8 @@ export default function NewServiceScreen() {
   const [tipo, setTipo] = useState('particular');
   const [empresaId, setEmpresaId] = useState('');
   const [empresaNombre, setEmpresaNombre] = useState('');
+  const [cobrado, setCobrado] = useState(false);
+  const [facturar, setFacturar] = useState(false);
   
   const [companies, setCompanies] = useState<Company[]>([]);
   const [menuVisible, setMenuVisible] = useState(false);
