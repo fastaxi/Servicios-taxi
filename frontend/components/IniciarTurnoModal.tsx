@@ -185,6 +185,12 @@ export default function IniciarTurnoModal({
         </Dialog.ScrollArea>
         <Dialog.Actions>
           <Button
+            onPress={handleCancel}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
             onPress={handleIniciarTurno}
             loading={loading}
             disabled={loading}
