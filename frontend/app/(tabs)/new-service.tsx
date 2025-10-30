@@ -169,6 +169,11 @@ export default function NewServiceScreen() {
 
       // Reset form
       resetForm();
+      
+      // Navigate to services screen
+      setTimeout(() => {
+        router.push('/services');
+      }, 500);
     } catch (error: any) {
       console.error('Error saving service:', error);
       setSnackbar({
