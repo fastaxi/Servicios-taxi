@@ -458,6 +458,15 @@ export default function TurnosScreen() {
         </Dialog>
       </Portal>
 
+      {/* Modal de iniciar turno */}
+      <IniciarTurnoModal
+        visible={iniciarTurnoModalVisible}
+        userId={user?._id || ''}
+        userName={user?.nombre || ''}
+        token={token || ''}
+        onTurnoIniciado={handleTurnoIniciado}
+      />
+
       <Snackbar
         visible={snackbar.visible}
         onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
