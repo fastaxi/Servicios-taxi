@@ -53,11 +53,12 @@ interface Turno {
 }
 
 export default function TurnosScreen() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [turnoActivo, setTurnoActivo] = useState<Turno | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [finalizarModalVisible, setFinalizarModalVisible] = useState(false);
+  const [iniciarTurnoModalVisible, setIniciarTurnoModalVisible] = useState(false);
   const [kmFin, setKmFin] = useState('');
   const [horaFin, setHoraFin] = useState('');
   const [expandedTurnos, setExpandedTurnos] = useState<{ [key: string]: boolean }>({});
