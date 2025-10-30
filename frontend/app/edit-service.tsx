@@ -16,6 +16,7 @@ import {
   Snackbar,
   Dialog,
   Portal,
+  Checkbox,
 } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { useSync } from '../contexts/SyncContext';
