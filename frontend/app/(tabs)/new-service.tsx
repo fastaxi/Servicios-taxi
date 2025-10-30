@@ -33,6 +33,7 @@ interface Company {
 export default function NewServiceScreen() {
   const { token } = useAuth();
   const { addPendingService } = useSync();
+  const router = useRouter();
 
   const [fecha, setFecha] = useState(format(new Date(), 'dd/MM/yyyy'));
   const [hora, setHora] = useState(format(new Date(), 'HH:mm'));
