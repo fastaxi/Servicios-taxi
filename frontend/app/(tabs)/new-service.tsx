@@ -417,6 +417,16 @@ const styles = StyleSheet.create({
   totalInput: {
     backgroundColor: '#E3F2FD',
   },
+  checkboxContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 8,
+    padding: 4,
+  },
+  checkboxLabel: {
+    fontSize: 16,
+  },
   submitButton: {
     marginTop: 24,
     paddingVertical: 8,
