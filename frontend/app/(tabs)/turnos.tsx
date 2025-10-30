@@ -176,8 +176,33 @@ export default function TurnosScreen() {
     return amount.toFixed(2).replace('.', ',') + ' €';
   };
 
+  const handleTurnoIniciado = () => {
+    setIniciarTurnoModalVisible(false);
+    loadTurnos();
+  };
+
   return (
     <View style={styles.container}>
+      {/* Banner si no hay turno activo */}
+      {!turnoActivo && (
+        <View style={styles.sinTurnoBanner}>
+          <Text variant="titleMedium" style={styles.sinTurnoText}>
+            No hay turno activo
+          </Text>
+          <Text variant="bodySmall" style={styles.sinTurnoSubtext}>
+            Inicia un turno para registrar nuevos servicios
+          </Text>
+          <Button
+            mode="contained"
+            onPress={() => setIniciarTurnoModalVisible(true)}
+            icon="plus-circle"
+            style={styles.iniciarTurnoButton}
+          >
+            Iniciar Turno
+          </Button>
+        </View>
+      )}
+
       <ScrollView
         style={styles.scrollView}
         refreshControl={
