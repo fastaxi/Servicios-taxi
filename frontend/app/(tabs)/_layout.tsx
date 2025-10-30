@@ -145,6 +145,7 @@ export default function TabsLayout() {
         userName={user?.nombre || ''}
         token={token || ''}
         onTurnoIniciado={handleTurnoIniciado}
+        onCancel={handleIniciarTurnoNo}
       />
     </>
   );
