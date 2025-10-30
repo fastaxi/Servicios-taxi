@@ -408,6 +408,13 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_adm
 @api_router.post("/companies", response_model=CompanyResponse)
 async def create_company(company: CompanyCreate, current_user: dict = Depends(get_current_admin)):
     company_dict = company.dict()
+    
+    # Validar numero_cliente único si se proporciona
+    if company_dict.get("numero_cliente"):
+        existing = await db.companies.find_one({"numero_cliente": company_dict["numero_cliente"]})
+        if existing:
+            raise HTTPException(status_code=400, detail="Número de cliente ya existe")
+    
     company_dict["created_at"] = datetime.utcnow()
     
     result = await db.companies.insert_one(company_dict)
