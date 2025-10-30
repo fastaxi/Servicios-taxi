@@ -202,8 +202,36 @@ export default function ServicesScreen() {
         </View>
       )}
 
+      {/* Banner informativo del turno activo */}
+      {turnoActivo && !mostrarHistorial && (
+        <View style={styles.turnoInfoBanner}>
+          <Text style={styles.turnoInfoText}>
+            📋 Turno activo: {serviciosTurnoActivo} servicio(s) en este turno
+          </Text>
+          {serviciosArchivados > 0 && (
+            <Text style={styles.turnoInfoSubtext}>
+              {serviciosArchivados} servicio(s) archivados
+            </Text>
+          )}
+        </View>
+      )}
+
+      {/* Botón para ver/ocultar historial */}
+      {serviciosArchivados > 0 && (
+        <View style={styles.historialButtonContainer}>
+          <Button
+            mode={mostrarHistorial ? "contained" : "outlined"}
+            onPress={() => setMostrarHistorial(!mostrarHistorial)}
+            icon={mostrarHistorial ? "eye-off" : "history"}
+            style={styles.historialButton}
+          >
+            {mostrarHistorial ? 'Ocultar historial' : `Ver historial (${serviciosArchivados})`}
+          </Button>
+        </View>
+      )}
+
       <FlatList
-        data={services}
+        data={getServiciosFiltrados()}
         renderItem={renderService}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
@@ -213,7 +241,11 @@ export default function ServicesScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text variant="bodyLarge" style={styles.emptyText}>
-              No hay servicios registrados
+              {mostrarHistorial 
+                ? 'No hay servicios en el historial' 
+                : turnoActivo 
+                  ? 'No hay servicios en este turno' 
+                  : 'No hay servicios registrados'}
             </Text>
           </View>
         }
