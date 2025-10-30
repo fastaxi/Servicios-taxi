@@ -122,6 +122,32 @@ export default function ServicesScreen() {
             {item.tipo === 'empresa' ? item.empresa_nombre : 'Particular'}
           </Chip>
         </View>
+
+        {/* Chips de estado */}
+        <View style={styles.statusChipsContainer}>
+          {item.cobrado && (
+            <Chip 
+              mode="flat" 
+              compact 
+              icon="cash-check"
+              style={styles.chipCobrado}
+              textStyle={styles.chipText}
+            >
+              Cobrado
+            </Chip>
+          )}
+          {item.facturar && (
+            <Chip 
+              mode="flat" 
+              compact 
+              icon="file-document"
+              style={styles.chipFacturar}
+              textStyle={styles.chipText}
+            >
+              Facturar
+            </Chip>
+          )}
+        </View>
       </Card.Content>
     </Card>
   );
