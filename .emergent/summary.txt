@@ -1,30 +1,29 @@
 <analysis>
-The AI engineer successfully implemented numerous features and fixes for the taxi management application, starting from an existing full-stack Expo/FastAPI/MongoDB setup. Initial work involved resolving frontend rendering issues and backend validation errors. Subsequent efforts focused on refining the Tiempo de espera field to Importe de espera in euros, adding an Importe Total field calculated automatically, and ensuring all monetary values are displayed in European format. Significant attention was given to user experience, including robust deletion confirmation dialogs, consistent data reloading using , and reorganizing UI elements for clarity (e.g., Empresas to Clientes, Configuración moved to admin profile). The most recent substantial work involved implementing a comprehensive Turnos (Shifts) management system, including new backend models (, ), API endpoints, and initial frontend integration with dedicated screens and modals for turn management and vehicle assignment to taxistas. The current state reflects the backend models and endpoints for shifts are in place, and the frontend has placeholder components for shift management.
+The AI engineer has significantly advanced the taxi management application, focusing on the Turnos (Shifts) system for both taxistas and administrators, and enhancing client management. Initially, the core Turnos functionality was implemented for taxistas, including manual shift closing with summaries and displaying associated services. This involved backend model and API updates for  and , and frontend screens for shift management and a start shift modal.
+
+Subsequently, the focus shifted to administrator functionalities, adding a Turnos tab, filtering, editing, and export capabilities. Key improvements included a detailed Clientes (Clients) section with new fields (, , ), and refined UI/UX for service creation/editing by introducing cobrado and facturar checkboxes and displaying their status in service summaries. A significant debugging effort addressed services not appearing in admin turn details, leading to a temporary frontend fix and the identification of a backend root cause. The Ver historial feature for taxistas was refined to group services by date using accordions. Most recently, efforts focused on UI refinements, such as reordering client form fields, creating a read-only client detail modal, and fixing display issues in the admin turn table where long taxista names overlapped with other data. The last action was a more robust attempt to fix this UI overlap issue.
 </analysis>
 
 <product_requirements>
-The application is an Android mobile app for the taxi sector in Asturias, Spain, facilitating service management for taxistas and comprehensive oversight for administrators.
-
+The application is an Android mobile app for the taxi sector in Asturias, Spain, for taxistas and administrators.
 **Core Features:**
-1.  **Taxista Module:** Records services (Date, Time, Origin, Destination, Amount, Importe de Espera (euros), Kilometers, Company/Particular), views/edits own services, and supports offline functionality. Will include Turnos (Shifts) management: starting/ending shifts, associating services to open shifts, and viewing shift summaries.
-2.  **Administrator Module:** Manages taxistas (including license, password with double verification, vehicle assignment) and clients (previously companies - Name, CIF, Address, Contact, Email). Views/filters/exports all services (CSV, Excel, PDF), edits any service. Personalizes app (Logo, contact details). Manages vehicles (Matrícula, plazas, marca, modelo, km_iniciales, fecha_compra).
+1.  **Taxista Module:** Records services (Date, Time, Origin, Destination, Amount, Importe de Espera (euros), Kilometers, Company/Particular), views/edits own services, and supports offline functionality. Implemented Turnos (Shifts) management: starting/ending shifts manually, associating services to open shifts, viewing shift summaries (nº servicios, km del turno, total particulares, total clientes). Services should be archived/filtered to show only active turn services by default, with an option to view historical services grouped by date.
+2.  **Administrator Module:** Manages taxistas (including license, password, vehicle assignment) and clients (Name, CIF, Address, Contact, Email). Views/filters/exports all services (CSV, Excel, PDF), edits any service. Personalizes app (Logo, contact details). Manages vehicles (Matrícula, plazas, marca, modelo, km_iniciales, fecha_compra). Now includes comprehensive Turnos management: visualize, filter by taxista/dates/vehicle, edit/close taxistas' turns, mark turns as liquidado (settled), generate reports/exports (CSV, Excel, PDF), and view global statistics. The client management now requires unique , , and .
 3.  **Branding:** Dynamic application configuration (logo, name, contact info).
 4.  **Technical:** Expo (React Native) frontend, FastAPI backend, MongoDB database. JWT for authentication.
 
 **Implementation Status:**
-All prior core features (user/client/service CRUD, admin filters, dynamic branding, offline sync) are implemented. The Importe de espera is fully functional. The Importe Total field calculates correctly. Deletion and editing of services/taxistas are functional with UI improvements. The Turnos (Shifts) and Vehículos (Vehicles) management system is currently under development. Backend models and CRUD for Vehículos and Turnos are complete. Frontend for Vehículos management and taxista vehicle assignment is complete. Initial frontend components for Turnos are created and integrated.
+All prior core features (user/client/service CRUD, admin filters, dynamic branding, offline sync) are implemented. Importe de espera and Importe Total fields are functional. Vehículos management is complete. The Turnos management system is largely implemented for both taxista and admin, including backend models and CRUD. Frontend for taxista turn management, IniciarTurnoModal, and admin turn management screen are integrated. Services now include  and  fields. Client creation/edit form now includes , ,  with  uniqueness validation. Services for taxistas can be viewed grouped by date or filtered by active turn. Turn total kilometers are refined. Daily taxista reports are available in the backend. User experience improvements include login dialog for optional turn start, cancel button in turn start modal, and various UI fixes, including the ongoing fix for overlapping names in the admin turn table.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack:** Expo (React Native), FastAPI, MongoDB.
--   **Authentication:** JWT.
 -   **Routing:** Expo Router.
 -   **State Management:** React Context API, useState.
--   **Forms:**  (implied by previous analysis, though not explicitly modified for all new inputs),  with manual state.
--   **UI Library:**  for Material Design components (Dialog, SegmentedButtons, Menu, FAB, Card, TextInput).
--   **Date/Time:**  for date range selection, JavaScript  objects for comparison.
--   **Data Persistence:** Asynchronous storage for offline capabilities (implied).
--   **Image Handling:**  (for dynamic config).
+-   **UI Library:**  (Dialog, SegmentedButtons, Menu, FAB, Card, TextInput, Checkbox, List.Accordion).
+-   **Date/Time:** JavaScript  objects,  (date-fns).
+-   **API Calls:** .
+-   **Navigation:**  (expo-router).
 </key_technical_concepts>
 
 <code_architecture>
@@ -38,105 +37,76 @@ The application uses a standard full-stack structure with a  Expo project and a 
 *   
     *   **Importance:** Central backend logic, API endpoints, and MongoDB models.
     *   **Changes:**
-        *   Updated  model to use  (float, optional) and introduced .
-        *   Added  model (matricula, marca, modelo, plazas, km_iniciales, fecha_compra, activo) with CRUD endpoints.
-        *   Added  model (taxista_id, vehiculo_id, fecha_inicio, hora_inicio, km_inicio, fecha_fin, hora_fin, km_fin, cerrado, liquidado) with CRUD endpoints.
-        *   Updated  models (, , , ) to include  and .
-        *   Modified service creation/update logic to automatically calculate  and associate services with an active .
-
+        *    model: Added  and .
+        *    model: Added , , .
+        *    and : Added uniqueness validation for .
+        *    model: Added .
+        *   : Modified to accept  for filtering.
+        *   : Modified to accept  and  filters.
+        *    & :  calculation logic modified to prioritize  if provided, otherwise sum of service kms.
+        *   Added ,  endpoints for turn data export.
+        *   Added  endpoint to provide daily summaries per taxista.
 *    (Root Layout)
     *   **Importance:** Global layout and context providers.
-    *   **Changes:** None recently.
-
+    *   **Changes:** None related to the current trajectory.
 *   
     *   **Importance:** Admin tab navigation.
-    *   **Changes:**
-        *   Renamed Empresas tab to Clientes.
-        *   Renamed Taxistas tab to Taxistas/Vehículos.
-        *   Hid  and  routes from tab navigation ().
-        *   Hid  route from tab navigation ().
-
+    *   **Changes:** Added a new tab for Turnos with .
 *   
-    *   **Importance:** Admin management of taxistas.
+    *   **Importance:** Admin management of clients.
     *   **Changes:**
-        *   Implemented  to toggle between Taxistas and Vehículos views internally.
-        *   Added vehicle assignment dropdown in the taxista creation/edit modal.
-        *   Added  field and validation for taxista password creation/edit.
-        *   Refactored  and conditional rendering to adhere to React Hooks rules.
-        *   Updated to display assigned vehicle in taxista cards.
-
+        *    interface and  updated to include , , .
+        *   Client creation/edit modal updated with  fields for , , .
+        *   Form fields reordered as per user request (Numero de Cliente, Fecha de alta, Nombre, CIF/DNI, Direccion, Codigo Postal, Localidad, Provincia, Telefono, Mail, Notas).
+        *   Adjusted modal styles (e.g.,  field height) for better visibility of action buttons.
+        *   Implemented a read-only client detail modal () that opens when clicking on a client's name in the list.
 *    (New File)
-    *   **Importance:** Admin management of vehicles.
-    *   **Changes:** Created as a screen to manage (CRUD) vehicle details. Adjusted initial container style to prevent rendering conflicts when used within . Corrected  usage to .
-
-*   
-    *   **Importance:** Admin view of all services.
+    *   **Importance:** Admin management of shifts.
     *   **Changes:**
-        *   Updated filter text from Empresa to Cliente.
-        *   Added  to ensure data reloads when screen is focused.
-        *   Corrected date filtering logic to compare dates numerically after converting  strings.
-        *   Reorganized service card display order: Date - Kilometers - Service Amount - Importe de Espera.
-        *   Updated to display  in the blue chip.
-
-*   
-    *   **Importance:** Admin management of companies.
-    *   **Changes:** Updated terminology from Empresas to Clientes.
-
-*   
-    *   **Importance:** Admin profile screen.
-    *   **Changes:** Added a button to navigate to the Configuración screen.
-
+        *   Created as a comprehensive screen for admin turn management.
+        *   Implemented  and  filters, with corrected logic for liquidados (requires  AND ).
+        *   Displays detailed turn information with expandable services.
+        *   Services within a turn now display  and  status chips.
+        *   Implemented a temporary fallback to show all services for a taxista by date if  based filtering yields no results, addressing a data migration issue.
+        *   Taxista names in the turn table are now clickable to open the turn editing modal.
+        *   Ongoing fix to prevent long taxista names from overlapping in the table view (using  and ).
 *   
     *   **Importance:** Taxista tab navigation and global turn logic.
-    *   **Changes:** Integrated  and logic to check for an active turn on screen focus.
-
+    *   **Changes:** Integrated a confirmation dialog () that prompts the user ¿Desea iniciar turno? upon login/focus, allowing them to proceed without starting a turn.
 *   
     *   **Importance:** Taxista form to record a new service.
-    *   **Changes:**
-        *   Updated to use  (euros only).
-        *   Introduced  to handle European comma decimals.
-        *   Changed  to  for amount fields.
-        *   Implemented  calculation and display.
-        *   Corrected  definition scope.
-
+    *   **Changes:** Added  for  and  to the form. Implemented automatic navigation to Mis servicios after successful service creation.
 *   
     *   **Importance:** Taxista's view of their own services.
     *   **Changes:**
-        *   Added  for data reloading.
-        *   Reorganized service card display order.
-        *   Updated to display  in the blue chip.
-
-*    (New File)
+        *    interface updated to include , , and .
+        *   Service cards now display  components for  and  status.
+        *   Modified to display only services for the active turn by default.
+        *   Added a Ver historial button which toggles the view to show all services, grouped by date with expandable  components. This grouping is applied when no active turn is present, or when Ver historial is active with an active turn.
+        *   The Ver historial button is now hidden if no active turn exists, as all services are considered historical in that context.
+*    (Taxista)
     *   **Importance:** Taxista's view and management of shifts.
-    *   **Changes:** Created as a placeholder screen for shift management.
-
+    *   **Changes:**
+        *   Modified to display an Iniciar Turno button and associated  if no active turn is found, allowing the taxista to start a turn from this screen.
 *   
     *   **Importance:** Shared screen for editing an existing service.
-    *   **Changes:**
-        *   Updated to use  (euros only) and .
-        *   Implemented  and  for decimal handling.
-        *   Changed  to  for amount fields.
-        *   Improved deletion flow with a confirmation dialog and  for navigation.
-        *   Fixed number formatting when loading service data ().
-
-*    (New File)
+    *   **Changes:** Added  for  and  to the form, and ensured their values are loaded and updated correctly.
+*   
     *   **Importance:** Modal for taxistas to open a new shift.
-    *   **Changes:** Created with input fields for , , , and a vehicle dropdown.
+    *   **Changes:** Added an  prop, made the  dismissable, and included a Cancelar button for better user experience.
+
 </code_architecture>
 
 <pending_tasks>
--   Complete the UI and logic within  for displaying, opening, and closing shifts.
--   Implement the summary calculations (total importes cobrados a clientes/particulares, total kilómetros del turno) on turn finalization.
--   Implement editing/filtering for shifts in both taxista and admin profiles.
+-   Implement the permanent solution for assigning  to existing services (e.g., a migration script).
 </pending_tasks>
 
 <current_work>
-The AI engineer is currently in the process of implementing a comprehensive Turnos (Shifts) management system.
-The backend () has been updated with new  and  models, including CRUD endpoints for both, and the  model now includes a . The service creation endpoint has been modified to automatically associate a new service with the taxista's active turn.
+The AI engineer is currently addressing a UI/UX issue within the admin Turnos section. The problem is that when viewing the table of shifts, a taxista's name, if particularly long, overlaps with the vehicle's license plate, making the information illegible.
 
-On the frontend, a new modal component  has been created to allow taxistas to open a new shift, collecting , , , and assigning a vehicle. This modal is integrated into the  to automatically prompt the taxista to open a turn upon login if no active turn is found. Additionally, a new screen  has been created, which is intended to display and manage the taxista's shifts. This file currently serves as a placeholder for the main shift management UI. The most recent action was restarting both backend and frontend services after the creation of , indicating that the setup for the Turnos feature is largely complete on the structural level, and the next step is to build out the UI and logic within the  screen itself.
+The immediate goal is to make the table display legible by adjusting column widths and implementing text truncation. The AI has already attempted a fix involving  and  within  to contain the name and prevent overlapping. The last action was to restart the frontend after applying this more robust styling change. The user's most recent feedback indicates that the issue persists, meaning the current work is still in the debugging/refinement phase for this specific layout problem.
 </current_work>
 
 <optional_next_step>
-Implement the UI and logic within  to display, open, and close turns.
+Verify if the latest styling changes in  have resolved the overlapping text issue in the admin turn table.
 </optional_next_step>
