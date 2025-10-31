@@ -1312,18 +1312,18 @@ const styles = StyleSheet.create({
   },
   // Estilos para tabla
   tableCellTaxista: {
-    width: 120,
+    width: 110,
     paddingRight: 4,
   },
   taxistaTouchable: {
-    maxWidth: 112,
+    maxWidth: 102,
   },
   tableCellVehiculo: {
-    width: 120,
+    width: 130,
     paddingRight: 4,
   },
   vehiculoText: {
-    maxWidth: 112,
+    maxWidth: 122,
   },
   tableCellFecha: {
     width: 95,
@@ -1341,7 +1341,7 @@ const styles = StyleSheet.create({
     width: 70,
   },
   tableCellTotal: {
-    width: 95,
+    width: 100,
   },
   tableCellEstado: {
     width: 70,
