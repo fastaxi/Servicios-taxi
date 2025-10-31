@@ -513,13 +513,19 @@ frontend:
     implemented: true
     working: "NA"
     file: "frontend/app/(admin)/turnos.tsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implementación completa del panel de administrador para turnos con: 1) Nueva pestaña 'Turnos' en navigation, 2) Filtros avanzados (taxista, estado: activos/cerrados/liquidados), 3) Tres vistas: Lista con cards expandibles, Tabla comparativa, Estadísticas globales, 4) Editar turnos (admin puede modificar cualquier campo), 5) Cerrar turnos de taxistas, 6) Marcar/desmarcar turnos como liquidados, 7) Ver servicios individuales expandibles por turno, 8) Botones de exportación (CSV/Excel/PDF), 9) Estadísticas: totales, promedios, turnos pendientes de liquidación. Pendiente de testing."
+      - working: false
+        agent: "user"
+        comment: "Usuario reportó problema en vista Tabla: nombres largos de taxistas se superponen con las matrículas de vehículos, haciendo la información ilegible."
+      - working: "NA"
+        agent: "main"
+        comment: "Arreglo aplicado a la vista Tabla (líneas 647-689): Ajustadas las columnas con anchos específicos (140px taxista, 100px vehículo), agregado truncamiento de texto con numberOfLines={1} y ellipsizeMode='tail', y estilos específicos para cada celda con maxWidth. Reorganizadas las celdas con componentes Text individuales para mejor control de overflow. Pendiente de verificación visual."
 
 metadata:
   created_by: "main_agent"
