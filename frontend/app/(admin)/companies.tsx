@@ -121,6 +121,11 @@ export default function CompaniesScreen() {
     setModalVisible(true);
   };
 
+  const openViewModal = (company: Company) => {
+    setViewingCompany(company);
+    setViewModalVisible(true);
+  };
+
   const closeModal = () => {
     setModalVisible(false);
     setEditingCompany(null);
