@@ -31,6 +31,7 @@ export default function ServicesScreen() {
   const [turnoActivo, setTurnoActivo] = useState<any>(null);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedDates, setExpandedDates] = useState<{ [key: string]: boolean }>({});
   const { token } = useAuth();
   const { pendingServices, syncStatus, syncServices } = useSync();
   const router = useRouter();
