@@ -648,10 +648,10 @@ export default function AdminTurnosScreen() {
     <ScrollView horizontal>
       <DataTable>
         <DataTable.Header>
-          <DataTable.Title style={{ width: 120 }}>Taxista</DataTable.Title>
-          <DataTable.Title style={{ width: 100 }}>Vehículo</DataTable.Title>
+          <DataTable.Title style={{ width: 150 }}>Taxista</DataTable.Title>
+          <DataTable.Title style={{ width: 110 }}>Vehículo</DataTable.Title>
           <DataTable.Title style={{ width: 100 }}>Fecha</DataTable.Title>
-          <DataTable.Title style={{ width: 60 }}>KM</DataTable.Title>
+          <DataTable.Title style={{ width: 70 }}>KM</DataTable.Title>
           <DataTable.Title numeric style={{ width: 80 }}>Servicios</DataTable.Title>
           <DataTable.Title numeric style={{ width: 100 }}>Total €</DataTable.Title>
           <DataTable.Title style={{ width: 80 }}>Estado</DataTable.Title>
@@ -659,14 +659,18 @@ export default function AdminTurnosScreen() {
 
         {turnos.map((turno) => (
           <DataTable.Row key={turno.id}>
-            <DataTable.Cell style={{ width: 120 }}>
+            <DataTable.Cell style={{ width: 150 }}>
               <TouchableOpacity onPress={() => handleEditTurno(turno)}>
-                <Text style={styles.clickableText}>{turno.taxista_nombre}</Text>
+                <Text style={styles.clickableText} numberOfLines={1} ellipsizeMode="tail">
+                  {turno.taxista_nombre}
+                </Text>
               </TouchableOpacity>
             </DataTable.Cell>
-            <DataTable.Cell style={{ width: 100 }}>{turno.vehiculo_matricula}</DataTable.Cell>
+            <DataTable.Cell style={{ width: 110 }}>
+              <Text numberOfLines={1} ellipsizeMode="tail">{turno.vehiculo_matricula}</Text>
+            </DataTable.Cell>
             <DataTable.Cell style={{ width: 100 }}>{turno.fecha_inicio}</DataTable.Cell>
-            <DataTable.Cell style={{ width: 60 }}>
+            <DataTable.Cell style={{ width: 70 }}>
               {turno.cerrado ? turno.km_fin! - turno.km_inicio : '-'}
             </DataTable.Cell>
             <DataTable.Cell numeric style={{ width: 80 }}>{turno.cantidad_servicios}</DataTable.Cell>
