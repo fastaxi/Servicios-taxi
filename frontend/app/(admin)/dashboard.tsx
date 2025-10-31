@@ -563,14 +563,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
   },
   cardTitle: {
     flex: 1,
     fontWeight: '600',
     color: '#333',
+    marginRight: 8,
   },
   chip: {
     backgroundColor: '#0066CC',
+    minWidth: 85,
   },
   detailRow: {
     flexDirection: 'row',
