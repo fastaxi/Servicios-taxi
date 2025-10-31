@@ -114,6 +114,32 @@ export default function ServicesScreen() {
   const serviciosTurnoActivo = turnoActivo ? services.filter(s => s.turno_id === turnoActivo.id).length : 0;
   const serviciosArchivados = services.length - serviciosTurnoActivo;
 
+  // Agrupar servicios por fecha
+  const agruparPorFecha = (servicios: Service[]) => {
+    const grupos: { [key: string]: Service[] } = {};
+    servicios.forEach(servicio => {
+      if (!grupos[servicio.fecha]) {
+        grupos[servicio.fecha] = [];
+      }
+      grupos[servicio.fecha].push(servicio);
+    });
+    
+    // Ordenar fechas de más reciente a más antigua
+    const fechasOrdenadas = Object.keys(grupos).sort((a, b) => {
+      // Convertir dd/mm/yyyy a Date para comparar
+      const [diaA, mesA, añoA] = a.split('/').map(Number);
+      const [diaB, mesB, añoB] = b.split('/').map(Number);
+      const fechaA = new Date(añoA, mesA - 1, diaA);
+      const fechaB = new Date(añoB, mesB - 1, diaB);
+      return fechaB.getTime() - fechaA.getTime();
+    });
+    
+    return fechasOrdenadas.map(fecha => ({
+      fecha,
+      servicios: grupos[fecha].sort((a, b) => b.hora.localeCompare(a.hora)) // Ordenar por hora desc
+    }));
+  };
+
   const renderService = ({ item }: { item: Service }) => (
     <Card style={styles.card}>
       <Card.Content>
