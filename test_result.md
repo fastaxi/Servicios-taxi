@@ -427,15 +427,21 @@ frontend:
 
   - task: "Admin - Dashboard"
     implemented: true
-    working: "NA"
+    working: true
     file: "frontend/app/(admin)/dashboard.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Dashboard con estadísticas, filtros (todos/empresa/particular), y botón de exportación. Pendiente de testing."
+      - working: true
+        agent: "user"
+        comment: "Usuario reportó que el origen/destino se solapaba con el importe azul cuando las localidades tenían nombres largos."
+      - working: true
+        agent: "main"
+        comment: "✅ PROBLEMA RESUELTO: Agregado gap de 12px entre texto y chip, marginRight de 8px en el título, minWidth de 85px en el chip azul. Usuario confirmó que funciona perfectamente."
 
   - task: "Admin - Gestión empresas"
     implemented: true
