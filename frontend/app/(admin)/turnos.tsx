@@ -648,39 +648,49 @@ export default function AdminTurnosScreen() {
     <ScrollView horizontal>
       <DataTable>
         <DataTable.Header>
-          <DataTable.Title style={{ width: 150 }}>Taxista</DataTable.Title>
-          <DataTable.Title style={{ width: 110 }}>Vehículo</DataTable.Title>
-          <DataTable.Title style={{ width: 100 }}>Fecha</DataTable.Title>
-          <DataTable.Title style={{ width: 70 }}>KM</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 80 }}>Servicios</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 100 }}>Total €</DataTable.Title>
-          <DataTable.Title style={{ width: 80 }}>Estado</DataTable.Title>
+          <DataTable.Title style={{ width: 140 }}>Taxista</DataTable.Title>
+          <DataTable.Title style={{ width: 100 }}>Vehículo</DataTable.Title>
+          <DataTable.Title style={{ width: 90 }}>Fecha</DataTable.Title>
+          <DataTable.Title style={{ width: 60 }}>KM</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 70 }}>Servs.</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 90 }}>Total €</DataTable.Title>
+          <DataTable.Title style={{ width: 70 }}>Estado</DataTable.Title>
         </DataTable.Header>
 
         {turnos.map((turno) => (
           <DataTable.Row key={turno.id}>
-            <DataTable.Cell style={{ width: 150, paddingRight: 8 }}>
-              <TouchableOpacity onPress={() => handleEditTurno(turno)} style={{ maxWidth: 140 }}>
+            <DataTable.Cell style={styles.tableCellTaxista}>
+              <TouchableOpacity onPress={() => handleEditTurno(turno)} style={styles.taxistaTouchable}>
                 <Text style={styles.clickableText} numberOfLines={1} ellipsizeMode="tail">
                   {turno.taxista_nombre}
                 </Text>
               </TouchableOpacity>
             </DataTable.Cell>
-            <DataTable.Cell style={{ width: 110, paddingRight: 8 }}>
-              <View style={{ maxWidth: 100 }}>
-                <Text numberOfLines={1} ellipsizeMode="tail">{turno.vehiculo_matricula}</Text>
-              </View>
+            <DataTable.Cell style={styles.tableCellVehiculo}>
+              <Text numberOfLines={1} ellipsizeMode="tail" style={styles.vehiculoText}>
+                {turno.vehiculo_matricula}
+              </Text>
             </DataTable.Cell>
-            <DataTable.Cell style={{ width: 100 }}>{turno.fecha_inicio}</DataTable.Cell>
-            <DataTable.Cell style={{ width: 70 }}>
-              {turno.cerrado ? turno.km_fin! - turno.km_inicio : '-'}
+            <DataTable.Cell style={styles.tableCellFecha}>
+              <Text numberOfLines={1} style={styles.fechaText}>{turno.fecha_inicio}</Text>
             </DataTable.Cell>
-            <DataTable.Cell numeric style={{ width: 80 }}>{turno.cantidad_servicios}</DataTable.Cell>
-            <DataTable.Cell numeric style={{ width: 100 }}>
-              {formatEuro(turno.total_importe_clientes + turno.total_importe_particulares)}
+            <DataTable.Cell style={styles.tableCellKm}>
+              <Text style={styles.kmText}>
+                {turno.cerrado ? turno.km_fin! - turno.km_inicio : '-'}
+              </Text>
             </DataTable.Cell>
-            <DataTable.Cell style={{ width: 80 }}>
-              {turno.liquidado ? 'Liq.' : turno.cerrado ? 'Cerr.' : 'Activo'}
+            <DataTable.Cell numeric style={styles.tableCellServicios}>
+              {turno.cantidad_servicios}
+            </DataTable.Cell>
+            <DataTable.Cell numeric style={styles.tableCellTotal}>
+              <Text numberOfLines={1} style={styles.totalText}>
+                {formatEuro(turno.total_importe_clientes + turno.total_importe_particulares)}
+              </Text>
+            </DataTable.Cell>
+            <DataTable.Cell style={styles.tableCellEstado}>
+              <Text style={styles.estadoText}>
+                {turno.liquidado ? 'Liq.' : turno.cerrado ? 'Cerr.' : 'Activo'}
+              </Text>
             </DataTable.Cell>
           </DataTable.Row>
         ))}
