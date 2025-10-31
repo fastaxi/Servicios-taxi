@@ -258,6 +258,24 @@ export default function CompaniesScreen() {
               </Text>
 
               <TextInput
+                label="Número de Cliente"
+                value={formData.numero_cliente}
+                onChangeText={(text) => setFormData({ ...formData, numero_cliente: text })}
+                mode="outlined"
+                style={styles.input}
+                placeholder="Ej: C001"
+              />
+
+              <TextInput
+                label="Fecha de Alta"
+                value={formData.fecha_alta}
+                onChangeText={(text) => setFormData({ ...formData, fecha_alta: text })}
+                mode="outlined"
+                style={styles.input}
+                placeholder="dd/mm/yyyy"
+              />
+
+              <TextInput
                 label="Nombre *"
                 value={formData.nombre}
                 onChangeText={(text) => setFormData({ ...formData, nombre: text })}
@@ -266,7 +284,7 @@ export default function CompaniesScreen() {
               />
 
               <TextInput
-                label="CIF *"
+                label="CIF/DNI *"
                 value={formData.cif}
                 onChangeText={(text) => setFormData({ ...formData, cif: text })}
                 mode="outlined"
@@ -323,24 +341,6 @@ export default function CompaniesScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 style={styles.input}
-              />
-
-              <TextInput
-                label="Número de Cliente"
-                value={formData.numero_cliente}
-                onChangeText={(text) => setFormData({ ...formData, numero_cliente: text })}
-                mode="outlined"
-                style={styles.input}
-                placeholder="Ej: C001"
-              />
-
-              <TextInput
-                label="Fecha de Alta"
-                value={formData.fecha_alta}
-                onChangeText={(text) => setFormData({ ...formData, fecha_alta: text })}
-                mode="outlined"
-                style={styles.input}
-                placeholder="dd/mm/yyyy"
               />
 
               <TextInput
