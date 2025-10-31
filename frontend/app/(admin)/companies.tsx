@@ -349,9 +349,9 @@ export default function CompaniesScreen() {
                 onChangeText={(text) => setFormData({ ...formData, notas: text })}
                 mode="outlined"
                 multiline
-                numberOfLines={4}
+                numberOfLines={2}
                 style={[styles.input, styles.notasInput]}
-                placeholder="Observaciones adicionales sobre el cliente..."
+                placeholder="Observaciones adicionales..."
               />
 
               <View style={styles.modalActions}>
