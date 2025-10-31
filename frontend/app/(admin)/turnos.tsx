@@ -659,15 +659,17 @@ export default function AdminTurnosScreen() {
 
         {turnos.map((turno) => (
           <DataTable.Row key={turno.id}>
-            <DataTable.Cell style={{ width: 150 }}>
-              <TouchableOpacity onPress={() => handleEditTurno(turno)}>
+            <DataTable.Cell style={{ width: 150, paddingRight: 8 }}>
+              <TouchableOpacity onPress={() => handleEditTurno(turno)} style={{ maxWidth: 140 }}>
                 <Text style={styles.clickableText} numberOfLines={1} ellipsizeMode="tail">
                   {turno.taxista_nombre}
                 </Text>
               </TouchableOpacity>
             </DataTable.Cell>
-            <DataTable.Cell style={{ width: 110 }}>
-              <Text numberOfLines={1} ellipsizeMode="tail">{turno.vehiculo_matricula}</Text>
+            <DataTable.Cell style={{ width: 110, paddingRight: 8 }}>
+              <View style={{ maxWidth: 100 }}>
+                <Text numberOfLines={1} ellipsizeMode="tail">{turno.vehiculo_matricula}</Text>
+              </View>
             </DataTable.Cell>
             <DataTable.Cell style={{ width: 100 }}>{turno.fecha_inicio}</DataTable.Cell>
             <DataTable.Cell style={{ width: 70 }}>
