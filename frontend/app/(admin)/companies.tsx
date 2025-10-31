@@ -184,9 +184,11 @@ export default function CompaniesScreen() {
     <Card style={styles.card}>
       <Card.Content>
         <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.companyName}>
-            {item.nombre}
-          </Text>
+          <TouchableOpacity onPress={() => openViewModal(item)} style={styles.nameContainer}>
+            <Text variant="titleMedium" style={styles.companyName}>
+              {item.nombre}
+            </Text>
+          </TouchableOpacity>
           <View style={styles.actions}>
             <IconButton
               icon="pencil"
