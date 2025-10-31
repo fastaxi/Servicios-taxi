@@ -1310,4 +1310,43 @@ const styles = StyleSheet.create({
     color: '#0066CC',
     textDecorationLine: 'underline',
   },
+  // Estilos para tabla
+  tableCellTaxista: {
+    width: 140,
+    paddingRight: 4,
+  },
+  taxistaTouchable: {
+    maxWidth: 132,
+  },
+  tableCellVehiculo: {
+    width: 100,
+    paddingRight: 4,
+  },
+  vehiculoText: {
+    maxWidth: 92,
+  },
+  tableCellFecha: {
+    width: 90,
+  },
+  fechaText: {
+    fontSize: 12,
+  },
+  tableCellKm: {
+    width: 60,
+  },
+  kmText: {
+    fontSize: 12,
+  },
+  tableCellServicios: {
+    width: 70,
+  },
+  tableCellTotal: {
+    width: 90,
+  },
+  tableCellEstado: {
+    width: 70,
+  },
+  estadoText: {
+    fontSize: 12,
+  },
 });
