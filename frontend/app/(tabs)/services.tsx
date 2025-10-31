@@ -96,16 +96,17 @@ export default function ServicesScreen() {
 
   // Filtrar servicios según si se muestra historial o no
   const getServiciosFiltrados = () => {
-    if (mostrarHistorial) {
-      return services; // Mostrar todos
+    // Si no hay turno activo, mostrar todos siempre
+    if (!turnoActivo) {
+      return services;
     }
     
-    // Mostrar solo del turno activo
-    if (turnoActivo) {
+    // Si NO muestra historial, mostrar solo del turno activo
+    if (!mostrarHistorial) {
       return services.filter(s => s.turno_id === turnoActivo.id);
     }
     
-    // Si no hay turno activo, mostrar todos (para compatibilidad)
+    // Si muestra historial, mostrar todos
     return services;
   };
 
