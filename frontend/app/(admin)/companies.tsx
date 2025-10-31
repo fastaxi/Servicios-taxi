@@ -431,27 +431,29 @@ const styles = StyleSheet.create({
   },
   modal: {
     backgroundColor: 'white',
-    padding: 24,
+    padding: 20,
     margin: 20,
     borderRadius: 12,
-    maxHeight: '80%',
+    maxHeight: '85%',
   },
   modalTitle: {
-    marginBottom: 16,
+    marginBottom: 12,
     color: '#0066CC',
     fontWeight: 'bold',
   },
   input: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   notasInput: {
-    minHeight: 100,
+    minHeight: 60,
+    maxHeight: 80,
     textAlignVertical: 'top',
   },
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 16,
+    marginBottom: 8,
   },
   modalButton: {
     flex: 1,
