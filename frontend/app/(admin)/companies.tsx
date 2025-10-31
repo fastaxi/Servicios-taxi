@@ -377,6 +377,110 @@ export default function CompaniesScreen() {
         </Modal>
       </Portal>
 
+      {/* Modal de consulta (solo lectura) */}
+      <Modal
+        visible={viewModalVisible}
+        onDismiss={() => setViewModalVisible(false)}
+        contentContainerStyle={styles.modal}
+      >
+        <ScrollView>
+          <Text variant="titleLarge" style={styles.modalTitle}>
+            Información del Cliente
+          </Text>
+
+          {viewingCompany && (
+            <View style={styles.viewContent}>
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Número de Cliente:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.numero_cliente || '-'}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Fecha de Alta:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.fecha_alta || '-'}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Nombre:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.nombre}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>CIF/DNI:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.cif}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Dirección:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.direccion}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Código Postal:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.codigo_postal || '-'}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Localidad:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.localidad}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Provincia:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.provincia}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Teléfono:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.telefono || '-'}
+                </Text>
+              </View>
+
+              <View style={styles.viewRow}>
+                <Text variant="bodySmall" style={styles.viewLabel}>Email:</Text>
+                <Text variant="bodyMedium" style={styles.viewValue}>
+                  {viewingCompany.email || '-'}
+                </Text>
+              </View>
+
+              {viewingCompany.notas && (
+                <View style={styles.viewRow}>
+                  <Text variant="bodySmall" style={styles.viewLabel}>Notas:</Text>
+                  <Text variant="bodyMedium" style={[styles.viewValue, styles.notasValue]}>
+                    {viewingCompany.notas}
+                  </Text>
+                </View>
+              )}
+
+              <Button
+                mode="contained"
+                onPress={() => setViewModalVisible(false)}
+                style={styles.closeButton}
+              >
+                Cerrar
+              </Button>
+            </View>
+          )}
+        </ScrollView>
+      </Modal>
+
       <Snackbar
         visible={snackbar.visible}
         onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
