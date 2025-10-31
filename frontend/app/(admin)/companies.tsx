@@ -573,4 +573,36 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 4,
   },
+  viewContent: {
+    paddingVertical: 8,
+  },
+  viewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  viewLabel: {
+    fontWeight: '600',
+    color: '#666',
+    flex: 1,
+    marginRight: 12,
+  },
+  viewValue: {
+    flex: 2,
+    textAlign: 'right',
+    color: '#333',
+  },
+  notasValue: {
+    textAlign: 'left',
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#0066CC',
+  },
+  nameContainer: {
+    flex: 1,
+  },
 });
