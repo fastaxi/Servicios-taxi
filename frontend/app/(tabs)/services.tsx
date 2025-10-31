@@ -217,8 +217,8 @@ export default function ServicesScreen() {
         </View>
       )}
 
-      {/* Botón para ver/ocultar historial */}
-      {serviciosArchivados > 0 && (
+      {/* Botón para ver/ocultar historial - solo si hay turno activo */}
+      {turnoActivo && serviciosArchivados > 0 && (
         <View style={styles.historialButtonContainer}>
           <Button
             mode={mostrarHistorial ? "contained" : "outlined"}
