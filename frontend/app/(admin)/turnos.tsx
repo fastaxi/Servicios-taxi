@@ -648,12 +648,12 @@ export default function AdminTurnosScreen() {
     <ScrollView horizontal>
       <DataTable>
         <DataTable.Header>
-          <DataTable.Title style={{ width: 120 }}>Taxista</DataTable.Title>
-          <DataTable.Title style={{ width: 120 }}>Vehículo</DataTable.Title>
+          <DataTable.Title style={{ width: 110 }}>Taxista</DataTable.Title>
+          <DataTable.Title style={{ width: 130 }}>Vehículo</DataTable.Title>
           <DataTable.Title style={{ width: 95 }}>Fecha</DataTable.Title>
           <DataTable.Title style={{ width: 60 }}>KM</DataTable.Title>
           <DataTable.Title numeric style={{ width: 70 }}>Servs.</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 95 }}>Total €</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 100 }}>Total €</DataTable.Title>
           <DataTable.Title style={{ width: 70 }}>Estado</DataTable.Title>
         </DataTable.Header>
 
