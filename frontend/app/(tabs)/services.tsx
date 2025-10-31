@@ -258,8 +258,8 @@ export default function ServicesScreen() {
         </View>
       )}
 
-      {/* Vista con turno activo o mostrando historial: FlatList normal */}
-      {(turnoActivo || mostrarHistorial) ? (
+      {/* Vista normal: solo servicios del turno activo en FlatList */}
+      {turnoActivo && !mostrarHistorial ? (
         <FlatList
           data={getServiciosFiltrados()}
           renderItem={renderService}
@@ -271,17 +271,13 @@ export default function ServicesScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text variant="bodyLarge" style={styles.emptyText}>
-                {mostrarHistorial 
-                  ? 'No hay servicios en el historial' 
-                  : turnoActivo 
-                    ? 'No hay servicios en este turno' 
-                    : 'No hay servicios registrados'}
+                No hay servicios en este turno
               </Text>
             </View>
           }
         />
       ) : (
-        /* Vista sin turno activo: Acordeones por fecha */
+        /* Vista con historial o sin turno: Acordeones por fecha */
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -289,14 +285,16 @@ export default function ServicesScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
           }
         >
-          {services.length === 0 ? (
+          {getServiciosFiltrados().length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text variant="bodyLarge" style={styles.emptyText}>
-                No hay servicios registrados
+                {mostrarHistorial 
+                  ? 'No hay servicios en el historial' 
+                  : 'No hay servicios registrados'}
               </Text>
             </View>
           ) : (
-            agruparPorFecha(services).map((grupo) => (
+            agruparPorFecha(getServiciosFiltrados()).map((grupo) => (
               <List.Accordion
                 key={grupo.fecha}
                 title={grupo.fecha}
