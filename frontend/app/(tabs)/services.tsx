@@ -258,26 +258,67 @@ export default function ServicesScreen() {
         </View>
       )}
 
-      <FlatList
-        data={getServiciosFiltrados()}
-        renderItem={renderService}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text variant="bodyLarge" style={styles.emptyText}>
-              {mostrarHistorial 
-                ? 'No hay servicios en el historial' 
-                : turnoActivo 
-                  ? 'No hay servicios en este turno' 
-                  : 'No hay servicios registrados'}
-            </Text>
-          </View>
-        }
-      />
+      {/* Vista con turno activo o mostrando historial: FlatList normal */}
+      {(turnoActivo || mostrarHistorial) ? (
+        <FlatList
+          data={getServiciosFiltrados()}
+          renderItem={renderService}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text variant="bodyLarge" style={styles.emptyText}>
+                {mostrarHistorial 
+                  ? 'No hay servicios en el historial' 
+                  : turnoActivo 
+                    ? 'No hay servicios en este turno' 
+                    : 'No hay servicios registrados'}
+              </Text>
+            </View>
+          }
+        />
+      ) : (
+        /* Vista sin turno activo: Acordeones por fecha */
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
+          }
+        >
+          {services.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text variant="bodyLarge" style={styles.emptyText}>
+                No hay servicios registrados
+              </Text>
+            </View>
+          ) : (
+            agruparPorFecha(services).map((grupo) => (
+              <List.Accordion
+                key={grupo.fecha}
+                title={grupo.fecha}
+                description={`${grupo.servicios.length} servicio(s)`}
+                left={props => <List.Icon {...props} icon="calendar" />}
+                expanded={expandedDates[grupo.fecha] || false}
+                onPress={() => setExpandedDates({
+                  ...expandedDates,
+                  [grupo.fecha]: !expandedDates[grupo.fecha]
+                })}
+                style={styles.accordion}
+              >
+                {grupo.servicios.map((servicio) => (
+                  <View key={servicio.id}>
+                    {renderService({ item: servicio })}
+                  </View>
+                ))}
+              </List.Accordion>
+            ))
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }
