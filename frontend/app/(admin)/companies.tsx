@@ -40,7 +40,9 @@ export default function CompaniesScreen() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   
   const [formData, setFormData] = useState({
