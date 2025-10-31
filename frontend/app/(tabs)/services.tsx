@@ -360,6 +360,16 @@ const styles = StyleSheet.create({
   historialButton: {
     borderColor: '#0066CC',
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 80,
+  },
+  accordion: {
+    backgroundColor: 'white',
+    marginBottom: 1,
+  },
   list: {
     padding: 16,
   },
