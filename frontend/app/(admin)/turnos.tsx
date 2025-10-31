@@ -1290,4 +1290,8 @@ const styles = StyleSheet.create({
   exportButton: {
     marginBottom: 8,
   },
+  clickableText: {
+    color: '#0066CC',
+    textDecorationLine: 'underline',
+  },
 });
