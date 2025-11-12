@@ -286,11 +286,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Agregado campo 'liquidado' (bool) al modelo Turno. Permite marcar turnos como liquidados por el admin."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: Campo liquidado funcionando correctamente. Turno de prueba marcado como liquidado exitosamente por admin. Integrado con exportaciones y filtros."
 
   - task: "Endpoint editar turno (admin)"
     implemented: true
@@ -298,11 +301,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Nuevo endpoint PUT /turnos/{id} (solo admin) para editar cualquier campo del turno: fecha_inicio, hora_inicio, km_inicio, fecha_fin, hora_fin, km_fin, cerrado, liquidado."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: PUT /turnos/{id} funcionando correctamente. Admin puede editar todos los campos del turno incluyendo liquidado. Usado exitosamente durante testing para marcar turno como liquidado."
 
   - task: "Exportación de turnos CSV"
     implemented: true
@@ -310,11 +316,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint GET /turnos/export/csv con filtros (taxista, fechas, cerrado, liquidado). Incluye totales calculados automáticamente para cada turno."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /turnos/export/csv funcionando perfectamente. Probados 4 casos: sin filtros (1171 bytes, 12 líneas), cerrado=false (312 bytes, 3 líneas), cerrado=true (1034 bytes, 10 líneas), liquidado=true (366 bytes, 3 líneas). Content-Type correcto, headers válidos, contenido CSV legible."
 
   - task: "Exportación de turnos Excel"
     implemented: true
@@ -322,11 +331,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint GET /turnos/export/excel con estilos y formato. Incluye totales calculados, cabeceras con colores Asturias."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /turnos/export/excel funcionando perfectamente. Probados 2 casos: sin filtros (6064 bytes), cerrado=true (5936 bytes). Content-Type correcto (.xlsx), headers válidos, archivos Excel generados con estilos y formato."
 
   - task: "Exportación de turnos PDF"
     implemented: true
@@ -334,11 +346,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint GET /turnos/export/pdf con tabla formateada. Estados abreviados (A=Activo, C=Cerrado, L=Liquidado)."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /turnos/export/pdf funcionando perfectamente. Probados 2 casos: sin filtros (2870 bytes), liquidado=true (2363 bytes). Content-Type correcto (PDF), headers válidos, archivos PDF generados con tabla formateada y estados abreviados."
 
   - task: "Estadísticas de turnos"
     implemented: true
@@ -346,11 +361,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint GET /turnos/estadisticas con cálculos globales: total turnos, activos, cerrados, liquidados, pendientes liquidación, totales (importe, km, servicios), promedios por turno."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: Endpoint de estadísticas integrado correctamente con el sistema de turnos. Verificado durante testing de turnos - totales calculados automáticamente: Particulares=30.5€, Empresas=45.0€, KM=47.7, Servicios=2."
 
 frontend:
   - task: "Login Screen"
