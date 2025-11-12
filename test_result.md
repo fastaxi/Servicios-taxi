@@ -541,9 +541,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Backend testing COMPLETADO ✅ - Todos los endpoints funcionando"
-    - "Nuevas funcionalidades de Turnos y Vehículos COMPLETADAS ✅ - Testing exitoso"
-    - "Frontend: Pendiente de testing UI (opcional - usuario puede probar manualmente)"
+    - "Exportación de Servicios (CSV, Excel, PDF)"
+    - "Exportación de Turnos (CSV, Excel, PDF)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -551,38 +550,49 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Backend completamente implementado con:
-      - Auth JWT (admin/admin123 creado por defecto)
-      - CRUD completo: Users, Companies, Services
-      - Filtros avanzados en servicios
-      - Exportación en 3 formatos: CSV, Excel, PDF
-      - Sincronización batch para offline
-      - **NUEVO**: CRUD Vehículos con validación de matrícula única
-      - **NUEVO**: CRUD Turnos con cálculo automático de totales
-      - **NUEVO**: Filtro turno_id en servicios
+      ✅ CORRECCIÓN DE BUG DE EXPORTACIÓN COMPLETADA
       
-      Frontend completamente implementado con:
-      - Login screen (verificado visualmente)
-      - Navegación con tabs para taxistas y admin
-      - Context de auth y sync offline
-      - Todas las pantallas CRUD
-      - Funcionalidad offline-first con NetInfo
-      - Diseño con colores Asturias (azul #0066CC y amarillo #FFD700)
-      - **NUEVO**: Gestión de vehículos integrada en admin
-      - **NUEVO**: Modal de iniciar turno con validación
-      - **NUEVO**: Pantalla completa de gestión de turnos con:
-        * Turno activo con resumen en tiempo real
-        * Finalizar turno con entrada manual de hora (HH:mm) y km
-        * Historial ordenado del más reciente al más antiguo
-        * Expandir turnos para ver servicios individuales
+      **Problema identificado:**
+      Error "TypeError: Cannot read property 'Base64' of undefined" al exportar archivos en React Native.
       
-      Datos de prueba creados:
-      - Admin: admin/admin123
-      - Taxista: taxista1/taxista123
-      - Empresa: Hospital Universitario Central de Asturias
-      - Servicio: Tineo -> Oviedo (45.50€)
+      **Root cause:**
+      - FileReader no está disponible en React Native
+      - FileSystem.EncodingType.Base64 no existe correctamente en la versión de expo-file-system
       
-      Solicito testing del backend para las nuevas funcionalidades de turnos y vehículos.
+      **Solución implementada:**
+      1. Instalada librería `base-64` para conversión compatible con React Native
+      2. Cambio de responseType de 'blob' a 'arraybuffer'
+      3. Conversión manual: ArrayBuffer → Uint8Array → String binario → Base64
+      4. Corrección del encoding de FileSystem.EncodingType.Base64 a 'base64' (string)
+      5. Agregadas extensiones correctas (.xlsx para Excel)
+      
+      **Archivos modificados:**
+      - /app/frontend/app/(admin)/dashboard.tsx (exportación de servicios)
+      - /app/frontend/app/(admin)/turnos.tsx (exportación de turnos)
+      
+      **Solicitud de testing:**
+      Por favor probar TODAS las exportaciones con curl para verificar que los archivos se generan correctamente:
+      
+      **SERVICIOS (Dashboard):**
+      1. GET /api/services/export/csv
+      2. GET /api/services/export/excel (xlsx)
+      3. GET /api/services/export/pdf
+      4. Con filtros: tipo=empresa, tipo=particular, fecha_inicio, fecha_fin
+      
+      **TURNOS (Admin Turnos):**
+      1. GET /api/turnos/export/csv
+      2. GET /api/turnos/export/excel (xlsx)
+      3. GET /api/turnos/export/pdf
+      4. Con filtros: cerrado=true, cerrado=false, liquidado=true
+      
+      **Criterios de éxito:**
+      - Cada endpoint debe retornar 200 OK
+      - Los archivos deben tener contenido válido (no vacío)
+      - CSV debe ser texto plano legible
+      - Excel debe ser archivo binario válido
+      - PDF debe ser archivo binario válido
+      
+      Usuario reportó error anteriormente. Necesito confirmar que está completamente resuelto.
   
   - agent: "testing"
     message: |
