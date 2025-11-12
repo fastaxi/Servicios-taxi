@@ -23,6 +23,7 @@ import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { format } from 'date-fns';
+import { encode as base64Encode } from 'base-64';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
