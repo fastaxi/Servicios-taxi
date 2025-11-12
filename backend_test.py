@@ -431,79 +431,324 @@ class TaxiTineoAPITester:
         except Exception as e:
             self.log_result("Batch Sync", False, f"Exception: {str(e)}")
     
+    def test_export_endpoint(self, endpoint, expected_content_type, test_name, params=None):
+        """Test a single export endpoint with comprehensive validation"""
+        if not self.admin_token:
+            self.log_result(test_name, False, "No admin token available")
+            return False
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        try:
+            url = f"{BASE_URL}{endpoint}"
+            response = requests.get(url, params=params, headers=admin_headers, timeout=30)
+            
+            # Check status code
+            if response.status_code != 200:
+                self.log_result(test_name, False, f"Status: {response.status_code}, Response: {response.text[:200]}")
+                return False
+            
+            # Check content type
+            content_type = response.headers.get('content-type', '')
+            if expected_content_type not in content_type:
+                self.log_result(test_name, False, f"Wrong content-type. Expected: {expected_content_type}, Got: {content_type}")
+                return False
+            
+            # Check file size
+            file_size = len(response.content)
+            if file_size == 0:
+                self.log_result(test_name, False, "File is empty (0 bytes)")
+                return False
+            
+            # Check Content-Disposition header
+            content_disposition = response.headers.get('content-disposition', '')
+            if 'attachment' not in content_disposition:
+                self.log_result(test_name, False, f"Missing or invalid Content-Disposition header: {content_disposition}")
+                return False
+            
+            # Additional checks based on file type
+            details = f"Content-Type: {content_type}, Size: {file_size} bytes"
+            
+            if 'text/csv' in content_type:
+                # Check if CSV contains readable text
+                try:
+                    content_text = response.content.decode('utf-8')
+                    if len(content_text.strip()) == 0:
+                        self.log_result(test_name, False, "CSV file contains no readable text")
+                        return False
+                    # Check for CSV headers
+                    lines = content_text.strip().split('\n')
+                    if len(lines) < 1:
+                        self.log_result(test_name, False, "CSV file has no header row")
+                        return False
+                    details += f", Lines: {len(lines)}"
+                except UnicodeDecodeError:
+                    self.log_result(test_name, False, "CSV file contains invalid UTF-8 content")
+                    return False
+            
+            self.log_result(test_name, True, details)
+            return True
+            
+        except Exception as e:
+            self.log_result(test_name, False, f"Exception: {str(e)}")
+            return False
+
     def test_export_endpoints(self):
-        """Test export endpoints"""
-        print("\n=== TESTING EXPORT ENDPOINTS ===")
+        """Test ALL export endpoints as requested - Services and Turnos"""
+        print("\n=== TESTING ALL EXPORT ENDPOINTS (COMPREHENSIVE) ===")
         
         if not self.admin_token:
             self.log_result("Export Setup", False, "No admin token available")
             return
         
-        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        # Create test data first to ensure exports have content
+        self.create_export_test_data()
         
-        # Test CSV export
-        try:
-            response = requests.get(f"{BASE_URL}/services/export/csv", headers=admin_headers)
-            if response.status_code == 200:
-                content_type = response.headers.get('content-type', '')
-                if 'csv' in content_type or 'text' in content_type:
-                    self.log_result("CSV Export", True, f"CSV exported successfully ({len(response.content)} bytes)")
-                else:
-                    self.log_result("CSV Export", False, f"Wrong content type: {content_type}")
-            else:
-                self.log_result("CSV Export", False, f"Status: {response.status_code}")
-        except Exception as e:
-            self.log_result("CSV Export", False, f"Exception: {str(e)}")
+        print("\n📊 TESTING SERVICES EXPORT ENDPOINTS:")
+        print("-" * 50)
         
-        # Test Excel export
-        try:
-            response = requests.get(f"{BASE_URL}/services/export/excel", headers=admin_headers)
-            if response.status_code == 200:
-                content_type = response.headers.get('content-type', '')
-                if 'spreadsheet' in content_type or 'excel' in content_type:
-                    self.log_result("Excel Export", True, f"Excel exported successfully ({len(response.content)} bytes)")
-                else:
-                    self.log_result("Excel Export", False, f"Wrong content type: {content_type}")
-            else:
-                self.log_result("Excel Export", False, f"Status: {response.status_code}")
-        except Exception as e:
-            self.log_result("Excel Export", False, f"Exception: {str(e)}")
+        # SERVICES EXPORT TEST CASES (as specified in request)
+        services_tests = [
+            ("/services/export/csv", None, "Services CSV - No filters", "text/csv"),
+            ("/services/export/csv", {"tipo": "empresa"}, "Services CSV - Filter tipo=empresa", "text/csv"),
+            ("/services/export/csv", {"tipo": "particular"}, "Services CSV - Filter tipo=particular", "text/csv"),
+            ("/services/export/excel", None, "Services Excel - No filters", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            ("/services/export/excel", {"tipo": "empresa"}, "Services Excel - Filter tipo=empresa", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            ("/services/export/pdf", None, "Services PDF - No filters", "application/pdf"),
+            ("/services/export/pdf", {"tipo": "particular"}, "Services PDF - Filter tipo=particular", "application/pdf"),
+        ]
         
-        # Test PDF export
-        try:
-            response = requests.get(f"{BASE_URL}/services/export/pdf", headers=admin_headers)
-            if response.status_code == 200:
-                content_type = response.headers.get('content-type', '')
-                if 'pdf' in content_type:
-                    self.log_result("PDF Export", True, f"PDF exported successfully ({len(response.content)} bytes)")
-                else:
-                    self.log_result("PDF Export", False, f"Wrong content type: {content_type}")
-            else:
-                self.log_result("PDF Export", False, f"Status: {response.status_code}")
-        except Exception as e:
-            self.log_result("PDF Export", False, f"Exception: {str(e)}")
+        services_results = []
+        for endpoint, params, test_name, content_type in services_tests:
+            success = self.test_export_endpoint(endpoint, content_type, test_name, params)
+            services_results.append(success)
         
-        # Test export with filters
-        try:
-            response = requests.get(f"{BASE_URL}/services/export/csv?tipo=particular", headers=admin_headers)
-            if response.status_code == 200:
-                self.log_result("CSV Export with Filters", True, "CSV with filters exported successfully")
-            else:
-                self.log_result("CSV Export with Filters", False, f"Status: {response.status_code}")
-        except Exception as e:
-            self.log_result("CSV Export with Filters", False, f"Exception: {str(e)}")
+        print("\n🚕 TESTING TURNOS EXPORT ENDPOINTS:")
+        print("-" * 50)
+        
+        # TURNOS EXPORT TEST CASES (as specified in request)
+        turnos_tests = [
+            ("/turnos/export/csv", None, "Turnos CSV - No filters", "text/csv"),
+            ("/turnos/export/csv", {"cerrado": "false"}, "Turnos CSV - Filter cerrado=false", "text/csv"),
+            ("/turnos/export/csv", {"cerrado": "true"}, "Turnos CSV - Filter cerrado=true", "text/csv"),
+            ("/turnos/export/csv", {"liquidado": "true"}, "Turnos CSV - Filter liquidado=true", "text/csv"),
+            ("/turnos/export/excel", None, "Turnos Excel - No filters", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            ("/turnos/export/excel", {"cerrado": "true"}, "Turnos Excel - Filter cerrado=true", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            ("/turnos/export/pdf", None, "Turnos PDF - No filters", "application/pdf"),
+            ("/turnos/export/pdf", {"liquidado": "true"}, "Turnos PDF - Filter liquidado=true", "application/pdf"),
+        ]
+        
+        turnos_results = []
+        for endpoint, params, test_name, content_type in turnos_tests:
+            success = self.test_export_endpoint(endpoint, content_type, test_name, params)
+            turnos_results.append(success)
         
         # Test export access with taxista token (should fail)
+        print("\n🔒 TESTING EXPORT ACCESS CONTROL:")
+        print("-" * 50)
         if self.taxista_token:
             taxista_headers = {"Authorization": f"Bearer {self.taxista_token}"}
             try:
                 response = requests.get(f"{BASE_URL}/services/export/csv", headers=taxista_headers)
                 if response.status_code == 403:
-                    self.log_result("Export Access (Taxista - Should Fail)", True, "Correctly denied export access to taxista")
+                    self.log_result("Export Access Control (Services)", True, "Correctly denied export access to taxista")
                 else:
-                    self.log_result("Export Access (Taxista - Should Fail)", False, f"Expected 403, got {response.status_code}")
+                    self.log_result("Export Access Control (Services)", False, f"Expected 403, got {response.status_code}")
             except Exception as e:
-                self.log_result("Export Access (Taxista - Should Fail)", False, f"Exception: {str(e)}")
+                self.log_result("Export Access Control (Services)", False, f"Exception: {str(e)}")
+            
+            try:
+                response = requests.get(f"{BASE_URL}/turnos/export/csv", headers=taxista_headers)
+                if response.status_code == 403:
+                    self.log_result("Export Access Control (Turnos)", True, "Correctly denied export access to taxista")
+                else:
+                    self.log_result("Export Access Control (Turnos)", False, f"Expected 403, got {response.status_code}")
+            except Exception as e:
+                self.log_result("Export Access Control (Turnos)", False, f"Exception: {str(e)}")
+        
+        # Summary of export tests
+        total_services = len(services_tests)
+        passed_services = sum(services_results)
+        total_turnos = len(turnos_tests)
+        passed_turnos = sum(turnos_results)
+        
+        print(f"\n📈 EXPORT TESTS SUMMARY:")
+        print(f"Services Exports: {passed_services}/{total_services} passed")
+        print(f"Turnos Exports: {passed_turnos}/{total_turnos} passed")
+        print(f"Total Export Tests: {passed_services + passed_turnos}/{total_services + total_turnos} passed")
+
+    def create_export_test_data(self):
+        """Create comprehensive test data for export testing"""
+        print("\n📝 Creating test data for export testing...")
+        
+        if not self.admin_token:
+            return False
+        
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        try:
+            # Create test company
+            company_data = {
+                "nombre": "Empresa Export Test",
+                "cif": "B87654321",
+                "direccion": "Calle Export 456",
+                "localidad": "Tineo",
+                "provincia": "Asturias",
+                "telefono": "985654321"
+            }
+            
+            company_response = requests.post(f"{BASE_URL}/companies", json=company_data, headers=admin_headers, timeout=10)
+            company_id = None
+            if company_response.status_code == 200:
+                company_id = company_response.json()["id"]
+                self.created_resources.setdefault('companies', []).append(company_id)
+                print(f"✅ Test company created for exports: {company_id}")
+            
+            # Create test taxista for exports
+            taxista_data = {
+                "username": f"export_taxista_{datetime.now().strftime('%H%M%S')}",
+                "password": "export123",
+                "nombre": "Taxista Export Test",
+                "role": "taxista",
+                "licencia": "EXPORT123"
+            }
+            
+            taxista_response = requests.post(f"{BASE_URL}/users", json=taxista_data, headers=admin_headers, timeout=10)
+            taxista_id = None
+            if taxista_response.status_code == 200:
+                taxista_id = taxista_response.json()["id"]
+                self.created_resources.setdefault('users', []).append(taxista_id)
+                print(f"✅ Test taxista created for exports: {taxista_id}")
+            
+            # Create test vehicle
+            vehiculo_data = {
+                "matricula": f"EXP-{datetime.now().strftime('%H%M')}",
+                "plazas": 4,
+                "marca": "Seat",
+                "modelo": "Leon",
+                "km_iniciales": 75000,
+                "fecha_compra": "01/06/2019",
+                "activo": True
+            }
+            
+            vehiculo_response = requests.post(f"{BASE_URL}/vehiculos", json=vehiculo_data, headers=admin_headers, timeout=10)
+            vehiculo_id = None
+            if vehiculo_response.status_code == 200:
+                vehiculo_id = vehiculo_response.json()["id"]
+                self.created_resources.setdefault('vehiculos', []).append(vehiculo_id)
+                print(f"✅ Test vehicle created for exports: {vehiculo_id}")
+            
+            # Create multiple test services with different types
+            test_services = [
+                {
+                    "fecha": "15/12/2024",
+                    "hora": "08:30",
+                    "origen": "Tineo Plaza",
+                    "destino": "Hospital San Agustín",
+                    "importe": 18.50,
+                    "importe_espera": 3.00,
+                    "kilometros": 8.5,
+                    "tipo": "empresa",
+                    "empresa_id": company_id,
+                    "empresa_nombre": "Empresa Export Test"
+                },
+                {
+                    "fecha": "15/12/2024",
+                    "hora": "10:15",
+                    "origen": "Estación Autobuses",
+                    "destino": "Centro Comercial",
+                    "importe": 12.00,
+                    "importe_espera": 0.00,
+                    "kilometros": 4.2,
+                    "tipo": "particular"
+                },
+                {
+                    "fecha": "15/12/2024",
+                    "hora": "14:45",
+                    "origen": "Residencia Ancianos",
+                    "destino": "Centro Salud",
+                    "importe": 15.75,
+                    "importe_espera": 2.50,
+                    "kilometros": 6.8,
+                    "tipo": "empresa",
+                    "empresa_id": company_id,
+                    "empresa_nombre": "Empresa Export Test"
+                },
+                {
+                    "fecha": "16/12/2024",
+                    "hora": "09:00",
+                    "origen": "Domicilio Particular",
+                    "destino": "Aeropuerto Asturias",
+                    "importe": 85.00,
+                    "importe_espera": 5.00,
+                    "kilometros": 65.0,
+                    "tipo": "particular"
+                }
+            ]
+            
+            services_created = 0
+            for service_data in test_services:
+                service_response = requests.post(f"{BASE_URL}/services", json=service_data, headers=admin_headers, timeout=10)
+                if service_response.status_code == 200:
+                    service_id = service_response.json()["id"]
+                    self.created_resources.setdefault('services', []).append(service_id)
+                    services_created += 1
+            
+            print(f"✅ Created {services_created} test services for exports")
+            
+            # Create test turnos if we have taxista and vehicle
+            if taxista_id and vehiculo_id:
+                # Login as the test taxista to create turnos
+                taxista_login = requests.post(f"{BASE_URL}/auth/login", json={
+                    "username": taxista_data["username"],
+                    "password": taxista_data["password"]
+                }, timeout=10)
+                
+                if taxista_login.status_code == 200:
+                    test_taxista_token = taxista_login.json()["access_token"]
+                    test_taxista_headers = {"Authorization": f"Bearer {test_taxista_token}"}
+                    
+                    # Create and finalize a turno
+                    turno_data = {
+                        "taxista_id": taxista_id,
+                        "taxista_nombre": "Taxista Export Test",
+                        "vehiculo_id": vehiculo_id,
+                        "vehiculo_matricula": vehiculo_data["matricula"],
+                        "fecha_inicio": "15/12/2024",
+                        "hora_inicio": "07:30",
+                        "km_inicio": 75100
+                    }
+                    
+                    turno_response = requests.post(f"{BASE_URL}/turnos", json=turno_data, headers=test_taxista_headers, timeout=10)
+                    if turno_response.status_code == 200:
+                        turno_id = turno_response.json()["id"]
+                        self.created_resources.setdefault('turnos', []).append(turno_id)
+                        print(f"✅ Test turno created for exports: {turno_id}")
+                        
+                        # Finalize the turno
+                        finalize_data = {
+                            "fecha_fin": "15/12/2024",
+                            "hora_fin": "18:00",
+                            "km_fin": 75200,
+                            "cerrado": True
+                        }
+                        
+                        finalize_response = requests.put(f"{BASE_URL}/turnos/{turno_id}/finalizar", json=finalize_data, headers=test_taxista_headers, timeout=10)
+                        if finalize_response.status_code == 200:
+                            print(f"✅ Test turno finalized for exports")
+                            
+                            # Mark as liquidated (admin only)
+                            liquidate_data = {"liquidado": True}
+                            liquidate_response = requests.put(f"{BASE_URL}/turnos/{turno_id}", json=liquidate_data, headers=admin_headers, timeout=10)
+                            if liquidate_response.status_code == 200:
+                                print(f"✅ Test turno marked as liquidated")
+            
+            print("✅ Export test data creation completed\n")
+            return True
+            
+        except Exception as e:
+            print(f"⚠️ Error creating export test data: {str(e)}")
+            return False
 
     def test_vehiculos_crud(self):
         """Test vehículos CRUD operations"""
