@@ -211,8 +211,13 @@ export default function DashboardScreen() {
         responseType: 'arraybuffer',
       });
 
-      // Convertir arraybuffer a base64 usando Buffer (disponible en React Native)
-      const base64 = Buffer.from(response.data, 'binary').toString('base64');
+      // Convertir arraybuffer a base64
+      const uint8Array = new Uint8Array(response.data);
+      let binaryString = '';
+      for (let i = 0; i < uint8Array.length; i++) {
+        binaryString += String.fromCharCode(uint8Array[i]);
+      }
+      const base64 = base64Encode(binaryString);
       
       const fileUri = `${FileSystem.documentDirectory}servicios.${format === 'excel' ? 'xlsx' : format}`;
       await FileSystem.writeAsStringAsync(fileUri, base64, {
