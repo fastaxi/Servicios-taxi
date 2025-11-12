@@ -207,11 +207,13 @@ export default function DashboardScreen() {
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob',
+        responseType: 'arraybuffer',
       });
 
-      const fileUri = `${FileSystem.documentDirectory}servicios.${format}`;
-      const base64 = await blobToBase64(response.data);
+      // Convertir arraybuffer a base64 usando Buffer (disponible en React Native)
+      const base64 = Buffer.from(response.data, 'binary').toString('base64');
+      
+      const fileUri = `${FileSystem.documentDirectory}servicios.${format === 'excel' ? 'xlsx' : format}`;
       await FileSystem.writeAsStringAsync(fileUri, base64, {
         encoding: FileSystem.EncodingType.Base64,
       });
@@ -225,19 +227,6 @@ export default function DashboardScreen() {
       setSnackbar({ visible: true, message: 'Error al exportar datos' });
     }
     setExportMenuVisible(false);
-  };
-
-  const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          resolve(reader.result.split(',')[1]);
-        }
-      };
-      reader.readAsDataURL(blob);
-    });
   };
 
   const renderService = ({ item }: { item: Service }) => (
