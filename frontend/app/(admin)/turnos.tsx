@@ -413,7 +413,7 @@ export default function AdminTurnosScreen() {
       
       const fileUri = `${FileSystem.documentDirectory}turnos.${format === 'excel' ? 'xlsx' : format}`;
       await FileSystem.writeAsStringAsync(fileUri, base64, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64',
       });
 
       if (await Sharing.isAvailableAsync()) {
