@@ -19,6 +19,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { encode as base64Encode } from 'base-64';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
