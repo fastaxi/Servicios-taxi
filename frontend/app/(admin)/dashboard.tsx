@@ -221,7 +221,7 @@ export default function DashboardScreen() {
       
       const fileUri = `${FileSystem.documentDirectory}servicios.${format === 'excel' ? 'xlsx' : format}`;
       await FileSystem.writeAsStringAsync(fileUri, base64, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64',
       });
 
       if (await Sharing.isAvailableAsync()) {
