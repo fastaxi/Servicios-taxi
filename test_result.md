@@ -558,57 +558,105 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "REVISIÓN FINAL DEL PROYECTO"
+    - "Testing exhaustivo de todos los endpoints"
+    - "Verificación de funcionalidades core"
+    - "Validación de exportaciones corregidas"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
     message: |
-      ✅ CORRECCIÓN DE BUG DE EXPORTACIÓN COMPLETADA
+      🎯 SOLICITUD DE REVISIÓN FINAL DEL PROYECTO
       
-      **Problema identificado:**
-      Error "TypeError: Cannot read property 'Base64' of undefined" al exportar archivos en React Native.
+      **Contexto:**
+      El usuario solicita una revisión final completa del proyecto antes de considerarlo terminado.
       
-      **Root cause:**
-      - FileReader no está disponible en React Native
-      - FileSystem.EncodingType.Base64 no existe correctamente en la versión de expo-file-system
+      **Cambios recientes implementados:**
+      1. ✅ Ajustes UI en tabla de turnos (admin) - anchos de columnas optimizados
+      2. ✅ Ajustes UI en dashboard - separación entre origen/destino y chip de importe
+      3. ✅ Corrección de exportaciones - migración a expo-file-system/legacy
+      4. ✅ Librería base-64 instalada para conversión en React Native
+      5. ✅ Manual de usuario completo creado (MANUAL_USUARIO.md)
       
-      **Solución implementada:**
-      1. Instalada librería `base-64` para conversión compatible con React Native
-      2. Cambio de responseType de 'blob' a 'arraybuffer'
-      3. Conversión manual: ArrayBuffer → Uint8Array → String binario → Base64
-      4. Corrección del encoding de FileSystem.EncodingType.Base64 a 'base64' (string)
-      5. Agregadas extensiones correctas (.xlsx para Excel)
+      **SOLICITUD DE TESTING EXHAUSTIVO:**
       
-      **Archivos modificados:**
-      - /app/frontend/app/(admin)/dashboard.tsx (exportación de servicios)
-      - /app/frontend/app/(admin)/turnos.tsx (exportación de turnos)
+      Por favor realizar testing completo de TODAS las funcionalidades principales:
       
-      **Solicitud de testing:**
-      Por favor probar TODAS las exportaciones con curl para verificar que los archivos se generan correctamente:
+      **1. AUTENTICACIÓN Y USUARIOS**
+      - POST /api/auth/login (admin y taxista)
+      - GET /api/users (listar)
+      - POST /api/users (crear taxista)
+      - PUT /api/users/{id} (editar)
+      - DELETE /api/users/{id} (eliminar)
       
-      **SERVICIOS (Dashboard):**
-      1. GET /api/services/export/csv
-      2. GET /api/services/export/excel (xlsx)
-      3. GET /api/services/export/pdf
-      4. Con filtros: tipo=empresa, tipo=particular, fecha_inicio, fecha_fin
+      **2. CLIENTES (COMPANIES)**
+      - GET /api/companies (listar)
+      - POST /api/companies (crear con validación numero_cliente único)
+      - PUT /api/companies/{id} (editar)
+      - DELETE /api/companies/{id} (eliminar)
       
-      **TURNOS (Admin Turnos):**
-      1. GET /api/turnos/export/csv
-      2. GET /api/turnos/export/excel (xlsx)
-      3. GET /api/turnos/export/pdf
-      4. Con filtros: cerrado=true, cerrado=false, liquidado=true
+      **3. VEHÍCULOS**
+      - GET /api/vehiculos (listar)
+      - POST /api/vehiculos (crear con validación matrícula única)
+      - PUT /api/vehiculos/{id} (editar)
+      - DELETE /api/vehiculos/{id} (eliminar)
       
-      **Criterios de éxito:**
-      - Cada endpoint debe retornar 200 OK
-      - Los archivos deben tener contenido válido (no vacío)
-      - CSV debe ser texto plano legible
-      - Excel debe ser archivo binario válido
-      - PDF debe ser archivo binario válido
+      **4. SERVICIOS**
+      - GET /api/services (listar, con/sin filtros)
+      - POST /api/services (crear - validar que requiere turno activo)
+      - PUT /api/services/{id} (editar)
+      - DELETE /api/services/{id} (eliminar)
+      - Filtros: tipo, empresa_id, taxista_id, fecha_inicio, fecha_fin, turno_id
       
-      Usuario reportó error anteriormente. Necesito confirmar que está completamente resuelto.
+      **5. TURNOS**
+      - GET /api/turnos (listar con filtros)
+      - POST /api/turnos (iniciar turno)
+      - GET /api/turnos/activo (obtener turno activo del taxista)
+      - PUT /api/turnos/{id}/finalizar (cerrar turno)
+      - PUT /api/turnos/{id} (editar turno - admin)
+      - Filtros: cerrado, liquidado, taxista_id
+      
+      **6. EXPORTACIONES (CRÍTICO - recién corregidas)**
+      - GET /api/services/export/csv
+      - GET /api/services/export/excel
+      - GET /api/services/export/pdf
+      - GET /api/turnos/export/csv
+      - GET /api/turnos/export/excel
+      - GET /api/turnos/export/pdf
+      - Verificar con diferentes filtros aplicados
+      
+      **7. CONFIGURACIÓN**
+      - GET /api/config
+      - PUT /api/config
+      
+      **8. SINCRONIZACIÓN OFFLINE**
+      - POST /api/services/sync (batch de servicios)
+      
+      **CRITERIOS DE ÉXITO:**
+      ✅ Todos los endpoints responden correctamente (200/201)
+      ✅ Validaciones funcionando (unicidad, requeridos)
+      ✅ Relaciones entre entidades correctas
+      ✅ Exportaciones generan archivos válidos
+      ✅ Cálculos automáticos correctos (totales de turnos)
+      ✅ Control de acceso funcionando (admin vs taxista)
+      
+      **CASOS EDGE A VERIFICAR:**
+      - Crear servicio sin turno activo (debe fallar)
+      - Duplicar numero_cliente (debe fallar)
+      - Duplicar matrícula (debe fallar)
+      - Taxista accediendo a endpoints de admin (debe dar 403)
+      - Exportaciones con datos vacíos
+      - Filtros múltiples combinados
+      
+      Por favor reportar:
+      1. Resumen de funcionalidades testeadas (OK/FAIL)
+      2. Cualquier error encontrado con detalles
+      3. Sugerencias de mejora si las hubiera
+      4. Estado general del proyecto (LISTO/NECESITA_AJUSTES)
   
   - agent: "testing"
     message: |
