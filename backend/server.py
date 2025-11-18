@@ -26,10 +26,21 @@ from reportlab.lib.units import inch
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB connection - Compatible con desarrollo y producción
+mongo_url = os.getenv('MONGO_URL', os.getenv('MONGODB_URI', 'mongodb://localhost:27017'))
+db_name = os.getenv('DB_NAME', os.getenv('MONGODB_DB_NAME', 'taxis'))
+
+# Log configuration for debugging
+print(f"[STARTUP] Connecting to MongoDB...")
+print(f"[STARTUP] Database: {db_name}")
+
+try:
+    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+    db = client[db_name]
+    print("[STARTUP] MongoDB connection initialized successfully")
+except Exception as e:
+    print(f"[STARTUP ERROR] Failed to connect to MongoDB: {e}")
+    raise
 
 # Security
 SECRET_KEY = os.environ.get('SECRET_KEY', 'taxi-tineo-secret-key-change-in-production')
