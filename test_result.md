@@ -570,93 +570,76 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      🎯 SOLICITUD DE REVISIÓN FINAL DEL PROYECTO
+      🎯 REVISIÓN FINAL DEL PROYECTO - BACKEND COMPLETADO
       
-      **Contexto:**
-      El usuario solicita una revisión final completa del proyecto antes de considerarlo terminado.
+      **BACKEND TESTING RESULTS:**
+      ✅ 62/63 tests passed (98.4%)
+      ✅ Único "fallo" verificado: Es comportamiento correcto (taxista requiere turno activo)
+      ✅ BACKEND 100% OPERATIVO Y LISTO
       
-      **Cambios recientes implementados:**
-      1. ✅ Ajustes UI en tabla de turnos (admin) - anchos de columnas optimizados
-      2. ✅ Ajustes UI en dashboard - separación entre origen/destino y chip de importe
-      3. ✅ Corrección de exportaciones - migración a expo-file-system/legacy
-      4. ✅ Librería base-64 instalada para conversión en React Native
-      5. ✅ Manual de usuario completo creado (MANUAL_USUARIO.md)
+      **VERIFICACIÓN DEL "FALLO":**
+      - El sistema correctamente rechaza servicios sin turno activo para taxistas
+      - Código en líneas 1108-1112 de server.py implementa esta validación
+      - Mensaje de error claro: "Debes iniciar un turno antes de registrar servicios"
+      - Administradores SÍ pueden crear servicios sin turno (excepción correcta)
+      - ESTADO: NO ES BUG - ES COMPORTAMIENTO ESPERADO ✅
       
-      **SOLICITUD DE TESTING EXHAUSTIVO:**
+      **AHORA PROCEDER CON FRONTEND TESTING:**
       
-      Por favor realizar testing completo de TODAS las funcionalidades principales:
+      Por favor realizar testing exhaustivo del frontend para verificar:
       
-      **1. AUTENTICACIÓN Y USUARIOS**
-      - POST /api/auth/login (admin y taxista)
-      - GET /api/users (listar)
-      - POST /api/users (crear taxista)
-      - PUT /api/users/{id} (editar)
-      - DELETE /api/users/{id} (eliminar)
+      **1. PANTALLAS TAXISTA:**
+      - Login y navegación
+      - Nuevo Servicio (formulario completo)
+      - Mis Servicios (lista, edición, vista historial)
+      - Turnos (iniciar, ver activo, finalizar, historial)
+      - Perfil
       
-      **2. CLIENTES (COMPANIES)**
-      - GET /api/companies (listar)
-      - POST /api/companies (crear con validación numero_cliente único)
-      - PUT /api/companies/{id} (editar)
-      - DELETE /api/companies/{id} (eliminar)
+      **2. PANTALLAS ADMIN:**
+      - Login y navegación
+      - Dashboard (estadísticas, filtros, lista servicios)
+      - Usuarios (CRUD taxistas)
+      - Clientes (CRUD, modal detalle, modal edición)
+      - Vehículos (CRUD)
+      - Turnos (3 vistas: lista/tabla/estadísticas, filtros, editar)
+      - Configuración
       
-      **3. VEHÍCULOS**
-      - GET /api/vehiculos (listar)
-      - POST /api/vehiculos (crear con validación matrícula única)
-      - PUT /api/vehiculos/{id} (editar)
-      - DELETE /api/vehiculos/{id} (eliminar)
+      **3. FUNCIONALIDADES CRÍTICAS A VERIFICAR:**
+      - Botones de exportación (CSV/Excel/PDF) en Dashboard y Turnos
+      - Validación de campos obligatorios
+      - Mensajes de error/éxito (Snackbar)
+      - Navegación entre pantallas
+      - Filtros en Dashboard y Turnos
+      - Modales (crear/editar para todas las entidades)
+      - Chips de estado (Cobrado/Facturar en servicios)
+      - Cálculos en tiempo real en turnos activos
       
-      **4. SERVICIOS**
-      - GET /api/services (listar, con/sin filtros)
-      - POST /api/services (crear - validar que requiere turno activo)
-      - PUT /api/services/{id} (editar)
-      - DELETE /api/services/{id} (eliminar)
-      - Filtros: tipo, empresa_id, taxista_id, fecha_inicio, fecha_fin, turno_id
+      **4. UI/UX:**
+      - Tabla de turnos admin (verificar anchos de columnas corregidos)
+      - Cards de servicios dashboard (verificar separación corregida)
+      - Formularios responsivos
+      - Colores de marca (azul #0066CC)
       
-      **5. TURNOS**
-      - GET /api/turnos (listar con filtros)
-      - POST /api/turnos (iniciar turno)
-      - GET /api/turnos/activo (obtener turno activo del taxista)
-      - PUT /api/turnos/{id}/finalizar (cerrar turno)
-      - PUT /api/turnos/{id} (editar turno - admin)
-      - Filtros: cerrado, liquidado, taxista_id
+      **5. CASOS EDGE FRONTEND:**
+      - Intentar crear servicio sin turno activo (debe mostrar error o pedir iniciar turno)
+      - Validaciones de formularios (campos vacíos, formatos)
+      - Comportamiento de botones "Ver Historial"
+      - Expandir/contraer acordeones y cards
       
-      **6. EXPORTACIONES (CRÍTICO - recién corregidas)**
-      - GET /api/services/export/csv
-      - GET /api/services/export/excel
-      - GET /api/services/export/pdf
-      - GET /api/turnos/export/csv
-      - GET /api/turnos/export/excel
-      - GET /api/turnos/export/pdf
-      - Verificar con diferentes filtros aplicados
+      **OBJETIVO:** Validar que la UI está pulida, funcional y lista para usuarios finales.
       
-      **7. CONFIGURACIÓN**
-      - GET /api/config
-      - PUT /api/config
-      
-      **8. SINCRONIZACIÓN OFFLINE**
-      - POST /api/services/sync (batch de servicios)
-      
-      **CRITERIOS DE ÉXITO:**
-      ✅ Todos los endpoints responden correctamente (200/201)
-      ✅ Validaciones funcionando (unicidad, requeridos)
-      ✅ Relaciones entre entidades correctas
-      ✅ Exportaciones generan archivos válidos
-      ✅ Cálculos automáticos correctos (totales de turnos)
-      ✅ Control de acceso funcionando (admin vs taxista)
-      
-      **CASOS EDGE A VERIFICAR:**
-      - Crear servicio sin turno activo (debe fallar)
-      - Duplicar numero_cliente (debe fallar)
-      - Duplicar matrícula (debe fallar)
-      - Taxista accediendo a endpoints de admin (debe dar 403)
-      - Exportaciones con datos vacíos
-      - Filtros múltiples combinados
-      
-      Por favor reportar:
-      1. Resumen de funcionalidades testeadas (OK/FAIL)
-      2. Cualquier error encontrado con detalles
-      3. Sugerencias de mejora si las hubiera
-      4. Estado general del proyecto (LISTO/NECESITA_AJUSTES)
+      **DELIVERABLE:**
+      - ✅ Funcionalidades UI testeadas
+      - ❌ Problemas encontrados (si los hay)
+      - 📊 Estado final: LISTO / NECESITA AJUSTES
+  
+  - agent: "testing"
+    message: |
+      Backend testing completado exitosamente.
+      62/63 tests passed (98.4%).
+      Único "fallo" verificado como comportamiento correcto.
+      Sistema backend 100% operativo.
+      Esperando confirmación para proceder con frontend testing.
   
   - agent: "testing"
     message: |
