@@ -370,6 +370,21 @@ backend:
         agent: "testing"
         comment: "✅ TESTING COMPLETO: Endpoint de estadísticas integrado correctamente con el sistema de turnos. Verificado durante testing de turnos - totales calculados automáticamente: Particulares=30.5€, Empresas=45.0€, KM=47.7, Servicios=2."
 
+  - task: "DELETE Turnos con eliminación en cascada"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint DELETE /turnos/{turno_id} (solo admin) implementado con eliminación automática en cascada de todos los servicios asociados al turno. Retorna número de servicios eliminados."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING EXHAUSTIVO COMPLETADO: DELETE /turnos funcionando perfectamente con eliminación en cascada. CRÍTICO VERIFICADO: 5 servicios creados → DELETE turno → 5 servicios eliminados automáticamente. Autorización correcta (403 para taxistas). Edge cases: 404 para turno inexistente, 0 servicios eliminados para turno vacío, 10 servicios eliminados para turno con muchos servicios. Sistema 100% operativo."
+
 frontend:
   - task: "Login Screen"
     implemented: true
