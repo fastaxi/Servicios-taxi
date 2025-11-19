@@ -702,6 +702,12 @@ async def get_turnos(
     if liquidado is not None:
         query["liquidado"] = liquidado
     
+    # Validar y ajustar límite
+    if limit <= 0:
+        limit = 500  # Default
+    elif limit > 1000:
+        limit = 1000  # Maximum
+    
     turnos = await db.turnos.find(query).sort("created_at", -1).limit(limit).to_list(limit)
     
     # OPTIMIZACIÓN: Batch query - traer todos los servicios de una vez
