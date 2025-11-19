@@ -1270,6 +1270,12 @@ async def get_services(
         else:
             query["fecha"] = {"$lte": fecha_fin}
     
+    # Validar y ajustar límite
+    if limit <= 0:
+        limit = 1000  # Default
+    elif limit > 10000:
+        limit = 10000  # Maximum
+    
     # Proyección: traer solo campos necesarios (todos en este caso, pero preparado para futura optimización)
     services = await db.services.find(query).sort("created_at", -1).limit(limit).to_list(limit)
     return [
