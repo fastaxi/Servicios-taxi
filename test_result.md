@@ -592,10 +592,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "TESTEO PROFUNDO POST-OPTIMIZACIONES"
-    - "Verificar que todas las optimizaciones funcionan correctamente"
-    - "Confirmar que no hay breaking changes"
-    - "Validar performance improvements"
+    - "TESTING FINAL - ELIMINACIÓN DE TURNOS"
+    - "Verificar eliminación en cascada de servicios"
+    - "Confirmar que no hay regresiones en toda la aplicación"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
@@ -603,119 +602,83 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      🎯 SOLICITUD DE TESTEO PROFUNDO POST-OPTIMIZACIONES
+      🎯 TESTING FINAL POST-IMPLEMENTACIÓN ELIMINAR TURNOS
       
-      **CONTEXTO:**
-      Se han implementado TODAS las optimizaciones de rendimiento:
-      1. ✅ 11 índices de base de datos creados
-      2. ✅ Eliminación de N+1 queries en 5 endpoints
-      3. ✅ Proyecciones agregadas (excluir passwords)
-      4. ✅ Límites configurables en queries
-      5. ✅ Sistema de cache implementado
+      **NUEVA FUNCIONALIDAD IMPLEMENTADA:**
+      - DELETE /api/turnos/{turno_id} (solo admin)
+      - Eliminación en cascada de servicios asociados
+      - Dialog de confirmación en frontend
+      - Botón "Eliminar" en modal de edición
       
-      **OBJETIVO:**
-      Validar que TODAS las funcionalidades siguen funcionando correctamente después de las optimizaciones
-      y que el rendimiento ha mejorado significativamente.
+      **OBJETIVO DEL TESTING:**
+      1. Verificar que DELETE /turnos funciona correctamente
+      2. Verificar que los servicios asociados se eliminan automáticamente
+      3. Confirmar que NO hay regresiones en resto de funcionalidades
+      4. Validar que todas las optimizaciones siguen funcionando
       
-      **SCOPE DE TESTING EXHAUSTIVO:**
+      **SCOPE COMPLETO:**
       
-      **1. ÍNDICES DE BASE DE DATOS**
-      - Verificar que los índices fueron creados correctamente
-      - Verificar que las queries usan los índices (mejor performance)
-      - Verificar índices únicos (username, matricula, numero_cliente)
+      **PARTE 1: TESTING ESPECÍFICO DE ELIMINACIÓN DE TURNOS (CRÍTICO)**
       
-      **2. AUTENTICACIÓN Y USUARIOS**
-      - POST /api/auth/login (admin y taxista)
-      - GET /api/users (verificar que NO retorna passwords)
-      - POST /api/users (crear taxista)
-      - PUT /api/users/{id} (editar)
-      - DELETE /api/users/{id} (eliminar)
-      - Verificar proyección: password debe estar excluido
+      Escenario completo:
+      1. Login como admin
+      2. Crear un taxista de prueba
+      3. Crear un vehículo de prueba
+      4. Crear un turno para ese taxista
+      5. Crear 3-5 servicios asociados a ese turno
+      6. **Verificar que los servicios existen** (GET /services?turno_id=XXX)
+      7. **ELIMINAR el turno** (DELETE /turnos/{turno_id})
+      8. **Verificar que el turno ya no existe** (GET /turnos - no debe aparecer)
+      9. **CRÍTICO: Verificar que los servicios fueron eliminados** (GET /services?turno_id=XXX debe retornar vacío)
+      10. Verificar respuesta del DELETE incluye servicios_eliminados
       
-      **3. CLIENTES (COMPANIES)**
-      - GET /api/companies (listar)
-      - POST /api/companies (con validación numero_cliente único)
-      - PUT /api/companies/{id} (editar)
-      - DELETE /api/companies/{id} (eliminar)
-      - Verificar índice único en numero_cliente
+      **PARTE 2: TESTING DE AUTORIZACIÓN**
+      - Login como taxista (no admin)
+      - Intentar DELETE /turnos/{turno_id} → debe retornar 403 Forbidden
+      - Confirmar que solo admins pueden eliminar turnos
       
-      **4. VEHÍCULOS**
-      - GET /api/vehiculos (listar)
-      - POST /api/vehiculos (con validación matrícula única)
-      - PUT /api/vehiculos/{id} (editar)
-      - DELETE /api/vehiculos/{id} (eliminar)
-      - Verificar índice único en matricula
+      **PARTE 3: TESTING DE EDGE CASES**
+      - DELETE turno inexistente → debe retornar 404
+      - DELETE turno sin servicios → debe funcionar (servicios_eliminados: 0)
+      - DELETE turno con muchos servicios (10+) → debe eliminar todos
       
-      **5. SERVICIOS CON LÍMITES**
-      - GET /api/services (sin límite - debe usar default 1000)
-      - GET /api/services?limit=50 (con límite específico)
-      - GET /api/services?limit=20000 (debe limitarse a máximo 10000)
-      - POST /api/services (crear con turno activo)
-      - PUT /api/services/{id} (editar)
-      - DELETE /api/services/{id} (eliminar)
-      - Filtros: tipo, empresa_id, taxista_id, fecha_inicio, fecha_fin, turno_id
+      **PARTE 4: FUNCIONALIDADES CORE (NO REGRESIONES)**
+      - Autenticación (admin/taxista)
+      - CRUD Usuarios
+      - CRUD Clientes (índice único numero_cliente)
+      - CRUD Vehículos (índice único matricula)
+      - CRUD Servicios (con límites y proyecciones)
+      - CRUD Turnos (crear, editar, finalizar, listar)
+      - Exportaciones (CSV, Excel, PDF)
+      - Estadísticas optimizadas
       
-      **6. TURNOS OPTIMIZADOS (CRÍTICO)**
-      - GET /api/turnos (sin límite - debe usar default 500)
-      - GET /api/turnos?limit=100 (con límite específico)
-      - POST /api/turnos (iniciar turno)
-      - GET /api/turnos/activo (turno activo)
-      - PUT /api/turnos/{id}/finalizar (cerrar turno)
-      - PUT /api/turnos/{id} (editar - admin)
-      - Filtros: cerrado, liquidado, taxista_id
-      - **VERIFICAR: Queries optimizadas (batch queries, no N+1)**
-      
-      **7. EXPORTACIONES OPTIMIZADAS (CRÍTICO)**
-      - GET /api/services/export/csv (con y sin filtros)
-      - GET /api/services/export/excel (con y sin filtros)
-      - GET /api/services/export/pdf (con y sin filtros)
-      - GET /api/turnos/export/csv (verificar batch queries)
-      - GET /api/turnos/export/excel (verificar batch queries)
-      - GET /api/turnos/export/pdf (verificar batch queries)
-      - **VERIFICAR: Performance mejorado (< 1s para 100 registros)**
-      
-      **8. ESTADÍSTICAS OPTIMIZADAS**
-      - GET /api/turnos/estadisticas (verificar batch queries)
-      - GET /api/turnos/reporte_diario (verificar cálculos correctos)
-      
-      **9. CONFIGURACIÓN**
-      - GET /api/config
-      - PUT /api/config
-      
-      **10. SINCRONIZACIÓN OFFLINE**
-      - POST /api/services/sync (batch de servicios)
-      
-      **PRUEBAS DE RENDIMIENTO:**
-      - Crear 10 turnos con 10 servicios cada uno
-      - GET /turnos - debe ser rápido (< 1s)
-      - Export CSV de turnos - debe ser rápido (< 1s)
-      - Verificar que se hacen solo 2 queries (no 11)
-      
-      **PRUEBAS DE EDGE CASES:**
-      - Límite máximo: ?limit=999999 → debe limitarse a 10000
-      - Límite mínimo: ?limit=0 → debe usar default
-      - Query sin índice vs con índice (medir diferencia)
-      - Verificar que passwords NO aparecen en GET /users
+      **PARTE 5: OPTIMIZACIONES (SIGUEN FUNCIONANDO)**
+      - Índices de base de datos activos
+      - Batch queries (no N+1) en GET /turnos
+      - Passwords excluidos en GET /users
+      - Límites configurables operativos
       
       **CRITERIOS DE ÉXITO:**
-      ✅ Todos los endpoints responden correctamente (200/201)
-      ✅ NO hay breaking changes (funcionalidad intacta)
-      ✅ Passwords excluidos en GET /users
-      ✅ Límites funcionando correctamente
-      ✅ Índices únicos validando correctamente
-      ✅ Exportaciones generan archivos válidos
-      ✅ Performance mejorado notablemente
-      ✅ Batch queries funcionando (no N+1)
+      ✅ DELETE /turnos funciona correctamente
+      ✅ Servicios asociados se eliminan automáticamente (cascada)
+      ✅ Solo admins pueden eliminar turnos (403 para taxistas)
+      ✅ Edge cases manejados correctamente (404, sin servicios)
+      ✅ TODAS las funcionalidades core funcionan sin regresiones
+      ✅ Todas las optimizaciones siguen activas
+      ✅ Respuestas rápidas (< 2s)
       
       **DELIVERABLE:**
-      1. ✅ Lista completa de tests ejecutados (PASS/FAIL)
-      2. 📊 Comparación de performance (antes vs después si es posible)
-      3. ❌ Cualquier breaking change o regresión encontrada
-      4. 💡 Confirmación de que optimizaciones están activas
-      5. 🎯 Estado final: LISTO PARA DEPLOYMENT / NECESITA AJUSTES
+      1. ✅ Confirmación de que eliminación en cascada funciona
+      2. ✅ Lista completa de tests (PASS/FAIL)
+      3. ❌ Cualquier regresión o problema encontrado
+      4. 📊 Verificación de que servicios se eliminan correctamente
+      5. 🎯 Estado final: LISTO PARA DEPLOYMENT / AJUSTES NECESARIOS
       
-      Por favor realizar el testing más exhaustivo posible para confirmar que la aplicación
-      está 100% funcional y optimizada para producción.
+      **IMPORTANTE:**
+      Enfocarse especialmente en verificar que los servicios asociados
+      se eliminan automáticamente. Este es el punto crítico de esta nueva funcionalidad.
+      
+      Por favor ejecutar el testing más exhaustivo posible.
   
   - agent: "testing"
     message: |
