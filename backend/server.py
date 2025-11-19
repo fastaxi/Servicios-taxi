@@ -638,7 +638,8 @@ async def get_turnos(
     fecha_inicio: Optional[str] = Query(None),
     fecha_fin: Optional[str] = Query(None),
     cerrado: Optional[bool] = Query(None),
-    liquidado: Optional[bool] = Query(None)
+    liquidado: Optional[bool] = Query(None),
+    limit: int = Query(500, le=1000, description="Límite de resultados")
 ):
     query = {}
     
