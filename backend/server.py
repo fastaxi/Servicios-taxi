@@ -607,13 +607,30 @@ async def get_turnos(
     
     turnos = await db.turnos.find(query).sort("created_at", -1).to_list(1000)
     
+    # OPTIMIZACIÓN: Batch query - traer todos los servicios de una vez
+    if turnos:
+        turno_ids = [str(t["_id"]) for t in turnos]
+        all_servicios = await db.services.find(
+            {"turno_id": {"$in": turno_ids}}
+        ).to_list(100000)
+        
+        # Agrupar servicios por turno_id en memoria
+        servicios_by_turno = {}
+        for servicio in all_servicios:
+            turno_id = servicio["turno_id"]
+            if turno_id not in servicios_by_turno:
+                servicios_by_turno[turno_id] = []
+            servicios_by_turno[turno_id].append(servicio)
+    else:
+        servicios_by_turno = {}
+    
     # Calcular totales para cada turno
     result = []
     for turno in turnos:
         turno_id = str(turno["_id"])
         
-        # Obtener servicios del turno
-        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+        # Obtener servicios del turno desde el diccionario
+        servicios = servicios_by_turno.get(turno_id, [])
         
         total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
         total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
