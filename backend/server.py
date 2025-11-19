@@ -664,7 +664,7 @@ async def get_turnos(
     if liquidado is not None:
         query["liquidado"] = liquidado
     
-    turnos = await db.turnos.find(query).sort("created_at", -1).to_list(1000)
+    turnos = await db.turnos.find(query).sort("created_at", -1).limit(limit).to_list(limit)
     
     # OPTIMIZACIÓN: Batch query - traer todos los servicios de una vez
     if turnos:
