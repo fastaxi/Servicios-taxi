@@ -817,22 +817,8 @@ async def export_turnos_csv(
     
     turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
     
-    # Calcular totales para cada turno
-    turnos_con_totales = []
-    for turno in turnos:
-        turno_id = str(turno["_id"])
-        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
-        total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
-        total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
-        total_km = sum(s.get("kilometros", 0) for s in servicios)
-        
-        turnos_con_totales.append({
-            **turno,
-            "total_clientes": total_clientes,
-            "total_particulares": total_particulares,
-            "total_km": total_km,
-            "cantidad_servicios": len(servicios)
-        })
+    # Usar helper function para optimizar queries
+    turnos_con_totales = await get_turnos_with_servicios(turnos)
     
     output = io.StringIO()
     writer = csv.writer(output)
