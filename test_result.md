@@ -603,68 +603,119 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      🎯 REVISIÓN FINAL DEL PROYECTO - BACKEND COMPLETADO
+      🎯 SOLICITUD DE TESTEO PROFUNDO POST-OPTIMIZACIONES
       
-      **BACKEND TESTING RESULTS:**
-      ✅ 62/63 tests passed (98.4%)
-      ✅ Único "fallo" verificado: Es comportamiento correcto (taxista requiere turno activo)
-      ✅ BACKEND 100% OPERATIVO Y LISTO
+      **CONTEXTO:**
+      Se han implementado TODAS las optimizaciones de rendimiento:
+      1. ✅ 11 índices de base de datos creados
+      2. ✅ Eliminación de N+1 queries en 5 endpoints
+      3. ✅ Proyecciones agregadas (excluir passwords)
+      4. ✅ Límites configurables en queries
+      5. ✅ Sistema de cache implementado
       
-      **VERIFICACIÓN DEL "FALLO":**
-      - El sistema correctamente rechaza servicios sin turno activo para taxistas
-      - Código en líneas 1108-1112 de server.py implementa esta validación
-      - Mensaje de error claro: "Debes iniciar un turno antes de registrar servicios"
-      - Administradores SÍ pueden crear servicios sin turno (excepción correcta)
-      - ESTADO: NO ES BUG - ES COMPORTAMIENTO ESPERADO ✅
+      **OBJETIVO:**
+      Validar que TODAS las funcionalidades siguen funcionando correctamente después de las optimizaciones
+      y que el rendimiento ha mejorado significativamente.
       
-      **AHORA PROCEDER CON FRONTEND TESTING:**
+      **SCOPE DE TESTING EXHAUSTIVO:**
       
-      Por favor realizar testing exhaustivo del frontend para verificar:
+      **1. ÍNDICES DE BASE DE DATOS**
+      - Verificar que los índices fueron creados correctamente
+      - Verificar que las queries usan los índices (mejor performance)
+      - Verificar índices únicos (username, matricula, numero_cliente)
       
-      **1. PANTALLAS TAXISTA:**
-      - Login y navegación
-      - Nuevo Servicio (formulario completo)
-      - Mis Servicios (lista, edición, vista historial)
-      - Turnos (iniciar, ver activo, finalizar, historial)
-      - Perfil
+      **2. AUTENTICACIÓN Y USUARIOS**
+      - POST /api/auth/login (admin y taxista)
+      - GET /api/users (verificar que NO retorna passwords)
+      - POST /api/users (crear taxista)
+      - PUT /api/users/{id} (editar)
+      - DELETE /api/users/{id} (eliminar)
+      - Verificar proyección: password debe estar excluido
       
-      **2. PANTALLAS ADMIN:**
-      - Login y navegación
-      - Dashboard (estadísticas, filtros, lista servicios)
-      - Usuarios (CRUD taxistas)
-      - Clientes (CRUD, modal detalle, modal edición)
-      - Vehículos (CRUD)
-      - Turnos (3 vistas: lista/tabla/estadísticas, filtros, editar)
-      - Configuración
+      **3. CLIENTES (COMPANIES)**
+      - GET /api/companies (listar)
+      - POST /api/companies (con validación numero_cliente único)
+      - PUT /api/companies/{id} (editar)
+      - DELETE /api/companies/{id} (eliminar)
+      - Verificar índice único en numero_cliente
       
-      **3. FUNCIONALIDADES CRÍTICAS A VERIFICAR:**
-      - Botones de exportación (CSV/Excel/PDF) en Dashboard y Turnos
-      - Validación de campos obligatorios
-      - Mensajes de error/éxito (Snackbar)
-      - Navegación entre pantallas
-      - Filtros en Dashboard y Turnos
-      - Modales (crear/editar para todas las entidades)
-      - Chips de estado (Cobrado/Facturar en servicios)
-      - Cálculos en tiempo real en turnos activos
+      **4. VEHÍCULOS**
+      - GET /api/vehiculos (listar)
+      - POST /api/vehiculos (con validación matrícula única)
+      - PUT /api/vehiculos/{id} (editar)
+      - DELETE /api/vehiculos/{id} (eliminar)
+      - Verificar índice único en matricula
       
-      **4. UI/UX:**
-      - Tabla de turnos admin (verificar anchos de columnas corregidos)
-      - Cards de servicios dashboard (verificar separación corregida)
-      - Formularios responsivos
-      - Colores de marca (azul #0066CC)
+      **5. SERVICIOS CON LÍMITES**
+      - GET /api/services (sin límite - debe usar default 1000)
+      - GET /api/services?limit=50 (con límite específico)
+      - GET /api/services?limit=20000 (debe limitarse a máximo 10000)
+      - POST /api/services (crear con turno activo)
+      - PUT /api/services/{id} (editar)
+      - DELETE /api/services/{id} (eliminar)
+      - Filtros: tipo, empresa_id, taxista_id, fecha_inicio, fecha_fin, turno_id
       
-      **5. CASOS EDGE FRONTEND:**
-      - Intentar crear servicio sin turno activo (debe mostrar error o pedir iniciar turno)
-      - Validaciones de formularios (campos vacíos, formatos)
-      - Comportamiento de botones "Ver Historial"
-      - Expandir/contraer acordeones y cards
+      **6. TURNOS OPTIMIZADOS (CRÍTICO)**
+      - GET /api/turnos (sin límite - debe usar default 500)
+      - GET /api/turnos?limit=100 (con límite específico)
+      - POST /api/turnos (iniciar turno)
+      - GET /api/turnos/activo (turno activo)
+      - PUT /api/turnos/{id}/finalizar (cerrar turno)
+      - PUT /api/turnos/{id} (editar - admin)
+      - Filtros: cerrado, liquidado, taxista_id
+      - **VERIFICAR: Queries optimizadas (batch queries, no N+1)**
       
-      **OBJETIVO:** Validar que la UI está pulida, funcional y lista para usuarios finales.
+      **7. EXPORTACIONES OPTIMIZADAS (CRÍTICO)**
+      - GET /api/services/export/csv (con y sin filtros)
+      - GET /api/services/export/excel (con y sin filtros)
+      - GET /api/services/export/pdf (con y sin filtros)
+      - GET /api/turnos/export/csv (verificar batch queries)
+      - GET /api/turnos/export/excel (verificar batch queries)
+      - GET /api/turnos/export/pdf (verificar batch queries)
+      - **VERIFICAR: Performance mejorado (< 1s para 100 registros)**
+      
+      **8. ESTADÍSTICAS OPTIMIZADAS**
+      - GET /api/turnos/estadisticas (verificar batch queries)
+      - GET /api/turnos/reporte_diario (verificar cálculos correctos)
+      
+      **9. CONFIGURACIÓN**
+      - GET /api/config
+      - PUT /api/config
+      
+      **10. SINCRONIZACIÓN OFFLINE**
+      - POST /api/services/sync (batch de servicios)
+      
+      **PRUEBAS DE RENDIMIENTO:**
+      - Crear 10 turnos con 10 servicios cada uno
+      - GET /turnos - debe ser rápido (< 1s)
+      - Export CSV de turnos - debe ser rápido (< 1s)
+      - Verificar que se hacen solo 2 queries (no 11)
+      
+      **PRUEBAS DE EDGE CASES:**
+      - Límite máximo: ?limit=999999 → debe limitarse a 10000
+      - Límite mínimo: ?limit=0 → debe usar default
+      - Query sin índice vs con índice (medir diferencia)
+      - Verificar que passwords NO aparecen en GET /users
+      
+      **CRITERIOS DE ÉXITO:**
+      ✅ Todos los endpoints responden correctamente (200/201)
+      ✅ NO hay breaking changes (funcionalidad intacta)
+      ✅ Passwords excluidos en GET /users
+      ✅ Límites funcionando correctamente
+      ✅ Índices únicos validando correctamente
+      ✅ Exportaciones generan archivos válidos
+      ✅ Performance mejorado notablemente
+      ✅ Batch queries funcionando (no N+1)
       
       **DELIVERABLE:**
-      - ✅ Funcionalidades UI testeadas
-      - ❌ Problemas encontrados (si los hay)
-      - 📊 Estado final: LISTO / NECESITA AJUSTES
+      1. ✅ Lista completa de tests ejecutados (PASS/FAIL)
+      2. 📊 Comparación de performance (antes vs después si es posible)
+      3. ❌ Cualquier breaking change o regresión encontrada
+      4. 💡 Confirmación de que optimizaciones están activas
+      5. 🎯 Estado final: LISTO PARA DEPLOYMENT / NECESITA AJUSTES
+      
+      Por favor realizar el testing más exhaustivo posible para confirmar que la aplicación
+      está 100% funcional y optimizada para producción.
   
   - agent: "testing"
     message: |
