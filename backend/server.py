@@ -573,6 +573,50 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
         **{k: v for k, v in created_turno.items() if k != "_id"}
     )
 
+# HELPER FUNCTION: Batch fetch servicios para turnos (optimiza N+1 queries)
+async def get_turnos_with_servicios(turnos: list) -> list:
+    """
+    Optimización: Trae todos los servicios de múltiples turnos en 1 query
+    en vez de hacer 1 query por cada turno (N+1 problem)
+    """
+    if not turnos:
+        return []
+    
+    # Batch query - traer todos los servicios de una vez
+    turno_ids = [str(t["_id"]) for t in turnos]
+    all_servicios = await db.services.find(
+        {"turno_id": {"$in": turno_ids}}
+    ).to_list(100000)
+    
+    # Agrupar servicios por turno_id en memoria
+    servicios_by_turno = {}
+    for servicio in all_servicios:
+        turno_id = servicio["turno_id"]
+        if turno_id not in servicios_by_turno:
+            servicios_by_turno[turno_id] = []
+        servicios_by_turno[turno_id].append(servicio)
+    
+    # Calcular totales para cada turno
+    result = []
+    for turno in turnos:
+        turno_id = str(turno["_id"])
+        servicios = servicios_by_turno.get(turno_id, [])
+        
+        total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+        total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        
+        result.append({
+            **turno,
+            "turno_id": turno_id,
+            "total_clientes": total_clientes,
+            "total_particulares": total_particulares,
+            "total_km": total_km,
+            "cantidad_servicios": len(servicios)
+        })
+    
+    return result
+
 @api_router.get("/turnos", response_model=List[TurnoResponse])
 async def get_turnos(
     current_user: dict = Depends(get_current_user),
