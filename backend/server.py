@@ -1158,16 +1158,24 @@ async def get_reporte_diario(
     # Obtener todos los taxistas
     taxistas = await db.users.find({"role": "taxista"}).to_list(1000)
     
+    # OPTIMIZACIÓN: Batch query - traer todos los servicios de la fecha de una vez
+    all_servicios = await db.services.find({"fecha": fecha}).to_list(10000)
+    
+    # Agrupar servicios por taxista_id en memoria
+    servicios_by_taxista = {}
+    for servicio in all_servicios:
+        taxista_id = servicio["taxista_id"]
+        if taxista_id not in servicios_by_taxista:
+            servicios_by_taxista[taxista_id] = []
+        servicios_by_taxista[taxista_id].append(servicio)
+    
     reporte = []
     
     for taxista in taxistas:
         taxista_id = str(taxista["_id"])
         
-        # Obtener servicios del taxista en la fecha específica
-        servicios = await db.services.find({
-            "taxista_id": taxista_id,
-            "fecha": fecha
-        }).to_list(1000)
+        # Obtener servicios del taxista desde el diccionario agrupado
+        servicios = servicios_by_taxista.get(taxista_id, [])
         
         if len(servicios) == 0:
             continue  # Omitir taxistas sin servicios ese día
