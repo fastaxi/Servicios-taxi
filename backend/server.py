@@ -398,20 +398,10 @@ async def create_user(user: UserCreate, current_user: dict = Depends(get_current
 
 @api_router.get("/users", response_model=List[UserResponse])
 async def get_users(current_user: dict = Depends(get_current_admin)):
-    # Proyección: excluir password, solo traer campos necesarios
+    # Proyección: excluir password únicamente (no se puede mezclar inclusión y exclusión)
     users = await db.users.find(
         {"role": "taxista"},
-        {
-            "_id": 1,
-            "username": 1,
-            "nombre": 1,
-            "role": 1,
-            "licencia": 1,
-            "vehiculo_id": 1,
-            "vehiculo_matricula": 1,
-            "created_at": 1,
-            "password": 0  # Excluir explícitamente password
-        }
+        {"password": 0}  # Solo excluir password, traer todos los demás campos
     ).to_list(1000)
     return [
         UserResponse(
