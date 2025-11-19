@@ -105,6 +105,7 @@ export default function AdminTurnosScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [finalizarModalVisible, setFinalizarModalVisible] = useState(false);
   const [exportMenuVisible, setExportMenuVisible] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<Turno | null>(null);
   
   // Estados expandibles
