@@ -839,6 +839,29 @@ async def update_turno(turno_id: str, turno_update: TurnoUpdate, current_user: d
         cantidad_servicios=len(servicios)
     )
 
+@api_router.delete("/turnos/{turno_id}")
+async def delete_turno(turno_id: str, current_user: dict = Depends(get_current_admin)):
+    """
+    Eliminar un turno (solo admin).
+    También elimina todos los servicios asociados a ese turno.
+    """
+    # Verificar que el turno existe
+    turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    if not turno:
+        raise HTTPException(status_code=404, detail="Turno no encontrado")
+    
+    # Eliminar todos los servicios asociados al turno
+    servicios_result = await db.services.delete_many({"turno_id": turno_id})
+    
+    # Eliminar el turno
+    await db.turnos.delete_one({"_id": ObjectId(turno_id)})
+    
+    return {
+        "message": "Turno eliminado correctamente",
+        "turno_id": turno_id,
+        "servicios_eliminados": servicios_result.deleted_count
+    }
+
 # Exportación de Turnos
 @api_router.get("/turnos/export/csv")
 async def export_turnos_csv(
