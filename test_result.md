@@ -592,10 +592,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "REVISIÓN FINAL DEL PROYECTO"
-    - "Testing exhaustivo de todos los endpoints"
-    - "Verificación de funcionalidades core"
-    - "Validación de exportaciones corregidas"
+    - "TESTEO PROFUNDO POST-OPTIMIZACIONES"
+    - "Verificar que todas las optimizaciones funcionan correctamente"
+    - "Confirmar que no hay breaking changes"
+    - "Validar performance improvements"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
