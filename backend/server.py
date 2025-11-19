@@ -85,7 +85,10 @@ except Exception as e:
     raise
 
 # Security
-SECRET_KEY = os.environ.get('SECRET_KEY', 'taxi-tineo-secret-key-change-in-production')
+# SECRET_KEY debe estar en .env - sin fallback para forzar configuración segura
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY no configurada en variables de entorno. Por favor configura SECRET_KEY en .env")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
