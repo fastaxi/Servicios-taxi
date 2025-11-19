@@ -1494,6 +1494,38 @@ async def update_config(config: ConfigBase, current_user: dict = Depends(get_cur
 # Initialize default admin user and config
 @app.on_event("startup")
 async def startup_event():
+    # Create database indexes for performance
+    print("[STARTUP] Creating database indexes...")
+    try:
+        # Services indexes
+        await db.services.create_index("turno_id")
+        await db.services.create_index("taxista_id")
+        await db.services.create_index("fecha")
+        await db.services.create_index("tipo")
+        await db.services.create_index([("fecha", 1), ("taxista_id", 1)])  # Compound index
+        
+        # Turnos indexes
+        await db.turnos.create_index("taxista_id")
+        await db.turnos.create_index("cerrado")
+        await db.turnos.create_index("liquidado")
+        await db.turnos.create_index("fecha_inicio")
+        await db.turnos.create_index([("taxista_id", 1), ("cerrado", 1)])  # Compound index
+        
+        # Users indexes
+        await db.users.create_index("username", unique=True)
+        await db.users.create_index("role")
+        
+        # Vehiculos indexes
+        await db.vehiculos.create_index("matricula", unique=True)
+        
+        # Companies indexes
+        await db.companies.create_index("numero_cliente", unique=True, sparse=True)
+        
+        print("[STARTUP] Database indexes created successfully")
+    except Exception as e:
+        print(f"[STARTUP WARNING] Error creating indexes: {e}")
+        # No fallar si los índices ya existen
+    
     # Create default admin if not exists
     admin = await db.users.find_one({"username": "admin"})
     if not admin:
