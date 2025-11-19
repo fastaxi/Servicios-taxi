@@ -23,6 +23,44 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 
+# Simple in-memory cache
+class SimpleCache:
+    """Cache simple en memoria para datos consultados frecuentemente"""
+    def __init__(self):
+        self._cache = {}
+        self._ttl = {}  # Time-to-live para cada key
+    
+    def get(self, key: str):
+        """Obtener valor del cache si existe y no ha expirado"""
+        if key in self._cache:
+            # Verificar si no ha expirado (TTL de 5 minutos)
+            if key in self._ttl and datetime.utcnow() < self._ttl[key]:
+                return self._cache[key]
+            else:
+                # Expirado, eliminar
+                self.delete(key)
+        return None
+    
+    def set(self, key: str, value, ttl_minutes: int = 5):
+        """Guardar valor en cache con TTL"""
+        self._cache[key] = value
+        self._ttl[key] = datetime.utcnow() + timedelta(minutes=ttl_minutes)
+    
+    def delete(self, key: str):
+        """Eliminar valor del cache"""
+        if key in self._cache:
+            del self._cache[key]
+        if key in self._ttl:
+            del self._ttl[key]
+    
+    def clear(self):
+        """Limpiar todo el cache"""
+        self._cache.clear()
+        self._ttl.clear()
+
+# Instancia global del cache
+cache = SimpleCache()
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
