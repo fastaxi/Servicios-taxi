@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for Taxi Tineo Management System
-Tests all CRUD operations, authentication, authorization, filters, and exports
+TESTEO PROFUNDO POST-OPTIMIZACIONES - Backend Testing Suite
+Validación exhaustiva de todas las optimizaciones implementadas:
+1. 11 índices de base de datos
+2. Eliminación de N+1 queries (5 endpoints)
+3. Proyecciones (excluir passwords)
+4. Límites configurables
+5. Sistema de cache
 """
 
 import requests
 import json
-import sys
+import time
+import os
 from datetime import datetime, timedelta
-import io
+
+# Get backend URL from environment
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxiflow-admin.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
 
 # Configuration
-BASE_URL = "https://taxiflow-admin.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
-TAXISTA_CREDENTIALS = {"username": "taxista1", "password": "taxista123"}
 
 class TaxiTineoAPITester:
     def __init__(self):
