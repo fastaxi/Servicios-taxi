@@ -22,7 +22,7 @@
     "axios": "^1.12.2",
     "base-64": "^1.0.0",
     "date-fns": "^4.1.0",
-    "expo": "^54.0.24",
+    "expo": "^54.0.25",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
     "expo-file-system": "^19.0.17",
