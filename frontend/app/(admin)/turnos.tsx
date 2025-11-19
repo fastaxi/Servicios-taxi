@@ -323,6 +323,24 @@ export default function AdminTurnosScreen() {
     }
   };
 
+  const handleDeleteTurno = async () => {
+    if (!turnoSeleccionado) return;
+    
+    try {
+      await axios.delete(
+        `${API_URL}/turnos/${turnoSeleccionado.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setEditModalVisible(false);
+      setSnackbar({ visible: true, message: 'Turno y servicios asociados eliminados correctamente' });
+      loadData();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Error al eliminar turno';
+      setSnackbar({ visible: true, message: errorMsg });
+    }
+  };
+
   const submitFinalizarTurno = async () => {
     if (!kmFin || !horaFin || !turnoSeleccionado) {
       setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
