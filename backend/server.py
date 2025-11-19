@@ -28,7 +28,11 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection - Compatible con desarrollo y producción
 mongo_url = os.getenv('MONGO_URL', os.getenv('MONGODB_URI', 'mongodb://localhost:27017'))
-db_name = os.getenv('DB_NAME', os.getenv('MONGODB_DB_NAME', 'taxis'))
+db_name = os.getenv('DB_NAME') or os.getenv('MONGODB_DB_NAME')
+
+# Validar que db_name está configurado
+if not db_name:
+    raise ValueError("DB_NAME or MONGODB_DB_NAME must be set in environment variables")
 
 # Log configuration for debugging
 print(f"[STARTUP] Connecting to MongoDB...")
