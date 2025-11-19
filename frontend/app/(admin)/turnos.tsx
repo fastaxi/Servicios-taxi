@@ -997,8 +997,43 @@ export default function AdminTurnosScreen() {
             </ScrollView>
           </Dialog.ScrollArea>
           <Dialog.Actions>
+            <Button 
+              onPress={() => setDeleteConfirmVisible(true)} 
+              textColor="#D32F2F"
+              icon="delete"
+            >
+              Eliminar
+            </Button>
+            <View style={{ flex: 1 }} />
             <Button onPress={() => setEditModalVisible(false)}>Cancelar</Button>
             <Button onPress={submitEditTurno}>Guardar</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      {/* Modal de confirmación de eliminación */}
+      <Portal>
+        <Dialog visible={deleteConfirmVisible} onDismiss={() => setDeleteConfirmVisible(false)}>
+          <Dialog.Title>Confirmar Eliminación</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              ¿Estás seguro de que deseas eliminar este turno? 
+            </Text>
+            <Text variant="bodyMedium" style={{ marginTop: 8, color: '#D32F2F' }}>
+              Esta acción también eliminará todos los servicios asociados y no se puede deshacer.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDeleteConfirmVisible(false)}>Cancelar</Button>
+            <Button 
+              onPress={() => {
+                setDeleteConfirmVisible(false);
+                handleDeleteTurno();
+              }}
+              textColor="#D32F2F"
+            >
+              Eliminar
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
