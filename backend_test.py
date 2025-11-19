@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
 """
-TESTEO PROFUNDO POST-OPTIMIZACIONES - Backend Testing Suite
-Validación exhaustiva de todas las optimizaciones implementadas:
-1. 11 índices de base de datos
-2. Eliminación de N+1 queries (5 endpoints)
-3. Proyecciones (excluir passwords)
-4. Límites configurables
-5. Sistema de cache
+TESTING FINAL - ELIMINACIÓN DE TURNOS Y VERIFICACIÓN COMPLETA
+Comprehensive backend testing for taxi management system
+Focus: DELETE /turnos cascade deletion and full system verification
 """
 
 import requests
 import json
 import time
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Dict, List, Optional
 
-# Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxiflow-admin.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
+# Configuration
+BASE_URL = "https://taxiflow-admin.preview.emergentagent.com/api"
+ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 
 class TaxiBackendTester:
     def __init__(self):
