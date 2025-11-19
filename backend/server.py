@@ -1051,18 +1051,12 @@ async def get_turnos_estadisticas(
     turnos_liquidados = sum(1 for t in turnos if t.get("liquidado"))
     turnos_activos = total_turnos - turnos_cerrados
     
-    # Calcular totales globales
-    total_importe = 0
-    total_km = 0
-    total_servicios = 0
+    # Usar helper function para optimizar queries y calcular totales globales
+    turnos_con_totales = await get_turnos_with_servicios(turnos)
     
-    for turno in turnos:
-        turno_id = str(turno["_id"])
-        servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
-        for servicio in servicios:
-            total_importe += servicio.get("importe_total", servicio.get("importe", 0))
-            total_km += servicio.get("kilometros", 0)
-        total_servicios += len(servicios)
+    total_importe = sum(t["total_clientes"] + t["total_particulares"] for t in turnos_con_totales)
+    total_km = sum(t["total_km"] for t in turnos_con_totales)
+    total_servicios = sum(t["cantidad_servicios"] for t in turnos_con_totales)
     
     return {
         "total_turnos": total_turnos,
