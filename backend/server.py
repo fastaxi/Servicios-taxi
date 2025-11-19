@@ -1197,7 +1197,8 @@ async def get_services(
     taxista_id: Optional[str] = Query(None),
     turno_id: Optional[str] = Query(None),
     fecha_inicio: Optional[str] = Query(None),
-    fecha_fin: Optional[str] = Query(None)
+    fecha_fin: Optional[str] = Query(None),
+    limit: int = Query(1000, le=10000, description="Límite de resultados")
 ):
     query = {}
     
@@ -1224,7 +1225,8 @@ async def get_services(
         else:
             query["fecha"] = {"$lte": fecha_fin}
     
-    services = await db.services.find(query).sort("created_at", -1).to_list(10000)
+    # Proyección: traer solo campos necesarios (todos en este caso, pero preparado para futura optimización)
+    services = await db.services.find(query).sort("created_at", -1).limit(limit).to_list(limit)
     return [
         ServiceResponse(
             id=str(service["_id"]),
