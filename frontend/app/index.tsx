@@ -113,6 +113,12 @@ export default function LoginScreen() {
             Iniciar Sesión
           </Button>
 
+          {__DEV__ && (
+            <Text variant="bodySmall" style={styles.debugText}>
+              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxistas-asturias.preview.emergentagent.com'}
+            </Text>
+          )}
+
           <View style={styles.footer}>
             <Text variant="bodySmall" style={styles.footerText}>
               {config.web}
