@@ -196,6 +196,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
+  debugText: {
+    color: '#999',
+    fontSize: 10,
+    marginTop: 8,
+    textAlign: 'center',
+  },
   snackbar: {
     backgroundColor: '#D32F2F',
   },
