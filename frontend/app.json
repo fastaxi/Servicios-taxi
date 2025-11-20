@@ -51,11 +51,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "taxi-tineo-asturias"
-      }
     }
   }
 }
