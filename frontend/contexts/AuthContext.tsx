@@ -4,6 +4,8 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+console.log('[AuthContext] API_URL:', API_URL);
+console.log('[AuthContext] EXPO_PUBLIC_BACKEND_URL:', process.env.EXPO_PUBLIC_BACKEND_URL);
 
 interface User {
   id: string;
