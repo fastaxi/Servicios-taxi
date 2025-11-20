@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "description": "Sistema de gestión de servicios de taxi para Radio Taxi Tineo - Asturias",
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0066CC"
     },
