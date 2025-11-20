@@ -7,6 +7,12 @@ He configurado tu proyecto para crear builds standalone:
 ### Archivos Actualizados:
 - ✅ `app.json` - Configurado con nombre "Taxi Tineo", colores Asturias, y permisos
 - ✅ `eas.json` - Configuración de builds (development, preview, production)
+- ✅ **Iconos personalizados instalados** - Tu imagen de taxi ahora es el icono oficial de la app:
+  - `icon.png` (1024x1024) - Icono principal de la app
+  - `adaptive-icon.png` (1024x1024) - Icono adaptativo para Android
+  - `splash-icon.png` (200x200) - Icono para pantalla de carga
+  - `splash.png` (1242x2688) - Pantalla de carga completa con fondo azul Asturias
+  - `favicon.png` (48x48) - Icono para versión web
 
 ---
 
