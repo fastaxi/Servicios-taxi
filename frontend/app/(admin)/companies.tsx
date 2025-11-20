@@ -1,66 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import {
-  View,
-  StyleSheet,
-  FlatList,
-  RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  Text,
-  Card,
-  FAB,
-  Portal,
-  Modal,
   TextInput,
   Button,
-  IconButton,
+  Text,
+  FAB,
+  Dialog,
+  Portal,
   Snackbar,
+  Card,
+  IconButton,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+import { API_URL } from '../../config/api';
 
 interface Company {
   id: string;
   nombre: string;
-  cif: string;
-  direccion: string;
-  localidad: string;
-  provincia: string;
-  numero_cliente?: string;
-  fecha_alta?: string;
-  notas?: string;
+  numero_cliente: string;
+  contacto?: string;
+  telefono?: string;
+  email?: string;
+  direccion?: string;
 }
 
 export default function CompaniesScreen() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
-  const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
-  const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
-  
-  const [formData, setFormData] = useState({
-    nombre: '',
-    cif: '',
-    direccion: '',
-    codigo_postal: '',
-    localidad: '',
-    provincia: 'Asturias',
-    telefono: '',
-    email: '',
-    numero_cliente: '',
-    fecha_alta: '',
-    notas: '',
-  });
-
   const { token } = useAuth();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+
+  // Form states
+  const [nombre, setNombre] = useState('');
+  const [numeroCliente, setNumeroCliente] = useState('');
+  const [contacto, setContacto] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [email, setEmail] = useState('');
+  const [direccion, setDireccion] = useState('');
 
   useEffect(() => {
     loadCompanies();
@@ -74,412 +52,187 @@ export default function CompaniesScreen() {
       setCompanies(response.data);
     } catch (error) {
       console.error('Error loading companies:', error);
+      setSnackbar({ visible: true, message: 'Error al cargar empresas' });
     }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadCompanies();
-    setRefreshing(false);
   };
 
   const openModal = (company?: Company) => {
     if (company) {
       setEditingCompany(company);
-      setFormData({
-        nombre: company.nombre,
-        cif: company.cif,
-        direccion: company.direccion,
-        codigo_postal: company.codigo_postal || '',
-        localidad: company.localidad,
-        provincia: company.provincia,
-        telefono: company.telefono || '',
-        email: company.email || '',
-        numero_cliente: company.numero_cliente || '',
-        fecha_alta: company.fecha_alta || '',
-        notas: company.notas || '',
-      });
+      setNombre(company.nombre);
+      setNumeroCliente(company.numero_cliente);
+      setContacto(company.contacto || '');
+      setTelefono(company.telefono || '');
+      setEmail(company.email || '');
+      setDireccion(company.direccion || '');
     } else {
-      setEditingCompany(null);
-      // Auto-generar fecha de alta con fecha actual
-      const today = new Date();
-      const fechaAlta = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-      
-      setFormData({
-        nombre: '',
-        cif: '',
-        direccion: '',
-        codigo_postal: '',
-        localidad: '',
-        provincia: 'Asturias',
-        telefono: '',
-        email: '',
-        numero_cliente: '',
-        fecha_alta: fechaAlta,
-        notas: '',
-      });
+      resetForm();
     }
     setModalVisible(true);
   };
 
-  const openViewModal = (company: Company) => {
-    setViewingCompany(company);
-    setViewModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
+  const resetForm = () => {
     setEditingCompany(null);
+    setNombre('');
+    setNumeroCliente('');
+    setContacto('');
+    setTelefono('');
+    setEmail('');
+    setDireccion('');
   };
 
   const handleSubmit = async () => {
-    if (!formData.nombre || !formData.cif || !formData.direccion || !formData.codigo_postal || !formData.localidad || !formData.telefono || !formData.email) {
-      setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
+    if (!nombre || !numeroCliente) {
+      setSnackbar({ visible: true, message: 'Por favor, completa los campos obligatorios' });
       return;
     }
 
+    const companyData = {
+      nombre,
+      numero_cliente: numeroCliente,
+      contacto: contacto || undefined,
+      telefono: telefono || undefined,
+      email: email || undefined,
+      direccion: direccion || undefined,
+    };
+
     try {
       if (editingCompany) {
-        await axios.put(
-          `${API_URL}/companies/${editingCompany.id}`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.put(`${API_URL}/companies/${editingCompany.id}`, companyData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setSnackbar({ visible: true, message: 'Empresa actualizada correctamente' });
       } else {
-        await axios.post(`${API_URL}/companies`, formData, {
+        await axios.post(`${API_URL}/companies`, companyData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSnackbar({ visible: true, message: 'Empresa creada correctamente' });
       }
-
-      await loadCompanies();
-      closeModal();
+      
+      setModalVisible(false);
+      resetForm();
+      loadCompanies();
     } catch (error: any) {
-      console.error('Error saving company:', error);
-      setSnackbar({
-        visible: true,
-        message: error.response?.data?.detail || 'Error al guardar empresa',
-      });
+      const errorMsg = error.response?.data?.detail || 'Error al guardar la empresa';
+      setSnackbar({ visible: true, message: errorMsg });
     }
   };
 
-  const handleDelete = async (companyId: string) => {
-    try {
-      await axios.delete(`${API_URL}/companies/${companyId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSnackbar({ visible: true, message: 'Empresa eliminada correctamente' });
-      await loadCompanies();
-    } catch (error: any) {
-      console.error('Error deleting company:', error);
-      setSnackbar({
-        visible: true,
-        message: error.response?.data?.detail || 'Error al eliminar empresa',
-      });
-    }
+  const handleDelete = (company: Company) => {
+    Alert.alert(
+      'Eliminar Empresa',
+      `¿Estás seguro de que deseas eliminar la empresa ${company.nombre}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await axios.delete(`${API_URL}/companies/${company.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              setSnackbar({ visible: true, message: 'Empresa eliminada correctamente' });
+              loadCompanies();
+            } catch (error) {
+              setSnackbar({ visible: true, message: 'Error al eliminar la empresa' });
+            }
+          },
+        },
+      ]
+    );
   };
-
-  const renderCompany = ({ item }: { item: Company }) => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <View style={styles.cardHeader}>
-          <TouchableOpacity onPress={() => openViewModal(item)} style={styles.nameContainer}>
-            <Text variant="titleMedium" style={styles.companyName}>
-              {item.nombre}
-            </Text>
-          </TouchableOpacity>
-          <View style={styles.actions}>
-            <IconButton
-              icon="pencil"
-              size={20}
-              onPress={() => openModal(item)}
-              iconColor="#0066CC"
-            />
-            <IconButton
-              icon="delete"
-              size={20}
-              onPress={() => handleDelete(item.id)}
-              iconColor="#D32F2F"
-            />
-          </View>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text variant="bodySmall" style={styles.label}>CIF:</Text>
-          <Text variant="bodySmall">{item.cif}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text variant="bodySmall" style={styles.label}>Dirección:</Text>
-          <Text variant="bodySmall">{item.direccion}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text variant="bodySmall" style={styles.label}>Localidad:</Text>
-          <Text variant="bodySmall">{item.localidad}</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <Text variant="bodySmall" style={styles.label}>Provincia:</Text>
-          <Text variant="bodySmall">{item.provincia}</Text>
-        </View>
-      </Card.Content>
-    </Card>
-  );
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={companies}
-        renderItem={renderCompany}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text variant="bodyLarge" style={styles.emptyText}>
-              No hay clientes registrados
-            </Text>
-          </View>
-        }
-      />
+      <ScrollView>
+        {companies.map((company) => (
+          <Card key={company.id} style={styles.card}>
+            <Card.Title
+              title={company.nombre}
+              subtitle={`Cliente: ${company.numero_cliente}`}
+              right={(props) => (
+                <View style={styles.cardActions}>
+                  <IconButton {...props} icon="pencil" onPress={() => openModal(company)} />
+                  <IconButton {...props} icon="delete" onPress={() => handleDelete(company)} />
+                </View>
+              )}
+            />
+            <Card.Content>
+              {company.contacto && <Text>Contacto: {company.contacto}</Text>}
+              {company.telefono && <Text>Teléfono: {company.telefono}</Text>}
+              {company.email && <Text>Email: {company.email}</Text>}
+              {company.direccion && <Text>Dirección: {company.direccion}</Text>}
+            </Card.Content>
+          </Card>
+        ))}
+      </ScrollView>
 
       <FAB
-        icon="plus"
         style={styles.fab}
+        icon="plus"
         onPress={() => openModal()}
       />
 
       <Portal>
-        <Modal
-          visible={modalVisible}
-          onDismiss={closeModal}
-          contentContainerStyle={styles.modal}
-        >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
-            <ScrollView keyboardShouldPersistTaps="handled">
-              <Text variant="titleLarge" style={styles.modalTitle}>
-                {editingCompany ? 'Editar Cliente' : 'Nuevo Cliente'}
-              </Text>
-
-              <TextInput
-                label="Número de Cliente"
-                value={formData.numero_cliente}
-                onChangeText={(text) => setFormData({ ...formData, numero_cliente: text })}
-                mode="outlined"
-                style={styles.input}
-                placeholder="Ej: C001"
-              />
-
-              <TextInput
-                label="Fecha de Alta"
-                value={formData.fecha_alta}
-                onChangeText={(text) => setFormData({ ...formData, fecha_alta: text })}
-                mode="outlined"
-                style={styles.input}
-                placeholder="dd/mm/yyyy"
-              />
-
+        <Dialog visible={modalVisible} onDismiss={() => setModalVisible(false)}>
+          <Dialog.Title>{editingCompany ? 'Editar Empresa' : 'Nueva Empresa'}</Dialog.Title>
+          <Dialog.ScrollArea>
+            <ScrollView>
               <TextInput
                 label="Nombre *"
-                value={formData.nombre}
-                onChangeText={(text) => setFormData({ ...formData, nombre: text })}
+                value={nombre}
+                onChangeText={setNombre}
                 mode="outlined"
                 style={styles.input}
               />
-
               <TextInput
-                label="CIF/DNI *"
-                value={formData.cif}
-                onChangeText={(text) => setFormData({ ...formData, cif: text })}
+                label="Número de Cliente *"
+                value={numeroCliente}
+                onChangeText={setNumeroCliente}
                 mode="outlined"
                 style={styles.input}
               />
-
               <TextInput
-                label="Dirección *"
-                value={formData.direccion}
-                onChangeText={(text) => setFormData({ ...formData, direccion: text })}
+                label="Contacto"
+                value={contacto}
+                onChangeText={setContacto}
                 mode="outlined"
                 style={styles.input}
               />
-
               <TextInput
-                label="Código Postal *"
-                value={formData.codigo_postal}
-                onChangeText={(text) => setFormData({ ...formData, codigo_postal: text })}
-                mode="outlined"
-                keyboardType="numeric"
-                style={styles.input}
-              />
-
-              <TextInput
-                label="Localidad *"
-                value={formData.localidad}
-                onChangeText={(text) => setFormData({ ...formData, localidad: text })}
-                mode="outlined"
-                style={styles.input}
-              />
-
-              <TextInput
-                label="Provincia *"
-                value={formData.provincia}
-                onChangeText={(text) => setFormData({ ...formData, provincia: text })}
-                mode="outlined"
-                style={styles.input}
-              />
-
-              <TextInput
-                label="Teléfono *"
-                value={formData.telefono}
-                onChangeText={(text) => setFormData({ ...formData, telefono: text })}
+                label="Teléfono"
+                value={telefono}
+                onChangeText={setTelefono}
                 mode="outlined"
                 keyboardType="phone-pad"
                 style={styles.input}
               />
-
               <TextInput
-                label="Email *"
-                value={formData.email}
-                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
                 mode="outlined"
                 keyboardType="email-address"
-                autoCapitalize="none"
                 style={styles.input}
               />
-
               <TextInput
-                label="Notas"
-                value={formData.notas}
-                onChangeText={(text) => setFormData({ ...formData, notas: text })}
+                label="Dirección"
+                value={direccion}
+                onChangeText={setDireccion}
                 mode="outlined"
                 multiline
-                numberOfLines={2}
-                style={[styles.input, styles.notasInput]}
-                placeholder="Observaciones adicionales..."
+                numberOfLines={3}
+                style={styles.input}
               />
-
-              <View style={styles.modalActions}>
-                <Button mode="outlined" onPress={closeModal} style={styles.modalButton}>
-                  Cancelar
-                </Button>
-                <Button mode="contained" onPress={handleSubmit} style={styles.modalButton}>
-                  Guardar
-                </Button>
-              </View>
             </ScrollView>
-          </KeyboardAvoidingView>
-        </Modal>
+          </Dialog.ScrollArea>
+          <Dialog.Actions>
+            <Button onPress={() => setModalVisible(false)}>Cancelar</Button>
+            <Button onPress={handleSubmit}>Guardar</Button>
+          </Dialog.Actions>
+        </Dialog>
       </Portal>
-
-      {/* Modal de consulta (solo lectura) */}
-      <Modal
-        visible={viewModalVisible}
-        onDismiss={() => setViewModalVisible(false)}
-        contentContainerStyle={styles.modal}
-      >
-        <ScrollView>
-          <Text variant="titleLarge" style={styles.modalTitle}>
-            Información del Cliente
-          </Text>
-
-          {viewingCompany && (
-            <View style={styles.viewContent}>
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Número de Cliente:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.numero_cliente || '-'}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Fecha de Alta:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.fecha_alta || '-'}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Nombre:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.nombre}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>CIF/DNI:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.cif}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Dirección:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.direccion}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Código Postal:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.codigo_postal || '-'}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Localidad:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.localidad}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Provincia:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.provincia}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Teléfono:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.telefono || '-'}
-                </Text>
-              </View>
-
-              <View style={styles.viewRow}>
-                <Text variant="bodySmall" style={styles.viewLabel}>Email:</Text>
-                <Text variant="bodyMedium" style={styles.viewValue}>
-                  {viewingCompany.email || '-'}
-                </Text>
-              </View>
-
-              {viewingCompany.notas && (
-                <View style={styles.viewRow}>
-                  <Text variant="bodySmall" style={styles.viewLabel}>Notas:</Text>
-                  <Text variant="bodyMedium" style={[styles.viewValue, styles.notasValue]}>
-                    {viewingCompany.notas}
-                  </Text>
-                </View>
-              )}
-
-              <Button
-                mode="contained"
-                onPress={() => setViewModalVisible(false)}
-                style={styles.closeButton}
-              >
-                Cerrar
-              </Button>
-            </View>
-          )}
-        </ScrollView>
-      </Modal>
 
       <Snackbar
         visible={snackbar.visible}
@@ -497,112 +250,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
-  list: {
-    padding: 16,
-  },
   card: {
-    marginBottom: 16,
-    backgroundColor: 'white',
-    elevation: 2,
+    margin: 8,
   },
-  cardHeader: {
+  cardActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  companyName: {
-    flex: 1,
-    fontWeight: 'bold',
-    color: '#0066CC',
-  },
-  actions: {
-    flexDirection: 'row',
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  label: {
-    fontWeight: '600',
-    color: '#666',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 100,
-  },
-  emptyText: {
-    color: '#999',
   },
   fab: {
     position: 'absolute',
-    right: 16,
-    bottom: 16,
+    margin: 16,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#0066CC',
-  },
-  modal: {
-    backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 12,
-    maxHeight: '85%',
-  },
-  modalTitle: {
-    marginBottom: 12,
-    color: '#0066CC',
-    fontWeight: 'bold',
   },
   input: {
     marginBottom: 12,
-  },
-  notasInput: {
-    minHeight: 60,
-    maxHeight: 80,
-    textAlignVertical: 'top',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  modalButton: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  viewContent: {
-    paddingVertical: 8,
-  },
-  viewRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  viewLabel: {
-    fontWeight: '600',
-    color: '#666',
-    flex: 1,
-    marginRight: 12,
-  },
-  viewValue: {
-    flex: 2,
-    textAlign: 'right',
-    color: '#333',
-  },
-  notasValue: {
-    textAlign: 'left',
-  },
-  closeButton: {
-    marginTop: 20,
-    backgroundColor: '#0066CC',
-  },
-  nameContainer: {
-    flex: 1,
   },
 });
