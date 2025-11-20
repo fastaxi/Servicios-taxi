@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "taxitineo",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "description": "Sistema de gestión de servicios de taxi para Radio Taxi Tineo - Asturias",
     "splash": {
       "image": "./assets/images/splash.png",
