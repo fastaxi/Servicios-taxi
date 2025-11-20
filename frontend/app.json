@@ -51,6 +51,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7492bcf8-48ca-41ba-96e6-920db5fb56eb"
+      }
+    },
+    "owner": "ivantaxi"
   }
 }
