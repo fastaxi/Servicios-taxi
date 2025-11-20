@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import IniciarTurnoModal from '../../components/IniciarTurnoModal';
 import axios from 'axios';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+import { API_URL } from '../config/api';
 
 export default function TabsLayout() {
   const { user, token } = useAuth();

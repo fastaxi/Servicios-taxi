@@ -25,7 +25,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import VehiculosScreen from './vehiculos';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+import { API_URL } from '../config/api';
 
 interface User {
   id: string;

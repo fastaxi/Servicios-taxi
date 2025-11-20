@@ -4,7 +4,7 @@ import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+import { API_URL } from '../config/api';
 
 interface SyncContextType {
   pendingServices: number;

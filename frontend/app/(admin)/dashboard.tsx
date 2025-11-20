@@ -25,7 +25,7 @@ import * as Sharing from 'expo-sharing';
 import { format } from 'date-fns';
 import { encode as base64Encode } from 'base-64';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+import { API_URL } from '../config/api';
 
 interface Service {
   id: string;

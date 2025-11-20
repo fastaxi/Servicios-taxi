@@ -23,7 +23,7 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+import { API_URL } from '../config/api';
 
 interface Company {
   id: string;
