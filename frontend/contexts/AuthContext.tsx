@@ -2,10 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Constants from 'expo-constants';
-
-const API_URL = (process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxistas-asturias.preview.emergentagent.com') + '/api';
-console.log('[AuthContext] API_URL:', API_URL);
-console.log('[AuthContext] EXPO_PUBLIC_BACKEND_URL:', process.env.EXPO_PUBLIC_BACKEND_URL);
+import { API_URL } from '../config/api';
 
 interface User {
   id: string;
