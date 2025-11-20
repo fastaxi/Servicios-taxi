@@ -92,7 +92,7 @@ index e282bf9..e69de29 100644
 -----+import os
 -----+
 -----+# Get backend URL from environment
------+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://asturias-taxi.preview.emergentagent.com')
+-----+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxistas-asturias.preview.emergentagent.com')
 -----+API_BASE = f"{BACKEND_URL}/api"
 -----+
 -----+def test_invalid_login():
@@ -425,7 +425,7 @@ index e282bf9..e69de29 100644
 -------------+import time
 -------------+
 -------------+# Configuration
--------------+BASE_URL = "https://asturias-taxi.preview.emergentagent.com/api"
+-------------+BASE_URL = "https://taxistas-asturias.preview.emergentagent.com/api"
 -------------+ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 -------------+
 -------------+class AdditionalTester:
