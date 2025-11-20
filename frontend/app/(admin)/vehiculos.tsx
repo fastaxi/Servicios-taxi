@@ -14,8 +14,7 @@ import {
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+import { API_URL } from '../../config/api';
 
 interface Vehiculo {
   id: string;
