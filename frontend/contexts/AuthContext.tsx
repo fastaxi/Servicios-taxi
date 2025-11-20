@@ -51,11 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
+      console.log('[AuthContext] Attempting login to:', `${API_URL}/auth/login`);
       const response = await axios.post(`${API_URL}/auth/login`, {
         username,
         password,
       });
 
+      console.log('[AuthContext] Login successful');
       const { access_token, user: userData } = response.data;
       
       await AsyncStorage.setItem('token', access_token);
@@ -64,8 +66,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(access_token);
       setUser(userData);
     } catch (error: any) {
-      console.error('Login error:', error);
-      throw new Error(error.response?.data?.detail || 'Error al iniciar sesión');
+      console.error('[AuthContext] Login error:', error);
+      console.error('[AuthContext] Error response:', error.response?.data);
+      console.error('[AuthContext] Error message:', error.message);
+      throw new Error(error.response?.data?.detail || error.message || 'Error al iniciar sesión');
     }
   };
 
