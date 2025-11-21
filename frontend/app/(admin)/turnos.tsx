@@ -23,7 +23,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { encode as base64Encode } from 'base-64';
 
-import { API_URL } from '../config/api';
+import { API_URL } from '../../config/api';
 
 interface Servicio {
   id: string;

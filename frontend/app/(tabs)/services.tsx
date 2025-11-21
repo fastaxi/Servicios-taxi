@@ -7,7 +7,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import { format } from 'date-fns';
 
-import { API_URL } from '../config/api';
+import { API_URL } from '../../config/api';
 
 interface Service {
   id: string;

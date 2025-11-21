@@ -25,7 +25,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import VehiculosScreen from './vehiculos';
 
-import { API_URL } from '../config/api';
+import { API_URL } from '../../config/api';
 
 interface User {
   id: string;

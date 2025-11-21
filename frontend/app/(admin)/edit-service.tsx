@@ -22,7 +22,7 @@ import { useSync } from '../../contexts/SyncContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import axios from 'axios';
 
-import { API_URL } from '../config/api';
+import { API_URL } from '../../config/api';
 
 interface Company {
   id: string;

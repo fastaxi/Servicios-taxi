@@ -20,7 +20,7 @@ import { useConfig } from '../../contexts/ConfigContext';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 
-import { API_URL } from '../config/api';
+import { API_URL } from '../../config/api';
 
 interface Config {
   nombre_radio_taxi: string;

@@ -19,7 +19,7 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import IniciarTurnoModal from '../../components/IniciarTurnoModal';
 
-import { API_URL } from '../config/api';
+import { API_URL } from '../../config/api';
 
 interface Servicio {
   id: string;
