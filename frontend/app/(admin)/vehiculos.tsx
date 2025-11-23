@@ -209,13 +209,28 @@ export default function VehiculosScreen() {
         onPress={() => openModal()}
       />
 
-      <Portal>
-        <Dialog visible={modalVisible} onDismiss={() => setModalVisible(false)}>
-          <Dialog.Title>
-            {editingVehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo'}
-          </Dialog.Title>
-          <Dialog.ScrollArea>
-            <ScrollView>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Appbar.Header>
+            <Appbar.BackAction onPress={() => setModalVisible(false)} />
+            <Appbar.Content title={editingVehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo'} />
+            <Appbar.Action icon="check" onPress={handleSubmit} />
+          </Appbar.Header>
+          
+          <KeyboardAvoidingView
+            style={styles.keyboardAvoid}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}
+          >
+            <ScrollView 
+              style={styles.modalContent}
+              contentContainerStyle={styles.modalScrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
               <TextInput
                 label="Matrícula *"
                 value={matricula}
@@ -262,14 +277,18 @@ export default function VehiculosScreen() {
                 placeholder="01/01/2020"
                 style={styles.input}
               />
+              <View style={styles.buttonContainer}>
+                <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.modalButton}>
+                  Cancelar
+                </Button>
+                <Button mode="contained" onPress={handleSubmit} style={styles.modalButton}>
+                  Guardar
+                </Button>
+              </View>
             </ScrollView>
-          </Dialog.ScrollArea>
-          <Dialog.Actions>
-            <Button onPress={() => setModalVisible(false)}>Cancelar</Button>
-            <Button onPress={handleSubmit}>Guardar</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
 
       <Snackbar
         visible={snackbar.visible}
