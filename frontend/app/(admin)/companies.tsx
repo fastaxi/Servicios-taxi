@@ -173,11 +173,28 @@ export default function CompaniesScreen() {
         onPress={() => openModal()}
       />
 
-      <Portal>
-        <Dialog visible={modalVisible} onDismiss={() => setModalVisible(false)}>
-          <Dialog.Title>{editingCompany ? 'Editar Empresa' : 'Nueva Empresa'}</Dialog.Title>
-          <Dialog.ScrollArea>
-            <ScrollView>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Appbar.Header>
+            <Appbar.BackAction onPress={() => setModalVisible(false)} />
+            <Appbar.Content title={editingCompany ? 'Editar Empresa' : 'Nueva Empresa'} />
+            <Appbar.Action icon="check" onPress={handleSubmit} />
+          </Appbar.Header>
+          
+          <KeyboardAvoidingView
+            style={styles.keyboardAvoid}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}
+          >
+            <ScrollView 
+              style={styles.modalContent}
+              contentContainerStyle={styles.modalScrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
               <TextInput
                 label="Nombre *"
                 value={nombre}
@@ -213,6 +230,7 @@ export default function CompaniesScreen() {
                 onChangeText={setEmail}
                 mode="outlined"
                 keyboardType="email-address"
+                autoCapitalize="none"
                 style={styles.input}
               />
               <TextInput
@@ -224,14 +242,18 @@ export default function CompaniesScreen() {
                 numberOfLines={3}
                 style={styles.input}
               />
+              <View style={styles.buttonContainer}>
+                <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.modalButton}>
+                  Cancelar
+                </Button>
+                <Button mode="contained" onPress={handleSubmit} style={styles.modalButton}>
+                  Guardar
+                </Button>
+              </View>
             </ScrollView>
-          </Dialog.ScrollArea>
-          <Dialog.Actions>
-            <Button onPress={() => setModalVisible(false)}>Cancelar</Button>
-            <Button onPress={handleSubmit}>Guardar</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
 
       <Snackbar
         visible={snackbar.visible}
