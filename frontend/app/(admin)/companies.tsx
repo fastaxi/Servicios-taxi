@@ -284,7 +284,30 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: '#0066CC',
   },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  keyboardAvoid: {
+    flex: 1,
+  },
+  modalContent: {
+    flex: 1,
+  },
+  modalScrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
   input: {
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
   },
 });
