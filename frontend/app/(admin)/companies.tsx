@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Modal, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import {
   TextInput,
   Button,
   Text,
   FAB,
-  Dialog,
-  Portal,
   Snackbar,
   Card,
   IconButton,
+  Appbar,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
