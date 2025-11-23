@@ -1534,9 +1534,9 @@ async def export_pdf(
             service["taxista_nombre"][:12],
             service["origen"][:12],
             service["destino"][:12],
-            f"{importe}€",
-            f"{importe_espera}€",
-            f"{importe_total}€",
+            f"{importe:.2f}€",
+            f"{importe_espera:.2f}€",
+            f"{importe_total:.2f}€",
             service["kilometros"],
             service["tipo"][:3].upper(),
             "Sí" if service.get("cobrado", False) else "No"
