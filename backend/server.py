@@ -1511,7 +1511,8 @@ async def export_pdf(
     services = await db.services.find(query).sort("fecha", 1).to_list(10000)
     
     output = io.BytesIO()
-    doc = SimpleDocTemplate(output, pagesize=A4)
+    # Usar landscape (horizontal) para tener más espacio
+    doc = SimpleDocTemplate(output, pagesize=landscape(A4))
     elements = []
     
     styles = getSampleStyleSheet()
@@ -1519,18 +1520,26 @@ async def export_pdf(
     elements.append(title)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Table data
-    data = [["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe", "KM"]]
+    # Table data con más columnas
+    data = [["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe", "Espera", "Total", "KM", "Tipo", "Cobrado"]]
     
     for service in services:
+        importe = service.get("importe", 0)
+        importe_espera = service.get("importe_espera", 0)
+        importe_total = service.get("importe_total", importe + importe_espera)
+        
         data.append([
             service["fecha"],
             service["hora"],
-            service["taxista_nombre"][:15],
-            service["origen"][:15],
-            service["destino"][:15],
-            f"{service['importe']}€",
-            service["kilometros"]
+            service["taxista_nombre"][:12],
+            service["origen"][:12],
+            service["destino"][:12],
+            f"{importe}€",
+            f"{importe_espera}€",
+            f"{importe_total}€",
+            service["kilometros"],
+            service["tipo"][:3].upper(),
+            "Sí" if service.get("cobrado", False) else "No"
         ])
     
     table = Table(data)
@@ -1539,11 +1548,11 @@ async def export_pdf(
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
     ]))
     
     elements.append(table)
