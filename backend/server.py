@@ -1437,7 +1437,7 @@ async def export_excel(
     header_fill = PatternFill(start_color="0066CC", end_color="0066CC", fill_type="solid")
     header_font = Font(color="FFFFFF", bold=True)
     
-    headers = ["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Kilómetros", "Tipo", "Empresa"]
+    headers = ["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Importe Total (€)", "Kilómetros", "Tipo", "Empresa", "Cobrado", "Facturar"]
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=header)
         cell.fill = header_fill
@@ -1446,16 +1446,23 @@ async def export_excel(
     
     # Data
     for row_idx, service in enumerate(services, 2):
+        importe = service.get("importe", 0)
+        importe_espera = service.get("importe_espera", 0)
+        importe_total = service.get("importe_total", importe + importe_espera)
+        
         ws.cell(row=row_idx, column=1, value=service["fecha"])
         ws.cell(row=row_idx, column=2, value=service["hora"])
         ws.cell(row=row_idx, column=3, value=service["taxista_nombre"])
         ws.cell(row=row_idx, column=4, value=service["origen"])
         ws.cell(row=row_idx, column=5, value=service["destino"])
-        ws.cell(row=row_idx, column=6, value=service["importe"])
-        ws.cell(row=row_idx, column=7, value=service.get("importe_espera", 0))
-        ws.cell(row=row_idx, column=8, value=service["kilometros"])
-        ws.cell(row=row_idx, column=9, value=service["tipo"])
-        ws.cell(row=row_idx, column=10, value=service.get("empresa_nombre", ""))
+        ws.cell(row=row_idx, column=6, value=importe)
+        ws.cell(row=row_idx, column=7, value=importe_espera)
+        ws.cell(row=row_idx, column=8, value=importe_total)
+        ws.cell(row=row_idx, column=9, value=service["kilometros"])
+        ws.cell(row=row_idx, column=10, value=service["tipo"])
+        ws.cell(row=row_idx, column=11, value=service.get("empresa_nombre", ""))
+        ws.cell(row=row_idx, column=12, value="Sí" if service.get("cobrado", False) else "No")
+        ws.cell(row=row_idx, column=13, value="Sí" if service.get("facturar", False) else "No")
     
     # Auto-adjust column widths
     for col in ws.columns:
