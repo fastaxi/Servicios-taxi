@@ -145,14 +145,15 @@ class Token(BaseModel):
 
 class CompanyBase(BaseModel):
     nombre: str
-    cif: str
-    direccion: str
+    cif: Optional[str] = ""
+    direccion: Optional[str] = ""
     codigo_postal: Optional[str] = ""
-    localidad: str
-    provincia: str
+    localidad: Optional[str] = ""
+    provincia: Optional[str] = ""
     telefono: Optional[str] = ""
     email: Optional[str] = ""
     numero_cliente: Optional[str] = None
+    contacto: Optional[str] = ""
     fecha_alta: Optional[str] = None  # formato dd/mm/yyyy
     notas: Optional[str] = ""
 
