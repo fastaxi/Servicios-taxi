@@ -1376,20 +1376,27 @@ async def export_csv(
     
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Kilómetros", "Tipo", "Empresa"])
+    writer.writerow(["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Importe Total (€)", "Kilómetros", "Tipo", "Empresa", "Cobrado", "Facturar"])
     
     for service in services:
+        importe = service.get("importe", 0)
+        importe_espera = service.get("importe_espera", 0)
+        importe_total = service.get("importe_total", importe + importe_espera)
+        
         writer.writerow([
             service["fecha"],
             service["hora"],
             service["taxista_nombre"],
             service["origen"],
             service["destino"],
-            service["importe"],
-            service.get("importe_espera", 0),
+            importe,
+            importe_espera,
+            importe_total,
             service["kilometros"],
             service["tipo"],
-            service.get("empresa_nombre", "")
+            service.get("empresa_nombre", ""),
+            "Sí" if service.get("cobrado", False) else "No",
+            "Sí" if service.get("facturar", False) else "No"
         ])
     
     output.seek(0)
