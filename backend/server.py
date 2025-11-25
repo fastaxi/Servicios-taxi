@@ -1003,22 +1003,26 @@ async def export_turnos_excel(
     
     turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
     
-    # Usar helper function para optimizar queries
-    turnos_con_totales = await get_turnos_with_servicios(turnos)
+    # Usar helper function para optimizar queries e incluir servicios detallados
+    turnos_con_totales = await get_turnos_with_servicios(turnos, include_servicios_detail=True)
     
     wb = Workbook()
     ws = wb.active
-    ws.title = "Turnos"
+    ws.title = "Turnos Detallados"
     
     # Header styling
     header_fill = PatternFill(start_color="0066CC", end_color="0066CC", fill_type="solid")
     header_font = Font(color="FFFFFF", bold=True)
+    turno_fill = PatternFill(start_color="FFD966", end_color="FFD966", fill_type="solid")
+    servicio_fill = PatternFill(start_color="E7E6E6", end_color="E7E6E6", fill_type="solid")
     
     headers = [
-        "Taxista", "Vehículo", "Fecha Inicio", "Hora Inicio", "KM Inicio",
+        "Tipo", "Taxista", "Vehículo", "Fecha Inicio", "Hora Inicio", "KM Inicio",
         "Fecha Fin", "Hora Fin", "KM Fin", "Total KM",
-        "Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
-        "Cerrado", "Liquidado"
+        "N° Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
+        "Cerrado", "Liquidado",
+        "Servicio #", "Fecha Serv.", "Hora Serv.", "Origen", "Destino", "Tipo Serv.", 
+        "Empresa", "Importe", "Imp. Espera", "Total Serv.", "KM Serv."
     ]
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=header)
@@ -1027,22 +1031,64 @@ async def export_turnos_excel(
         cell.alignment = Alignment(horizontal="center")
     
     # Data
-    for row_idx, turno in enumerate(turnos_con_totales, 2):
-        ws.cell(row=row_idx, column=1, value=turno["taxista_nombre"])
-        ws.cell(row=row_idx, column=2, value=turno["vehiculo_matricula"])
-        ws.cell(row=row_idx, column=3, value=turno["fecha_inicio"])
-        ws.cell(row=row_idx, column=4, value=turno["hora_inicio"])
-        ws.cell(row=row_idx, column=5, value=turno["km_inicio"])
-        ws.cell(row=row_idx, column=6, value=turno.get("fecha_fin", ""))
-        ws.cell(row=row_idx, column=7, value=turno.get("hora_fin", ""))
-        ws.cell(row=row_idx, column=8, value=turno.get("km_fin", ""))
-        ws.cell(row=row_idx, column=9, value=turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0)
-        ws.cell(row=row_idx, column=10, value=turno["cantidad_servicios"])
-        ws.cell(row=row_idx, column=11, value=turno["total_clientes"])
-        ws.cell(row=row_idx, column=12, value=turno["total_particulares"])
-        ws.cell(row=row_idx, column=13, value=turno["total_clientes"] + turno["total_particulares"])
-        ws.cell(row=row_idx, column=14, value="Sí" if turno.get("cerrado") else "No")
-        ws.cell(row=row_idx, column=15, value="Sí" if turno.get("liquidado") else "No")
+    current_row = 2
+    for turno in turnos_con_totales:
+        total_km_turno = turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0
+        total_importe = turno["total_clientes"] + turno["total_particulares"]
+        
+        # Fila resumen del turno (con fondo amarillo)
+        ws.cell(row=current_row, column=1, value="TURNO")
+        ws.cell(row=current_row, column=2, value=turno["taxista_nombre"])
+        ws.cell(row=current_row, column=3, value=turno["vehiculo_matricula"])
+        ws.cell(row=current_row, column=4, value=turno["fecha_inicio"])
+        ws.cell(row=current_row, column=5, value=turno["hora_inicio"])
+        ws.cell(row=current_row, column=6, value=turno["km_inicio"])
+        ws.cell(row=current_row, column=7, value=turno.get("fecha_fin", ""))
+        ws.cell(row=current_row, column=8, value=turno.get("hora_fin", ""))
+        ws.cell(row=current_row, column=9, value=turno.get("km_fin", ""))
+        ws.cell(row=current_row, column=10, value=total_km_turno)
+        ws.cell(row=current_row, column=11, value=turno["cantidad_servicios"])
+        ws.cell(row=current_row, column=12, value=round(turno["total_clientes"], 2))
+        ws.cell(row=current_row, column=13, value=round(turno["total_particulares"], 2))
+        ws.cell(row=current_row, column=14, value=round(total_importe, 2))
+        ws.cell(row=current_row, column=15, value="Sí" if turno.get("cerrado") else "No")
+        ws.cell(row=current_row, column=16, value="Sí" if turno.get("liquidado") else "No")
+        
+        # Aplicar fondo amarillo a la fila del turno
+        for col in range(1, 27):
+            ws.cell(row=current_row, column=col).fill = turno_fill
+        
+        current_row += 1
+        
+        # Filas de servicios del turno (con fondo gris claro)
+        servicios = turno.get("servicios", [])
+        for idx, servicio in enumerate(servicios, 1):
+            importe = servicio.get("importe", 0)
+            importe_espera = servicio.get("importe_espera", 0)
+            importe_total = servicio.get("importe_total", importe + importe_espera)
+            empresa_nombre = servicio.get("empresa_nombre", "")
+            
+            ws.cell(row=current_row, column=1, value="SERVICIO")
+            ws.cell(row=current_row, column=17, value=idx)
+            ws.cell(row=current_row, column=18, value=servicio.get("fecha", ""))
+            ws.cell(row=current_row, column=19, value=servicio.get("hora", ""))
+            ws.cell(row=current_row, column=20, value=servicio.get("origen", ""))
+            ws.cell(row=current_row, column=21, value=servicio.get("destino", ""))
+            ws.cell(row=current_row, column=22, value=servicio.get("tipo", ""))
+            ws.cell(row=current_row, column=23, value=empresa_nombre if servicio.get("tipo") == "empresa" else "")
+            ws.cell(row=current_row, column=24, value=round(importe, 2))
+            ws.cell(row=current_row, column=25, value=round(importe_espera, 2))
+            ws.cell(row=current_row, column=26, value=round(importe_total, 2))
+            ws.cell(row=current_row, column=27, value=servicio.get("kilometros", 0))
+            
+            # Aplicar fondo gris claro a la fila del servicio
+            for col in range(1, 28):
+                ws.cell(row=current_row, column=col).fill = servicio_fill
+            
+            current_row += 1
+        
+        # Fila vacía para separar turnos
+        current_row += 1
     
     # Auto-adjust column widths
     for col in ws.columns:
@@ -1054,7 +1100,7 @@ async def export_turnos_excel(
                     max_length = len(cell.value)
             except:
                 pass
-        adjusted_width = (max_length + 2)
+        adjusted_width = min((max_length + 2), 50)  # Máximo 50 caracteres de ancho
         ws.column_dimensions[column].width = adjusted_width
     
     output = io.BytesIO()
@@ -1064,7 +1110,7 @@ async def export_turnos_excel(
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=turnos.xlsx"}
+        headers={"Content-Disposition": "attachment; filename=turnos_detallado.xlsx"}
     )
 
 @api_router.get("/turnos/export/pdf")
