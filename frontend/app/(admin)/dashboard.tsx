@@ -250,28 +250,26 @@ export default function DashboardScreen() {
       }
 
       // En móvil, usar FileSystem y Sharing
-      try {
-        const response = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'arraybuffer',
-        });
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'arraybuffer',
+      });
 
-        const uint8Array = new Uint8Array(response.data);
-        let binaryString = '';
-        for (let i = 0; i < uint8Array.length; i++) {
-          binaryString += String.fromCharCode(uint8Array[i]);
-        }
-        const base64 = base64Encode(binaryString);
-        
-        const fileUri = `${FileSystem.documentDirectory}servicios.${format === 'excel' ? 'xlsx' : format}`;
-        await FileSystem.writeAsStringAsync(fileUri, base64, {
-          encoding: 'base64',
-        });
+      const uint8Array = new Uint8Array(response.data);
+      let binaryString = '';
+      for (let i = 0; i < uint8Array.length; i++) {
+        binaryString += String.fromCharCode(uint8Array[i]);
+      }
+      const base64 = base64Encode(binaryString);
+      
+      const fileUri = `${FileSystem.documentDirectory}servicios.${format === 'excel' ? 'xlsx' : format}`;
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: 'base64',
+      });
 
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(fileUri);
-          setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
-        }
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
       }
     } catch (error) {
       console.error('Error exporting:', error);
