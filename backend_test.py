@@ -40,41 +40,50 @@ class TaxiTestSuite:
             "services": []
         }
         
-    def log(self, message, level="INFO"):
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {level}: {message}")
+    def log_test(self, test_name: str, passed: bool, details: str = "", response_data: Any = None):
+        """Log test result"""
+        status = "✅ PASS" if passed else "❌ FAIL"
+        result = {
+            "test": test_name,
+            "status": status,
+            "passed": passed,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        if response_data and not passed:
+            result["response_data"] = str(response_data)[:500]  # Limit response data
         
-    def test_request(self, method, endpoint, data=None, headers=None, expected_status=200, test_name=""):
-        """Make HTTP request and validate response"""
+        self.test_results.append(result)
+        print(f"{status}: {test_name}")
+        if details:
+            print(f"    Details: {details}")
+        if not passed and response_data:
+            print(f"    Response: {str(response_data)[:200]}...")
+        print()
+
+    def make_request(self, method: str, endpoint: str, data: dict = None, token: str = None, params: dict = None) -> tuple:
+        """Make HTTP request with error handling"""
         url = f"{API_BASE}{endpoint}"
+        headers = {"Content-Type": "application/json"}
+        
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         
         try:
             if method.upper() == "GET":
-                response = requests.get(url, headers=headers, params=data)
+                response = requests.get(url, headers=headers, params=params, timeout=30)
             elif method.upper() == "POST":
-                response = requests.post(url, json=data, headers=headers)
+                response = requests.post(url, headers=headers, json=data, timeout=30)
             elif method.upper() == "PUT":
-                response = requests.put(url, json=data, headers=headers)
+                response = requests.put(url, headers=headers, json=data, timeout=30)
             elif method.upper() == "DELETE":
-                response = requests.delete(url, headers=headers)
+                response = requests.delete(url, headers=headers, timeout=30)
             else:
-                raise ValueError(f"Unsupported method: {method}")
-                
-            if response.status_code == expected_status:
-                self.passed_tests += 1
-                self.log(f"✅ {test_name} - Status: {response.status_code}")
-                return response
-            else:
-                self.failed_tests += 1
-                self.log(f"❌ {test_name} - Expected: {expected_status}, Got: {response.status_code}", "ERROR")
-                if response.text:
-                    self.log(f"Response: {response.text[:200]}", "ERROR")
-                return response
-                
-        except Exception as e:
-            self.failed_tests += 1
-            self.log(f"❌ {test_name} - Exception: {str(e)}", "ERROR")
-            return None
+                return False, f"Unsupported method: {method}"
+            
+            return True, response
+        except requests.exceptions.RequestException as e:
+            return False, f"Request failed: {str(e)}"
     
     def setup_authentication(self):
         """Setup admin and taxista authentication"""
