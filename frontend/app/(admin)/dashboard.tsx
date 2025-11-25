@@ -664,4 +664,57 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'center',
   },
+  // Table styles for desktop
+  tableContainer: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    margin: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#0066CC',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  tableHeaderText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    alignItems: 'center',
+  },
+  tableCell: {
+    fontSize: 13,
+    color: '#333',
+  },
+  totalBold: {
+    fontWeight: '700',
+    color: '#0066CC',
+  },
+  tableActionButton: {
+    margin: 0,
+  },
+  // Column widths
+  colFecha: { width: 90 },
+  colHora: { width: 60 },
+  colTaxista: { width: 120, paddingRight: 8 },
+  colOrigen: { width: 130, paddingRight: 8 },
+  colDestino: { width: 130, paddingRight: 8 },
+  colKm: { width: 50, textAlign: 'right' },
+  colImporte: { width: 70, textAlign: 'right' },
+  colEspera: { width: 70, textAlign: 'right' },
+  colTotal: { width: 80, textAlign: 'right' },
+  colTipo: { width: 110, paddingRight: 8 },
+  colAcciones: { width: 60, alignItems: 'center', justifyContent: 'center' },
 });
