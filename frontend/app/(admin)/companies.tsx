@@ -17,6 +17,7 @@ import { API_URL } from '../../config/api';
 interface Company {
   id: string;
   nombre: string;
+  cif?: string;
   numero_cliente: string;
   contacto?: string;
   telefono?: string;
