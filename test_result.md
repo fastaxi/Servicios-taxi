@@ -607,11 +607,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "TESTING FINAL - ELIMINACIÓN DE TURNOS COMPLETADO"
-    - "Eliminación en cascada verificada y funcionando"
-    - "Sistema 100% operativo para producción"
+    - "Mejora exportación de turnos - incluir servicios detallados"
+    - "Modificar endpoints CSV/Excel/PDF de turnos"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
