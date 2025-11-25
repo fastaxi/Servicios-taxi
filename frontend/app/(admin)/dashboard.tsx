@@ -211,7 +211,14 @@ export default function DashboardScreen() {
       const url = `${API_URL}/services/export/${format}${queryString ? '?' + queryString : ''}`;
 
       // En web, descargar directamente usando fetch y blob
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      if (Platform.OS === 'web') {
+        // Esperar a que window esté disponible si estamos en SSR
+        if (typeof window === 'undefined') {
+          setSnackbar({ visible: true, message: 'Por favor, espera un momento e intenta de nuevo' });
+          setExportMenuVisible(false);
+          return;
+        }
+
         try {
           const response = await axios.get(url, {
             headers: { Authorization: `Bearer ${token}` },
@@ -236,10 +243,14 @@ export default function DashboardScreen() {
           setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
         } catch (err) {
           console.error('Web export error:', err);
-          throw err;
+          setSnackbar({ visible: true, message: 'Error al descargar el archivo' });
         }
-      } else {
-        // En móvil, usar FileSystem y Sharing
+        setExportMenuVisible(false);
+        return;
+      }
+
+      // En móvil, usar FileSystem y Sharing
+      try {
         const response = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` },
           responseType: 'arraybuffer',
