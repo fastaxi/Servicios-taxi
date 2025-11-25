@@ -149,10 +149,55 @@ export default function CompaniesScreen() {
     );
   };
 
+  const renderTableHeader = () => (
+    <View style={styles.tableHeader}>
+      <Text style={[styles.tableHeaderText, styles.colNombre]}>Nombre</Text>
+      <Text style={[styles.tableHeaderText, styles.colCIF]}>CIF/NIF</Text>
+      <Text style={[styles.tableHeaderText, styles.colCliente]}>Nº Cliente</Text>
+      <Text style={[styles.tableHeaderText, styles.colContacto]}>Contacto</Text>
+      <Text style={[styles.tableHeaderText, styles.colTelefono]}>Teléfono</Text>
+      <Text style={[styles.tableHeaderText, styles.colEmail]}>Email</Text>
+      <Text style={[styles.tableHeaderText, styles.colAcciones]}>Acciones</Text>
+    </View>
+  );
+
+  const renderTableRow = (company: Company) => (
+    <View key={company.id} style={styles.tableRow}>
+      <Text style={[styles.tableCell, styles.colNombre]} numberOfLines={1}>{company.nombre}</Text>
+      <Text style={[styles.tableCell, styles.colCIF]} numberOfLines={1}>{company.cif || '-'}</Text>
+      <Text style={[styles.tableCell, styles.colCliente]}>{company.numero_cliente}</Text>
+      <Text style={[styles.tableCell, styles.colContacto]} numberOfLines={1}>{company.contacto || '-'}</Text>
+      <Text style={[styles.tableCell, styles.colTelefono]}>{company.telefono || '-'}</Text>
+      <Text style={[styles.tableCell, styles.colEmail]} numberOfLines={1}>{company.email || '-'}</Text>
+      <View style={[styles.tableCell, styles.colAcciones]}>
+        <IconButton
+          icon="pencil"
+          size={18}
+          onPress={() => openModal(company)}
+          iconColor="#0066CC"
+          style={styles.tableActionButton}
+        />
+        <IconButton
+          icon="delete"
+          size={18}
+          onPress={() => handleDelete(company)}
+          iconColor="#D32F2F"
+          style={styles.tableActionButton}
+        />
+      </View>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {companies.map((company) => (
+      {isDesktop ? (
+        <ScrollView style={styles.tableContainer}>
+          {renderTableHeader()}
+          {companies.map(renderTableRow)}
+        </ScrollView>
+      ) : (
+        <ScrollView>
+          {companies.map((company) => (
           <Card key={company.id} style={styles.card}>
             <Card.Title
               title={company.nombre}
