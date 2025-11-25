@@ -115,7 +115,7 @@ export default function LoginScreen() {
 
           {__DEV__ && (
             <Text variant="bodySmall" style={styles.debugText}>
-              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxistas-asturias.preview.emergentagent.com'}
+              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxitineo.preview.emergentagent.com'}
             </Text>
           )}
 

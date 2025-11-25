@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 # Configuration
-BASE_URL = "https://taxistas-asturias.preview.emergentagent.com/api"
+BASE_URL = "https://taxitineo.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 
 class TaxiBackendTester:

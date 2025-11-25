@@ -43,12 +43,12 @@ Contraseña: taxista123
 
 ### Vista Web (Preview)
 ```
-https://taxistas-asturias.preview.emergentagent.com
+https://taxitineo.preview.emergentagent.com
 ```
 
 ### API Backend
 ```
-https://taxistas-asturias.preview.emergentagent.com/api
+https://taxitineo.preview.emergentagent.com/api
 ```
 
 ## 📱 Cómo Usar en Dispositivo Móvil Real
