@@ -163,6 +163,7 @@ export default function CompaniesScreen() {
               )}
             />
             <Card.Content>
+              {company.cif && <Text>CIF/NIF: {company.cif}</Text>}
               {company.contacto && <Text>Contacto: {company.contacto}</Text>}
               {company.telefono && <Text>Teléfono: {company.telefono}</Text>}
               {company.email && <Text>Email: {company.email}</Text>}
