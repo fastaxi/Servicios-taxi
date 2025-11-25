@@ -903,20 +903,29 @@ async def export_turnos_csv(
     
     turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
     
-    # Usar helper function para optimizar queries
-    turnos_con_totales = await get_turnos_with_servicios(turnos)
+    # Usar helper function para optimizar queries e incluir servicios detallados
+    turnos_con_totales = await get_turnos_with_servicios(turnos, include_servicios_detail=True)
     
     output = io.StringIO()
     writer = csv.writer(output)
+    
+    # Header principal de turnos
     writer.writerow([
-        "Taxista", "Vehículo", "Fecha Inicio", "Hora Inicio", "KM Inicio",
+        "Tipo", "Taxista", "Vehículo", "Fecha Inicio", "Hora Inicio", "KM Inicio",
         "Fecha Fin", "Hora Fin", "KM Fin", "Total KM",
-        "Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
-        "Cerrado", "Liquidado"
+        "N° Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
+        "Cerrado", "Liquidado",
+        "# SERVICIO: Fecha", "Hora", "Origen", "Destino", "Tipo", "Empresa", 
+        "Importe", "Importe Espera", "Total", "KM"
     ])
     
     for turno in turnos_con_totales:
+        total_km_turno = turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0
+        total_importe = turno["total_clientes"] + turno["total_particulares"]
+        
+        # Fila resumen del turno
         writer.writerow([
+            "TURNO",
             turno["taxista_nombre"],
             turno["vehiculo_matricula"],
             turno["fecha_inicio"],
@@ -925,20 +934,47 @@ async def export_turnos_csv(
             turno.get("fecha_fin", ""),
             turno.get("hora_fin", ""),
             turno.get("km_fin", ""),
-            turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0,
+            total_km_turno,
             turno["cantidad_servicios"],
-            turno["total_clientes"],
-            turno["total_particulares"],
-            turno["total_clientes"] + turno["total_particulares"],
+            f"{turno['total_clientes']:.2f}",
+            f"{turno['total_particulares']:.2f}",
+            f"{total_importe:.2f}",
             "Sí" if turno.get("cerrado") else "No",
-            "Sí" if turno.get("liquidado") else "No"
+            "Sí" if turno.get("liquidado") else "No",
+            "", "", "", "", "", "", "", "", "", ""
         ])
+        
+        # Filas de servicios del turno
+        servicios = turno.get("servicios", [])
+        for idx, servicio in enumerate(servicios, 1):
+            importe = servicio.get("importe", 0)
+            importe_espera = servicio.get("importe_espera", 0)
+            importe_total = servicio.get("importe_total", importe + importe_espera)
+            empresa_nombre = servicio.get("empresa_nombre", "")
+            
+            writer.writerow([
+                "SERVICIO",
+                "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+                f"#{idx}: {servicio.get('fecha', '')}",
+                servicio.get("hora", ""),
+                servicio.get("origen", ""),
+                servicio.get("destino", ""),
+                servicio.get("tipo", ""),
+                empresa_nombre if servicio.get("tipo") == "empresa" else "",
+                f"{importe:.2f}",
+                f"{importe_espera:.2f}",
+                f"{importe_total:.2f}",
+                servicio.get("kilometros", 0)
+            ])
+        
+        # Fila vacía para separar turnos
+        writer.writerow([])
     
     output.seek(0)
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=turnos.csv"}
+        headers={"Content-Disposition": "attachment; filename=turnos_detallado.csv"}
     )
 
 @api_router.get("/turnos/export/excel")
