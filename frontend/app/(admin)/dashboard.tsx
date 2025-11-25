@@ -210,11 +210,23 @@ export default function DashboardScreen() {
       const queryString = queryParams.toString();
       const url = `${API_URL}/services/export/${format}${queryString ? '?' + queryString : ''}`;
 
-      // En web, abrir en nueva pestaña para descargar
+      // En web, descargar directamente usando fetch y blob
       if (Platform.OS === 'web') {
-        const fullUrl = `${url}${queryString ? '&' : '?'}token=${token}`;
-        window.open(fullUrl, '_blank');
-        setSnackbar({ visible: true, message: `Descargando archivo ${format.toUpperCase()}...` });
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        });
+
+        const blob = new Blob([response.data]);
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `servicios.${format === 'excel' ? 'xlsx' : format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+        
+        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
       } else {
         // En móvil, usar FileSystem y Sharing
         const response = await axios.get(url, {
