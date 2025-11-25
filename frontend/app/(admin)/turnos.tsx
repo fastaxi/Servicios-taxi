@@ -417,23 +417,34 @@ export default function AdminTurnosScreen() {
       if (filtroEstado === 'liquidados') params.liquidado = true;
       
       // En web, descargar directamente usando fetch y blob
-      if (Platform.OS === 'web') {
-        const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params,
-          responseType: 'blob',
-        });
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        try {
+          const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params,
+            responseType: 'blob',
+          });
 
-        const blob = new Blob([response.data]);
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = `turnos.${format === 'excel' ? 'xlsx' : format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(link.href);
-        
-        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
+          const blob = response.data;
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `turnos.${format === 'excel' ? 'xlsx' : format}`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          
+          // Cleanup
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+          }, 100);
+          
+          setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
+        } catch (err) {
+          console.error('Web export error:', err);
+          throw err;
+        }
       } else {
         // En móvil, usar FileSystem y Sharing
         const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
