@@ -501,22 +501,41 @@ export default function DashboardScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={filteredServices}
-        renderItem={renderService}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text variant="bodyLarge" style={styles.emptyText}>
-              No hay servicios con los filtros seleccionados
-            </Text>
-          </View>
-        }
-      />
+      {isDesktop ? (
+        <ScrollView style={styles.tableContainer}>
+          {renderTableHeader()}
+          <FlatList
+            data={filteredServices}
+            renderItem={renderTableRow}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text variant="bodyLarge" style={styles.emptyText}>
+                  No hay servicios con los filtros seleccionados
+                </Text>
+              </View>
+            }
+          />
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={filteredServices}
+          renderItem={renderService}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0066CC']} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text variant="bodyLarge" style={styles.emptyText}>
+                No hay servicios con los filtros seleccionados
+              </Text>
+            </View>
+          }
+        />
+      )}
 
       <Snackbar
         visible={snackbar.visible}
