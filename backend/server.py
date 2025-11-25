@@ -620,10 +620,14 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     )
 
 # HELPER FUNCTION: Batch fetch servicios para turnos (optimiza N+1 queries)
-async def get_turnos_with_servicios(turnos: list) -> list:
+async def get_turnos_with_servicios(turnos: list, include_servicios_detail: bool = False) -> list:
     """
     Optimización: Trae todos los servicios de múltiples turnos en 1 query
     en vez de hacer 1 query por cada turno (N+1 problem)
+    
+    Args:
+        turnos: Lista de turnos
+        include_servicios_detail: Si True, incluye la lista completa de servicios en cada turno
     """
     if not turnos:
         return []
@@ -652,14 +656,20 @@ async def get_turnos_with_servicios(turnos: list) -> list:
         total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
         total_km = sum(s.get("kilometros", 0) for s in servicios)
         
-        result.append({
+        turno_data = {
             **turno,
             "turno_id": turno_id,
             "total_clientes": total_clientes,
             "total_particulares": total_particulares,
             "total_km": total_km,
             "cantidad_servicios": len(servicios)
-        })
+        }
+        
+        # Si se solicita, incluir el detalle completo de servicios
+        if include_servicios_detail:
+            turno_data["servicios"] = servicios
+        
+        result.append(turno_data)
     
     return result
 
