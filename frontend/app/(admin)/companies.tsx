@@ -31,6 +31,8 @@ export default function CompaniesScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= 1024;
 
   // Form states
   const [nombre, setNombre] = useState('');
