@@ -296,6 +296,48 @@ export default function DashboardScreen() {
     </Card>
   );
 
+  const renderTableHeader = () => (
+    <View style={styles.tableHeader}>
+      <Text style={[styles.tableHeaderText, styles.colFecha]}>Fecha</Text>
+      <Text style={[styles.tableHeaderText, styles.colHora]}>Hora</Text>
+      <Text style={[styles.tableHeaderText, styles.colTaxista]}>Taxista</Text>
+      <Text style={[styles.tableHeaderText, styles.colOrigen]}>Origen</Text>
+      <Text style={[styles.tableHeaderText, styles.colDestino]}>Destino</Text>
+      <Text style={[styles.tableHeaderText, styles.colKm]}>KM</Text>
+      <Text style={[styles.tableHeaderText, styles.colImporte]}>Importe</Text>
+      <Text style={[styles.tableHeaderText, styles.colEspera]}>Espera</Text>
+      <Text style={[styles.tableHeaderText, styles.colTotal]}>Total</Text>
+      <Text style={[styles.tableHeaderText, styles.colTipo]}>Tipo</Text>
+      <Text style={[styles.tableHeaderText, styles.colAcciones]}>Acciones</Text>
+    </View>
+  );
+
+  const renderTableRow = ({ item }: { item: Service }) => (
+    <View style={styles.tableRow}>
+      <Text style={[styles.tableCell, styles.colFecha]}>{item.fecha}</Text>
+      <Text style={[styles.tableCell, styles.colHora]}>{item.hora}</Text>
+      <Text style={[styles.tableCell, styles.colTaxista]} numberOfLines={1}>{item.taxista_nombre}</Text>
+      <Text style={[styles.tableCell, styles.colOrigen]} numberOfLines={1}>{item.origen}</Text>
+      <Text style={[styles.tableCell, styles.colDestino]} numberOfLines={1}>{item.destino}</Text>
+      <Text style={[styles.tableCell, styles.colKm]}>{item.kilometros}</Text>
+      <Text style={[styles.tableCell, styles.colImporte]}>{formatEuro(item.importe)}</Text>
+      <Text style={[styles.tableCell, styles.colEspera]}>{formatEuro(item.importe_espera || 0)}</Text>
+      <Text style={[styles.tableCell, styles.colTotal, styles.totalBold]}>{formatEuro(item.importe_total || item.importe)}</Text>
+      <Text style={[styles.tableCell, styles.colTipo]} numberOfLines={1}>
+        {item.tipo === 'empresa' ? item.empresa_nombre : 'Particular'}
+      </Text>
+      <View style={[styles.tableCell, styles.colAcciones]}>
+        <IconButton
+          icon="pencil"
+          size={18}
+          onPress={() => router.push(`/(admin)/edit-service?id=${item.id}`)}
+          iconColor="#0066CC"
+          style={styles.tableActionButton}
+        />
+      </View>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <ScrollView horizontal style={styles.statsContainer}>
