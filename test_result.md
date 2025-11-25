@@ -818,6 +818,27 @@ agent_communication:
       El proyecto está 100% funcional y listo para despliegue en producción. 
       Todas las funcionalidades solicitadas están implementadas y operativas.
   
+  - agent: "main"
+    message: |
+      🎯 NUEVA FUNCIONALIDAD: EXPORTACIÓN DE TURNOS CON SERVICIOS DETALLADOS
+      
+      **OBJETIVO:**
+      Mejorar las exportaciones de turnos (CSV, Excel, PDF) para incluir la lista detallada de
+      todos los servicios individuales realizados en cada turno.
+      
+      **IMPLEMENTACIÓN PLANIFICADA:**
+      1. Modificar función `get_turnos_with_servicios()` para devolver también los servicios
+      2. Actualizar `/turnos/export/csv` para incluir servicios como sub-filas
+      3. Actualizar `/turnos/export/excel` para incluir servicios en filas adicionales
+      4. Actualizar `/turnos/export/pdf` para incluir tabla de servicios por turno
+      
+      **CAMBIOS EN BACKEND:**
+      - server.py: Endpoints de exportación de turnos
+      
+      **NOTA:** Solo cambios en backend, NO requiere rebuild de APK
+      
+      Esperando testing backend con deep_testing_backend_v2
+  
   - agent: "testing"
     message: |
       🎯 TESTING FINAL ELIMINACIÓN DE TURNOS - 100% ÉXITO COMPLETO (26/26 tests)
