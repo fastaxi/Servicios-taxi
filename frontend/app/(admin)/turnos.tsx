@@ -416,28 +416,48 @@ export default function AdminTurnosScreen() {
       if (filtroEstado === 'cerrados') params.cerrado = true;
       if (filtroEstado === 'liquidados') params.liquidado = true;
       
-      const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params,
-        responseType: 'arraybuffer',
-      });
-      
-      // Convertir arraybuffer a base64
-      const uint8Array = new Uint8Array(response.data);
-      let binaryString = '';
-      for (let i = 0; i < uint8Array.length; i++) {
-        binaryString += String.fromCharCode(uint8Array[i]);
-      }
-      const base64 = base64Encode(binaryString);
-      
-      const fileUri = `${FileSystem.documentDirectory}turnos.${format === 'excel' ? 'xlsx' : format}`;
-      await FileSystem.writeAsStringAsync(fileUri, base64, {
-        encoding: 'base64',
-      });
+      // En web, descargar directamente usando fetch y blob
+      if (Platform.OS === 'web') {
+        const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+          responseType: 'blob',
+        });
 
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri);
-        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
+        const blob = new Blob([response.data]);
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `turnos.${format === 'excel' ? 'xlsx' : format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+        
+        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
+      } else {
+        // En móvil, usar FileSystem y Sharing
+        const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+          responseType: 'arraybuffer',
+        });
+        
+        const uint8Array = new Uint8Array(response.data);
+        let binaryString = '';
+        for (let i = 0; i < uint8Array.length; i++) {
+          binaryString += String.fromCharCode(uint8Array[i]);
+        }
+        const base64 = base64Encode(binaryString);
+        
+        const fileUri = `${FileSystem.documentDirectory}turnos.${format === 'excel' ? 'xlsx' : format}`;
+        await FileSystem.writeAsStringAsync(fileUri, base64, {
+          encoding: 'base64',
+        });
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri);
+          setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
+        }
       }
       setExportMenuVisible(false);
     } catch (error) {
