@@ -372,4 +372,49 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
   },
+  // Table styles for desktop
+  tableContainer: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    margin: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#0066CC',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  tableHeaderText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    alignItems: 'center',
+  },
+  tableCell: {
+    fontSize: 13,
+    color: '#333',
+  },
+  tableActionButton: {
+    margin: 0,
+  },
+  // Column widths
+  colNombre: { width: 200, paddingRight: 8 },
+  colCIF: { width: 120, paddingRight: 8 },
+  colCliente: { width: 100 },
+  colContacto: { width: 150, paddingRight: 8 },
+  colTelefono: { width: 120 },
+  colEmail: { width: 180, paddingRight: 8 },
+  colAcciones: { width: 100, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
 });
