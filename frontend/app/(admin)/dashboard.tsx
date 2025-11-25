@@ -498,9 +498,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     elevation: 2,
   },
+  statCardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   statValue: {
     fontWeight: 'bold',
     color: '#0066CC',
+    textAlign: 'center',
+  },
+  statLabel: {
+    textAlign: 'center',
+    marginTop: 4,
   },
   amountText: {
     color: '#4CAF50',
