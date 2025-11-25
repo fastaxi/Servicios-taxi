@@ -863,24 +863,62 @@ agent_communication:
   
   - agent: "main"
     message: |
-      🎯 NUEVA FUNCIONALIDAD: EXPORTACIÓN DE TURNOS CON SERVICIOS DETALLADOS
+      🎯 TESTING EXHAUSTIVO POST-BUILD v1.1.0
       
-      **OBJETIVO:**
-      Mejorar las exportaciones de turnos (CSV, Excel, PDF) para incluir la lista detallada de
-      todos los servicios individuales realizados en cada turno.
+      **CONTEXTO:**
+      - Nuevo APK v1.1.0 compilado exitosamente
+      - Backend actualizado con exportaciones detalladas de turnos
+      - Frontend incluye campo CIF, modales mejorados, responsive design
       
-      **IMPLEMENTACIÓN PLANIFICADA:**
-      1. Modificar función `get_turnos_with_servicios()` para devolver también los servicios
-      2. Actualizar `/turnos/export/csv` para incluir servicios como sub-filas
-      3. Actualizar `/turnos/export/excel` para incluir servicios en filas adicionales
-      4. Actualizar `/turnos/export/pdf` para incluir tabla de servicios por turno
+      **OBJETIVO DEL TESTING:**
+      Validación completa de todas las funcionalidades críticas del sistema
+      para asegurar que no hay regresiones ni fallos ocultos.
       
-      **CAMBIOS EN BACKEND:**
-      - server.py: Endpoints de exportación de turnos
+      **SCOPE COMPLETO:**
       
-      **NOTA:** Solo cambios en backend, NO requiere rebuild de APK
+      1. AUTENTICACIÓN Y SEGURIDAD
+         - Login admin/taxista con credenciales correctas e incorrectas
+         - Validación de tokens JWT
+         - Control de acceso por roles
       
-      Esperando testing backend con deep_testing_backend_v2
+      2. CRUD COMPLETO
+         - Usuarios (taxistas)
+         - Empresas/Clientes (con campo CIF)
+         - Vehículos
+         - Servicios
+         - Turnos
+      
+      3. EXPORTACIONES
+         - Servicios: CSV, Excel, PDF
+         - Turnos: CSV, Excel, PDF (con servicios detallados)
+         - Validar filtros en todas las exportaciones
+      
+      4. FLUJO COMPLETO DE TURNOS
+         - Crear turno
+         - Registrar múltiples servicios
+         - Finalizar turno
+         - Validar cálculos de totales
+         - Marcar como liquidado (admin)
+         - Eliminar turno (con cascada)
+      
+      5. VALIDACIONES Y EDGE CASES
+         - Campos únicos (numero_cliente, matrícula)
+         - Turno activo único por taxista
+         - Servicios requieren turno activo
+         - Límites de resultados
+      
+      6. OPTIMIZACIONES
+         - Batch queries funcionando
+         - Índices activos
+         - Proyecciones correctas
+      
+      **CRITERIO DE ÉXITO:**
+      ✅ Todas las funcionalidades core operativas
+      ✅ Sin regresiones
+      ✅ Validaciones de negocio funcionando
+      ✅ Rendimiento óptimo
+      
+      Por favor ejecutar el testing más exhaustivo posible.
   
   - agent: "testing"
     message: |
