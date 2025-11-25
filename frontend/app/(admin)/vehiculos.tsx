@@ -267,8 +267,9 @@ export default function VehiculosScreen() {
               </Card.Content>
             </Card>
           ))
-        )}
-      </ScrollView>
+          )}
+        </ScrollView>
+      )}
 
       <FAB
         icon="plus"
