@@ -208,6 +208,14 @@ export default function CompaniesScreen() {
                 style={styles.input}
               />
               <TextInput
+                label="CIF/NIF"
+                value={cif}
+                onChangeText={setCif}
+                mode="outlined"
+                autoCapitalize="characters"
+                style={styles.input}
+              />
+              <TextInput
                 label="Número de Cliente *"
                 value={numeroCliente}
                 onChangeText={setNumeroCliente}
