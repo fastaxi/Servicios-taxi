@@ -218,7 +218,8 @@ export default function CompaniesScreen() {
             </Card.Content>
           </Card>
         ))}
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <FAB
         style={styles.fab}
