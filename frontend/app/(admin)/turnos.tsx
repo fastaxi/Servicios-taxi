@@ -457,30 +457,27 @@ export default function AdminTurnosScreen() {
       }
 
       // En móvil, usar FileSystem y Sharing
-      try {
-        // En móvil, usar FileSystem y Sharing
-        const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params,
-          responseType: 'arraybuffer',
-        });
-        
-        const uint8Array = new Uint8Array(response.data);
-        let binaryString = '';
-        for (let i = 0; i < uint8Array.length; i++) {
-          binaryString += String.fromCharCode(uint8Array[i]);
-        }
-        const base64 = base64Encode(binaryString);
-        
-        const fileUri = `${FileSystem.documentDirectory}turnos.${format === 'excel' ? 'xlsx' : format}`;
-        await FileSystem.writeAsStringAsync(fileUri, base64, {
-          encoding: 'base64',
-        });
+      const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params,
+        responseType: 'arraybuffer',
+      });
+      
+      const uint8Array = new Uint8Array(response.data);
+      let binaryString = '';
+      for (let i = 0; i < uint8Array.length; i++) {
+        binaryString += String.fromCharCode(uint8Array[i]);
+      }
+      const base64 = base64Encode(binaryString);
+      
+      const fileUri = `${FileSystem.documentDirectory}turnos.${format === 'excel' ? 'xlsx' : format}`;
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: 'base64',
+      });
 
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(fileUri);
-          setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
-        }
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
       }
       setExportMenuVisible(false);
     } catch (error) {
