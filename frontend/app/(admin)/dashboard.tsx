@@ -296,29 +296,29 @@ export default function DashboardScreen() {
     <View style={styles.container}>
       <ScrollView horizontal style={styles.statsContainer}>
         <Card style={styles.statCard}>
-          <Card.Content>
+          <Card.Content style={styles.statCardContent}>
             <Text variant="titleLarge" style={styles.statValue}>
               {filteredServices.length}
             </Text>
-            <Text variant="bodyMedium">Servicios</Text>
+            <Text variant="bodyMedium" style={styles.statLabel}>Servicios</Text>
           </Card.Content>
         </Card>
 
         <Card style={styles.statCard}>
-          <Card.Content>
+          <Card.Content style={styles.statCardContent}>
             <Text variant="titleLarge" style={[styles.statValue, styles.amountText]}>
               {getTotalImporte()}
             </Text>
-            <Text variant="bodyMedium">Total Importe</Text>
+            <Text variant="bodyMedium" style={styles.statLabel}>Total Importe</Text>
           </Card.Content>
         </Card>
 
         <Card style={styles.statCard}>
-          <Card.Content>
+          <Card.Content style={styles.statCardContent}>
             <Text variant="titleLarge" style={styles.statValue}>
               {getTotalKilometros()}
             </Text>
-            <Text variant="bodyMedium">Total KM</Text>
+            <Text variant="bodyMedium" style={styles.statLabel}>Total KM</Text>
           </Card.Content>
         </Card>
       </ScrollView>
