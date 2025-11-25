@@ -85,26 +85,100 @@ class TaxiTestSuite:
         except requests.exceptions.RequestException as e:
             return False, f"Request failed: {str(e)}"
     
-    def setup_authentication(self):
-        """Setup admin and taxista authentication"""
-        self.log("=== SETUP: Authentication ===")
+    # ==========================================
+    # PARTE 1: AUTENTICACIÓN Y SEGURIDAD
+    # ==========================================
+    
+    def test_admin_login_success(self):
+        """Test admin login with correct credentials"""
+        success, response = self.make_request("POST", "/auth/login", ADMIN_CREDENTIALS)
         
-        # Admin login
-        admin_response = self.test_request(
-            "POST", "/auth/login",
-            data={"username": "admin", "password": "admin123"},
-            test_name="Admin Login"
-        )
-        
-        if admin_response and admin_response.status_code == 200:
-            admin_data = admin_response.json()
-            self.admin_token = admin_data["access_token"]
-            self.log(f"Admin token obtained: {self.admin_token[:20]}...")
-        else:
-            self.log("Failed to get admin token", "ERROR")
+        if not success:
+            self.log_test("Admin Login (Success)", False, f"Request failed: {response}")
             return False
             
-        return True
+        if response.status_code == 200:
+            data = response.json()
+            if "access_token" in data and "user" in data:
+                self.admin_token = data["access_token"]
+                self.log_test("Admin Login (Success)", True, f"Token received, user: {data['user']['username']}")
+                return True
+            else:
+                self.log_test("Admin Login (Success)", False, "Missing token or user in response", data)
+                return False
+        else:
+            self.log_test("Admin Login (Success)", False, f"Status: {response.status_code}", response.text)
+            return False
+
+    def test_login_invalid_credentials(self):
+        """Test login with invalid credentials"""
+        invalid_creds = {"username": "invalid", "password": "wrong"}
+        success, response = self.make_request("POST", "/auth/login", invalid_creds)
+        
+        if not success:
+            self.log_test("Login Invalid Credentials", False, f"Request failed: {response}")
+            return False
+            
+        if response.status_code == 401:
+            self.log_test("Login Invalid Credentials", True, "Correctly rejected invalid credentials")
+            return True
+        else:
+            self.log_test("Login Invalid Credentials", False, f"Expected 401, got {response.status_code}", response.text)
+            return False
+
+    def test_auth_me_valid_token(self):
+        """Test /auth/me with valid token"""
+        if not self.admin_token:
+            self.log_test("Auth Me (Valid Token)", False, "No admin token available")
+            return False
+            
+        success, response = self.make_request("GET", "/auth/me", token=self.admin_token)
+        
+        if not success:
+            self.log_test("Auth Me (Valid Token)", False, f"Request failed: {response}")
+            return False
+            
+        if response.status_code == 200:
+            data = response.json()
+            if "username" in data and data["username"] == "admin":
+                self.log_test("Auth Me (Valid Token)", True, f"User info retrieved: {data['username']}")
+                return True
+            else:
+                self.log_test("Auth Me (Valid Token)", False, "Invalid user data", data)
+                return False
+        else:
+            self.log_test("Auth Me (Valid Token)", False, f"Status: {response.status_code}", response.text)
+            return False
+
+    def test_auth_me_invalid_token(self):
+        """Test /auth/me with invalid token"""
+        success, response = self.make_request("GET", "/auth/me", token="invalid_token")
+        
+        if not success:
+            self.log_test("Auth Me (Invalid Token)", False, f"Request failed: {response}")
+            return False
+            
+        if response.status_code == 401:
+            self.log_test("Auth Me (Invalid Token)", True, "Correctly rejected invalid token")
+            return True
+        else:
+            self.log_test("Auth Me (Invalid Token)", False, f"Expected 401, got {response.status_code}", response.text)
+            return False
+
+    def test_auth_me_no_token(self):
+        """Test /auth/me without token"""
+        success, response = self.make_request("GET", "/auth/me")
+        
+        if not success:
+            self.log_test("Auth Me (No Token)", False, f"Request failed: {response}")
+            return False
+            
+        if response.status_code == 403:  # FastAPI HTTPBearer returns 403 for missing token
+            self.log_test("Auth Me (No Token)", True, "Correctly rejected missing token")
+            return True
+        else:
+            self.log_test("Auth Me (No Token)", False, f"Expected 403, got {response.status_code}", response.text)
+            return False
     
     def setup_test_data(self):
         """Create test taxista, vehicle, turno and services"""
