@@ -355,6 +355,42 @@ backend:
         agent: "testing"
         comment: "✅ TESTING COMPLETO: GET /turnos/export/pdf funcionando perfectamente. Probados 2 casos: sin filtros (2870 bytes), liquidado=true (2363 bytes). Content-Type correcto (PDF), headers válidos, archivos PDF generados con tabla formateada y estados abreviados."
 
+  - task: "Exportación turnos con servicios detallados CSV"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modificado endpoint GET /turnos/export/csv para incluir lista completa de servicios de cada turno. Formato: una fila resumen del turno + sub-filas con cada servicio individual (fecha, hora, origen, destino, tipo, importe, km). Archivo ahora se llama 'turnos_detallado.csv'."
+
+  - task: "Exportación turnos con servicios detallados Excel"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modificado endpoint GET /turnos/export/excel para incluir lista completa de servicios de cada turno. Formato con colores: fondo amarillo para fila de turno, fondo gris claro para filas de servicios. Incluye 27 columnas con todos los detalles. Archivo ahora se llama 'turnos_detallado.xlsx'."
+
+  - task: "Exportación turnos con servicios detallados PDF"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modificado endpoint GET /turnos/export/pdf para incluir secciones por turno con información detallada y tabla de todos los servicios. Formato estructurado: resumen de turno en tabla + tabla de servicios con 8 columnas. Archivo ahora se llama 'turnos_detallado.pdf'."
+
   - task: "Estadísticas de turnos"
     implemented: true
     working: true
