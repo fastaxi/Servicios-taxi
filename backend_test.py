@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """
-TESTING FINAL - ELIMINACIÓN DE TURNOS Y VERIFICACIÓN COMPLETA
-Comprehensive backend testing for taxi management system
-Focus: DELETE /turnos cascade deletion and full system verification
+Testing script for Taxi Tineo backend API - Focus on detailed turnos exports
+Testing the new functionality that includes individual services in turno exports
 """
 
 import requests
 import json
-import time
+import sys
 from datetime import datetime
-from typing import Dict, List, Optional
+import os
 
-# Configuration
-BASE_URL = "https://taxitineo.preview.emergentagent.com/api"
-ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
+# Get backend URL from environment
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxitineo.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
 
 class TaxiBackendTester:
     def __init__(self):
