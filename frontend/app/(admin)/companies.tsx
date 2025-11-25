@@ -61,6 +61,7 @@ export default function CompaniesScreen() {
     if (company) {
       setEditingCompany(company);
       setNombre(company.nombre);
+      setCif(company.cif || '');
       setNumeroCliente(company.numero_cliente);
       setContacto(company.contacto || '');
       setTelefono(company.telefono || '');
@@ -75,6 +76,7 @@ export default function CompaniesScreen() {
   const resetForm = () => {
     setEditingCompany(null);
     setNombre('');
+    setCif('');
     setNumeroCliente('');
     setContacto('');
     setTelefono('');
