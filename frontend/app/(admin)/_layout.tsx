@@ -1,8 +1,28 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { View, StyleSheet, useWindowDimensions, Platform } from 'react-native';
+import { Tabs, Slot } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AdminSidebar from '../../components/AdminSidebar';
 
 export default function AdminLayout() {
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= 1024;
+
+  // Si es desktop (web + pantalla grande), mostrar sidebar + contenido
+  if (isDesktop) {
+    return (
+      <View style={styles.desktopContainer}>
+        <View style={styles.sidebar}>
+          <AdminSidebar />
+        </View>
+        <View style={styles.content}>
+          <Slot />
+        </View>
+      </View>
+    );
+  }
+
+  // Si es móvil o tablet, mostrar tabs como antes
   return (
     <Tabs
       screenOptions={{
@@ -88,3 +108,18 @@ export default function AdminLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  desktopContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  sidebar: {
+    width: 280,
+    height: '100%',
+  },
+  content: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+});
