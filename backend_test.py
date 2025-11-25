@@ -26,16 +26,19 @@ BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxitineo.preview.emer
 API_BASE = f"{BACKEND_URL}/api"
 ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 
-class TaxiTineoTester:
+class TaxiTestSuite:
     def __init__(self):
         self.admin_token = None
         self.taxista_token = None
-        self.test_taxista_id = None
-        self.test_vehiculo_id = None
-        self.test_turno_id = None
-        self.test_service_ids = []
-        self.passed_tests = 0
-        self.failed_tests = 0
+        self.taxista_id = None
+        self.test_results = []
+        self.created_resources = {
+            "users": [],
+            "companies": [],
+            "vehiculos": [],
+            "turnos": [],
+            "services": []
+        }
         
     def log(self, message, level="INFO"):
         timestamp = datetime.now().strftime("%H:%M:%S")
