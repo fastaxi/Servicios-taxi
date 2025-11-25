@@ -454,4 +454,72 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
   },
+  // Table styles for desktop
+  tableContainer: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    margin: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#0066CC',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  tableHeaderText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    alignItems: 'center',
+  },
+  tableCell: {
+    fontSize: 13,
+    color: '#333',
+  },
+  tableActionButton: {
+    margin: 0,
+  },
+  matriculaText: {
+    fontWeight: '600',
+    color: '#0066CC',
+  },
+  centerText: {
+    textAlign: 'center',
+  },
+  rightText: {
+    textAlign: 'right',
+  },
+  statusChip: {
+    height: 24,
+  },
+  statusChipActive: {
+    backgroundColor: '#E8F5E9',
+  },
+  statusChipInactive: {
+    backgroundColor: '#FFEBEE',
+  },
+  statusChipText: {
+    fontSize: 11,
+  },
+  // Column widths
+  colMatricula: { width: 120, paddingRight: 8 },
+  colMarca: { width: 120, paddingRight: 8 },
+  colModelo: { width: 140, paddingRight: 8 },
+  colPlazas: { width: 70 },
+  colKmIniciales: { width: 110, paddingRight: 8 },
+  colFechaCompra: { width: 110 },
+  colEstado: { width: 100 },
+  colAcciones: { width: 100, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
 });
