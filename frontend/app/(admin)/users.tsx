@@ -54,6 +54,8 @@ export default function UsersScreen() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   const [vehiculoMenuVisible, setVehiculoMenuVisible] = useState(false);
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= 1024;
   
   const [formData, setFormData] = useState({
     username: '',
