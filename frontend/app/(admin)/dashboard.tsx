@@ -72,6 +72,8 @@ export default function DashboardScreen() {
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   const { token } = useAuth();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= 1024;
 
   useEffect(() => {
     loadData();
