@@ -1,18 +1,30 @@
 #!/usr/bin/env python3
 """
-Testing script for Taxi Tineo backend API - Focus on detailed turnos exports
-Testing the new functionality that includes individual services in turno exports
+🎯 TESTING EXHAUSTIVO POST-BUILD v1.1.0 - VALIDACIÓN COMPLETA DEL SISTEMA
+Backend API Testing Suite for Taxi Management System
+
+This comprehensive test suite validates all backend functionalities:
+- Authentication and Security
+- CRUD Operations (Users, Companies, Vehicles, Services, Turnos)
+- Complete Turno Workflow with Services
+- Export Functionalities (CSV, Excel, PDF)
+- Statistics and Reports
+- Offline Synchronization
+- Configuration Management
 """
 
 import requests
 import json
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
 import os
 
 # Get backend URL from environment
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxitineo.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
+ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 
 class TaxiTineoTester:
     def __init__(self):
