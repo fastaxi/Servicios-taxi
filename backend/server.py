@@ -1256,7 +1256,7 @@ async def export_turnos_pdf(
     return StreamingResponse(
         output,
         media_type="application/pdf",
-        headers={"Content-Disposition": "attachment; filename=turnos.pdf"}
+        headers={"Content-Disposition": "attachment; filename=turnos_detallado.pdf"}
     )
 
 # Estadísticas de turnos
