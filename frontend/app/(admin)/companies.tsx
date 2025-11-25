@@ -92,6 +92,7 @@ export default function CompaniesScreen() {
 
     const companyData = {
       nombre,
+      cif: cif || undefined,
       numero_cliente: numeroCliente,
       contacto: contacto || undefined,
       telefono: telefono || undefined,
