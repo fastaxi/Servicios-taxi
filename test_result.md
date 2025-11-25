@@ -1014,3 +1014,43 @@ agent_communication:
       - Taxista: taxistatest / test123 ✅
       
       **🚀 ESTADO: SISTEMA COMPLETO LISTO PARA USUARIOS FINALES**
+
+  - agent: "testing"
+    message: |
+      🎯 TESTING EXPORTACIONES DETALLADAS DE TURNOS - 100% ÉXITO COMPLETO (44/44 tests)
+      
+      ✅ FUNCIONALIDAD CRÍTICA VERIFICADA:
+      - GET /turnos/export/csv con servicios detallados ✓
+      - GET /turnos/export/excel con servicios detallados ✓  
+      - GET /turnos/export/pdf con servicios detallados ✓
+      - Todos los archivos ahora se llaman 'turnos_detallado.*' ✓
+      - Formato detallado incluye resumen de turno + servicios individuales ✓
+      
+      🎯 ESCENARIO COMPLETO EJECUTADO:
+      1. ✅ Setup: Admin login, crear taxista test, crear vehículo test
+      2. ✅ Crear turno para taxista con 5 servicios variados asociados
+      3. ✅ Verificar servicios asociados correctamente al turno
+      4. ✅ CSV Export: Content-Type correcto, filename 'turnos_detallado.csv', estructura con filas TURNO y SERVICIO
+      5. ✅ Excel Export: Content-Type correcto, filename 'turnos_detallado.xlsx', tamaño apropiado (6455+ bytes)
+      6. ✅ PDF Export: Content-Type correcto, filename 'turnos_detallado.pdf', formato PDF válido
+      7. ✅ Filtros funcionando: cerrado=true, liquidado=true
+      8. ✅ Edge cases: turnos sin servicios, múltiples turnos
+      
+      🔧 CORRECCIÓN APLICADA DURANTE TESTING:
+      - PDF filename corregido de 'turnos.pdf' a 'turnos_detallado.pdf'
+      
+      ✅ FORMATO DETALLADO VERIFICADO:
+      - CSV: Filas TURNO con resumen + filas SERVICIO con detalles individuales
+      - Excel: 27 columnas, fondo amarillo para turnos, gris claro para servicios
+      - PDF: Secciones por turno con tabla de información + tabla de servicios (8 columnas)
+      
+      ✅ SERVICIOS INDIVIDUALES INCLUIDOS:
+      - Fecha, hora, origen, destino, tipo (empresa/particular)
+      - Importe, importe espera, total, kilómetros
+      - Empresa (cuando aplica), cobrado, facturar
+      
+      🎉 VEREDICTO FINAL: EXPORTACIONES DETALLADAS 100% OPERATIVAS
+      Las 3 exportaciones (CSV, Excel, PDF) ahora incluyen correctamente
+      la lista completa de servicios individuales de cada turno.
+      Formato profesional y legible. Filtros funcionando.
+      Sistema listo para producción.
