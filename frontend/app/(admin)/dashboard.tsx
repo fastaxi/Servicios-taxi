@@ -211,22 +211,33 @@ export default function DashboardScreen() {
       const url = `${API_URL}/services/export/${format}${queryString ? '?' + queryString : ''}`;
 
       // En web, descargar directamente usando fetch y blob
-      if (Platform.OS === 'web') {
-        const response = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob',
-        });
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        try {
+          const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${token}` },
+            responseType: 'blob',
+          });
 
-        const blob = new Blob([response.data]);
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = `servicios.${format === 'excel' ? 'xlsx' : format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(link.href);
-        
-        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
+          const blob = response.data;
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `servicios.${format === 'excel' ? 'xlsx' : format}`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          
+          // Cleanup
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+          }, 100);
+          
+          setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
+        } catch (err) {
+          console.error('Web export error:', err);
+          throw err;
+        }
       } else {
         // En móvil, usar FileSystem y Sharing
         const response = await axios.get(url, {
