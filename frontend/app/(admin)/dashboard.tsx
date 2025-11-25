@@ -5,6 +5,8 @@ import {
   FlatList,
   RefreshControl,
   ScrollView,
+  useWindowDimensions,
+  Platform,
 } from 'react-native';
 import {
   Text,
