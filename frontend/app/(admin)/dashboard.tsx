@@ -210,27 +210,34 @@ export default function DashboardScreen() {
       const queryString = queryParams.toString();
       const url = `${API_URL}/services/export/${format}${queryString ? '?' + queryString : ''}`;
 
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'arraybuffer',
-      });
+      // En web, abrir en nueva pestaña para descargar
+      if (Platform.OS === 'web') {
+        const fullUrl = `${url}${queryString ? '&' : '?'}token=${token}`;
+        window.open(fullUrl, '_blank');
+        setSnackbar({ visible: true, message: `Descargando archivo ${format.toUpperCase()}...` });
+      } else {
+        // En móvil, usar FileSystem y Sharing
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'arraybuffer',
+        });
 
-      // Convertir arraybuffer a base64
-      const uint8Array = new Uint8Array(response.data);
-      let binaryString = '';
-      for (let i = 0; i < uint8Array.length; i++) {
-        binaryString += String.fromCharCode(uint8Array[i]);
-      }
-      const base64 = base64Encode(binaryString);
-      
-      const fileUri = `${FileSystem.documentDirectory}servicios.${format === 'excel' ? 'xlsx' : format}`;
-      await FileSystem.writeAsStringAsync(fileUri, base64, {
-        encoding: 'base64',
-      });
+        const uint8Array = new Uint8Array(response.data);
+        let binaryString = '';
+        for (let i = 0; i < uint8Array.length; i++) {
+          binaryString += String.fromCharCode(uint8Array[i]);
+        }
+        const base64 = base64Encode(binaryString);
+        
+        const fileUri = `${FileSystem.documentDirectory}servicios.${format === 'excel' ? 'xlsx' : format}`;
+        await FileSystem.writeAsStringAsync(fileUri, base64, {
+          encoding: 'base64',
+        });
 
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri);
-        setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri);
+          setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} exportado correctamente` });
+        }
       }
     } catch (error) {
       console.error('Error exporting:', error);
