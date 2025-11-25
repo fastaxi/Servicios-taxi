@@ -147,17 +147,82 @@ export default function VehiculosScreen() {
     );
   };
 
+  const renderTableHeader = () => (
+    <View style={styles.tableHeader}>
+      <Text style={[styles.tableHeaderText, styles.colMatricula]}>Matrícula</Text>
+      <Text style={[styles.tableHeaderText, styles.colMarca]}>Marca</Text>
+      <Text style={[styles.tableHeaderText, styles.colModelo]}>Modelo</Text>
+      <Text style={[styles.tableHeaderText, styles.colPlazas]}>Plazas</Text>
+      <Text style={[styles.tableHeaderText, styles.colKmIniciales]}>KM Iniciales</Text>
+      <Text style={[styles.tableHeaderText, styles.colFechaCompra]}>Fecha Compra</Text>
+      <Text style={[styles.tableHeaderText, styles.colEstado]}>Estado</Text>
+      <Text style={[styles.tableHeaderText, styles.colAcciones]}>Acciones</Text>
+    </View>
+  );
+
+  const renderTableRow = (vehiculo: Vehiculo) => (
+    <View key={vehiculo.id} style={styles.tableRow}>
+      <Text style={[styles.tableCell, styles.colMatricula, styles.matriculaText]}>{vehiculo.matricula}</Text>
+      <Text style={[styles.tableCell, styles.colMarca]}>{vehiculo.marca}</Text>
+      <Text style={[styles.tableCell, styles.colModelo]}>{vehiculo.modelo}</Text>
+      <Text style={[styles.tableCell, styles.colPlazas, styles.centerText]}>{vehiculo.plazas}</Text>
+      <Text style={[styles.tableCell, styles.colKmIniciales, styles.rightText]}>{vehiculo.km_iniciales}</Text>
+      <Text style={[styles.tableCell, styles.colFechaCompra]}>{vehiculo.fecha_compra}</Text>
+      <View style={[styles.tableCell, styles.colEstado]}>
+        <Chip
+          mode="flat"
+          style={[styles.statusChip, vehiculo.activo ? styles.statusChipActive : styles.statusChipInactive]}
+          textStyle={styles.statusChipText}
+        >
+          {vehiculo.activo ? 'Activo' : 'Inactivo'}
+        </Chip>
+      </View>
+      <View style={[styles.tableCell, styles.colAcciones]}>
+        <IconButton
+          icon="pencil"
+          size={18}
+          onPress={() => openModal(vehiculo)}
+          iconColor="#0066CC"
+          style={styles.tableActionButton}
+        />
+        <IconButton
+          icon="delete"
+          size={18}
+          onPress={() => handleDelete(vehiculo)}
+          iconColor="#D32F2F"
+          style={styles.tableActionButton}
+        />
+      </View>
+    </View>
+  );
+
   return (
     <>
-      <ScrollView style={styles.scrollView}>
-        {vehiculos.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text variant="bodyLarge" style={styles.emptyText}>
-              No hay vehículos registrados
-            </Text>
-          </View>
-        ) : (
-          vehiculos.map((vehiculo) => (
+      {isDesktop ? (
+        <ScrollView style={styles.tableContainer}>
+          {vehiculos.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text variant="bodyLarge" style={styles.emptyText}>
+                No hay vehículos registrados
+              </Text>
+            </View>
+          ) : (
+            <>
+              {renderTableHeader()}
+              {vehiculos.map(renderTableRow)}
+            </>
+          )}
+        </ScrollView>
+      ) : (
+        <ScrollView style={styles.scrollView}>
+          {vehiculos.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text variant="bodyLarge" style={styles.emptyText}>
+                No hay vehículos registrados
+              </Text>
+            </View>
+          ) : (
+            vehiculos.map((vehiculo) => (
             <Card key={vehiculo.id} style={styles.card}>
               <Card.Content>
                 <View style={styles.cardHeader}>
