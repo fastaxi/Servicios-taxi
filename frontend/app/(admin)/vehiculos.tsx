@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Modal, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
 import {
   TextInput,
   Button,
