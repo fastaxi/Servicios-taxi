@@ -417,7 +417,14 @@ export default function AdminTurnosScreen() {
       if (filtroEstado === 'liquidados') params.liquidado = true;
       
       // En web, descargar directamente usando fetch y blob
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      if (Platform.OS === 'web') {
+        // Esperar a que window esté disponible si estamos en SSR
+        if (typeof window === 'undefined') {
+          setSnackbar({ visible: true, message: 'Por favor, espera un momento e intenta de nuevo' });
+          setExportMenuVisible(false);
+          return;
+        }
+
         try {
           const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -443,9 +450,14 @@ export default function AdminTurnosScreen() {
           setSnackbar({ visible: true, message: `Archivo ${format.toUpperCase()} descargado correctamente` });
         } catch (err) {
           console.error('Web export error:', err);
-          throw err;
+          setSnackbar({ visible: true, message: 'Error al descargar el archivo' });
         }
-      } else {
+        setExportMenuVisible(false);
+        return;
+      }
+
+      // En móvil, usar FileSystem y Sharing
+      try {
         // En móvil, usar FileSystem y Sharing
         const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
           headers: { Authorization: `Bearer ${token}` },
