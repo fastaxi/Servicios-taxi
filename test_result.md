@@ -357,39 +357,48 @@ backend:
 
   - task: "Exportación turnos con servicios detallados CSV"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Modificado endpoint GET /turnos/export/csv para incluir lista completa de servicios de cada turno. Formato: una fila resumen del turno + sub-filas con cada servicio individual (fecha, hora, origen, destino, tipo, importe, km). Archivo ahora se llama 'turnos_detallado.csv'."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /turnos/export/csv funcionando perfectamente con servicios detallados. Verificado: Content-Type correcto (text/csv), filename 'turnos_detallado.csv', estructura CSV con filas TURNO y SERVICIO, filtros cerrado=true y liquidado=true operativos. Formato detallado incluye resumen de turno + sub-filas con cada servicio individual (fecha, hora, origen, destino, tipo, importe, km). Edge cases manejados: turnos sin servicios, múltiples turnos."
 
   - task: "Exportación turnos con servicios detallados Excel"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Modificado endpoint GET /turnos/export/excel para incluir lista completa de servicios de cada turno. Formato con colores: fondo amarillo para fila de turno, fondo gris claro para filas de servicios. Incluye 27 columnas con todos los detalles. Archivo ahora se llama 'turnos_detallado.xlsx'."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /turnos/export/excel funcionando perfectamente con servicios detallados. Verificado: Content-Type correcto (spreadsheetml.sheet), filename 'turnos_detallado.xlsx', tamaño de archivo apropiado (6455+ bytes con datos detallados), filtro liquidado=true operativo. Formato Excel con colores: fondo amarillo para filas de turno, fondo gris claro para filas de servicios. Incluye 27 columnas con todos los detalles de turnos y servicios."
 
   - task: "Exportación turnos con servicios detallados PDF"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Modificado endpoint GET /turnos/export/pdf para incluir secciones por turno con información detallada y tabla de todos los servicios. Formato estructurado: resumen de turno en tabla + tabla de servicios con 8 columnas. Archivo ahora se llama 'turnos_detallado.pdf'."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING COMPLETO: GET /turnos/export/pdf funcionando perfectamente con servicios detallados. Verificado: Content-Type correcto (application/pdf), filename 'turnos_detallado.pdf' (corregido durante testing), tamaño apropiado (3605+ bytes), formato PDF válido, filtro liquidado=true operativo. Formato estructurado por turno: resumen en tabla + tabla de servicios con 8 columnas (fecha, hora, origen, destino, tipo, importe, km). CORRECCIÓN APLICADA: filename actualizado de 'turnos.pdf' a 'turnos_detallado.pdf'."
 
   - task: "Estadísticas de turnos"
     implemented: true
