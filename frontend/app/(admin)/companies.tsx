@@ -33,6 +33,7 @@ export default function CompaniesScreen() {
 
   // Form states
   const [nombre, setNombre] = useState('');
+  const [cif, setCif] = useState('');
   const [numeroCliente, setNumeroCliente] = useState('');
   const [contacto, setContacto] = useState('');
   const [telefono, setTelefono] = useState('');
