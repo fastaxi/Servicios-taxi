@@ -32,6 +32,8 @@ export default function VehiculosScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   const [editingVehiculo, setEditingVehiculo] = useState<Vehiculo | null>(null);
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= 1024;
 
   // Form states
   const [matricula, setMatricula] = useState('');
