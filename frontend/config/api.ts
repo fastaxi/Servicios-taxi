@@ -1,8 +1,24 @@
+import Constants from 'expo-constants';
+
 /**
  * Configuración centralizada de la API
- * Si EXPO_PUBLIC_BACKEND_URL no está definida, usa la URL de producción por defecto
+ * Usa Constants.expoConfig.extra para builds de producción
+ * y process.env para desarrollo local
  */
-export const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxitineo.preview.emergentagent.com';
+const getBackendUrl = () => {
+  // En builds compilados (APK), la URL viene desde app.json extra
+  const extraUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL;
+  
+  // En desarrollo, viene de process.env
+  const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+  
+  // Fallback a la URL de producción
+  const defaultUrl = 'https://taxitineo.preview.emergentagent.com';
+  
+  return extraUrl || envUrl || defaultUrl;
+};
+
+export const API_BASE_URL = getBackendUrl();
 export const API_URL = `${API_BASE_URL}/api`;
 
 console.log('[API Config] API_BASE_URL:', API_BASE_URL);
