@@ -1,14 +1,18 @@
 [
   {
-    "content": "Analyze EAS authentication and permissions issue preventing build",
+    "content": "Analyze EAS job failure logs and identify root cause",
     "status": "completed"
   },
   {
-    "content": "Identify Expo project and EAS credentials configuration",
+    "content": "Verify EAS app configuration and permissions",
     "status": "completed"
   },
   {
-    "content": "Document root cause and provide fix recommendations",
+    "content": "Check app.json and EAS project settings",
+    "status": "completed"
+  },
+  {
+    "content": "Provide targeted recommendation for fix",
     "status": "in_progress"
   }
 ]
