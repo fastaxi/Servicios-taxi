@@ -77,14 +77,10 @@ if not db_name:
     # En producción, extraer el nombre de la base de datos de la URL si no está especificado
     if 'mongodb+srv://' in mongo_url or 'mongodb://' in mongo_url:
         # Intentar extraer el nombre de la BD de la URL
-        try:
-            from urllib.parse import urlparse
-            parsed = urlparse(mongo_url)
-            if parsed.path and len(parsed.path) > 1:
-                db_name = parsed.path[1:].split('?')[0]
-                print(f"[STARTUP] Database name extracted from URL: {db_name}")
-        except:
-            pass
+        parsed = urlparse(mongo_url)
+        if parsed.path and len(parsed.path) > 1:
+            db_name = parsed.path[1:].split('?')[0]
+            print(f"[STARTUP] Database name extracted from URL: {db_name}")
     
     if not db_name:
         raise ValueError("DB_NAME or MONGODB_DB_NAME must be set in environment variables")
