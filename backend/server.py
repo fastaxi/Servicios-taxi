@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import os
 import logging
 from pathlib import Path
+from urllib.parse import urlparse
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from bson import ObjectId
