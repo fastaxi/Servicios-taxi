@@ -64,7 +64,7 @@ class SimpleCache:
 cache = SimpleCache()
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / '.env', override=False)
 
 # MongoDB connection - Compatible con desarrollo y producción
 mongo_url = os.getenv('MONGO_URL') or os.getenv('MONGODB_URI')
