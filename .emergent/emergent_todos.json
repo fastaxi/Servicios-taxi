@@ -1,18 +1,18 @@
 [
   {
-    "content": "Analyze EAS job failure logs and identify root cause",
+    "content": "Analyze EAS authorization error - app-level permissions issue",
     "status": "completed"
   },
   {
-    "content": "Verify EAS app configuration and permissions",
+    "content": "Check EAS credentials and project ownership",
     "status": "completed"
   },
   {
-    "content": "Check app.json and EAS project settings",
+    "content": "Review app configuration for EAS settings",
     "status": "completed"
   },
   {
-    "content": "Provide targeted recommendation for fix",
+    "content": "Provide targeted fix for permission issue",
     "status": "in_progress"
   }
 ]
