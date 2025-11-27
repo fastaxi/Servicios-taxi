@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import os
 import logging
+import secrets
 from pathlib import Path
 from urllib.parse import urlparse
 from pydantic import BaseModel, Field
