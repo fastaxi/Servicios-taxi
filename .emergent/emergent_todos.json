@@ -1,0 +1,18 @@
+[
+  {
+    "content": "Examine EAS authentication issue - wrong credentials or permission scope for robot user",
+    "status": "completed"
+  },
+  {
+    "content": "Review source pod environment variables for EAS_TOKEN and permissions",
+    "status": "completed"
+  },
+  {
+    "content": "Check app.json EAS project linkage and owner credentials",
+    "status": "in_progress"
+  },
+  {
+    "content": "Document root cause and suggest fixes",
+    "status": "in_progress"
+  }
+]
