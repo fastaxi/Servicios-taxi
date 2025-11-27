@@ -117,9 +117,45 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
+# Configure logging FIRST
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Create the main app
-app = FastAPI()
+app = FastAPI(title="Taxi Tineo API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
+
+# Root health check endpoint for deployment systems
+@app.get("/")
+async def root_health_check():
+    """Health check endpoint for deployment verification"""
+    return {
+        "status": "healthy",
+        "service": "taxi-tineo-api",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+# API health check endpoint
+@app.get("/health")
+async def health_check():
+    """Detailed health check with database connectivity"""
+    try:
+        # Test database connection
+        await db.command("ping")
+        db_status = "connected"
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        db_status = "disconnected"
+    
+    return {
+        "status": "healthy" if db_status == "connected" else "degraded",
+        "database": db_status,
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 # Helper function for ObjectId
 class PyObjectId(ObjectId):
