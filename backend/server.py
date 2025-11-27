@@ -65,19 +65,44 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection - Compatible con desarrollo y producción
-mongo_url = os.getenv('MONGO_URL', os.getenv('MONGODB_URI', 'mongodb://localhost:27017'))
+mongo_url = os.getenv('MONGO_URL') or os.getenv('MONGODB_URI')
 db_name = os.getenv('DB_NAME') or os.getenv('MONGODB_DB_NAME')
 
-# Validar que db_name está configurado
+# Validar configuración de MongoDB
+if not mongo_url:
+    raise ValueError("MONGO_URL or MONGODB_URI must be set in environment variables")
+
 if not db_name:
-    raise ValueError("DB_NAME or MONGODB_DB_NAME must be set in environment variables")
+    # En producción, extraer el nombre de la base de datos de la URL si no está especificado
+    if 'mongodb+srv://' in mongo_url or 'mongodb://' in mongo_url:
+        # Intentar extraer el nombre de la BD de la URL
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(mongo_url)
+            if parsed.path and len(parsed.path) > 1:
+                db_name = parsed.path[1:].split('?')[0]
+                print(f"[STARTUP] Database name extracted from URL: {db_name}")
+        except:
+            pass
+    
+    if not db_name:
+        raise ValueError("DB_NAME or MONGODB_DB_NAME must be set in environment variables")
 
 # Log configuration for debugging
 print(f"[STARTUP] Connecting to MongoDB...")
 print(f"[STARTUP] Database: {db_name}")
+print(f"[STARTUP] MongoDB URL type: {'Atlas' if 'mongodb+srv://' in mongo_url else 'Local'}")
 
 try:
-    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+    # Configuración optimizada para MongoDB Atlas y local
+    client = AsyncIOMotorClient(
+        mongo_url,
+        serverSelectionTimeoutMS=10000,
+        connectTimeoutMS=10000,
+        socketTimeoutMS=10000,
+        maxPoolSize=50,
+        minPoolSize=10
+    )
     db = client[db_name]
     print("[STARTUP] MongoDB connection initialized successfully")
 except Exception as e:
