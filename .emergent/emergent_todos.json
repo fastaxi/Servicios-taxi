@@ -1,18 +1,18 @@
 [
   {
-    "content": "Examine EAS authentication issue - wrong credentials or permission scope for robot user",
+    "content": "Identify EAS authentication issue with Expo project 7492bcf8-48ca-41ba-96e6-920db5fb56eb",
     "status": "completed"
   },
   {
-    "content": "Review source pod environment variables for EAS_TOKEN and permissions",
+    "content": "Verify EAS credentials and permissions in environment/secrets",
     "status": "completed"
   },
   {
-    "content": "Check app.json EAS project linkage and owner credentials",
-    "status": "in_progress"
+    "content": "Check EAS project configuration in source pod or secrets",
+    "status": "completed"
   },
   {
-    "content": "Document root cause and suggest fixes",
+    "content": "Provide diagnosis and fix recommendations",
     "status": "in_progress"
   }
 ]
