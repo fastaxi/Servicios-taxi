@@ -1895,13 +1895,6 @@ async def startup_event():
         await db.config.insert_one(default_config)
         logger.info("Default config created")
 
-# Configure logging BEFORE using it
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
 # Include router
 app.include_router(api_router)
 
