@@ -112,7 +112,6 @@ except Exception as e:
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
     # En desarrollo, generar una clave temporal (NO USAR EN PRODUCCIÓN)
-    import secrets
     SECRET_KEY = secrets.token_hex(32)
     print("[STARTUP WARNING] SECRET_KEY not set, using temporary key for development")
     print("[STARTUP WARNING] Set SECRET_KEY environment variable for production!")
