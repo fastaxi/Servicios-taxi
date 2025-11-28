@@ -1,18 +1,18 @@
 [
   {
-    "content": "Analyze EAS authorization error - app-level permissions issue",
+    "content": "Analyze EAS authentication failure - app ID mismatch or permission issue",
     "status": "completed"
   },
   {
-    "content": "Check EAS credentials and project ownership",
+    "content": "Check EAS project configuration and credentials in source pod",
     "status": "completed"
   },
   {
-    "content": "Review app configuration for EAS settings",
+    "content": "Verify app.json project ID and Expo account permissions",
     "status": "completed"
   },
   {
-    "content": "Provide targeted fix for permission issue",
+    "content": "Provide remediation steps and verification strategy",
     "status": "in_progress"
   }
 ]
