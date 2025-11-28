@@ -1,18 +1,18 @@
 [
   {
-    "content": "Analyze EAS authentication failure - app ID mismatch or permission issue",
+    "content": "Analyze EAS job failure root cause - insufficient permissions for EAS project 7492bcf8-48ca-41ba-96e6-920db5fb56eb",
     "status": "completed"
   },
   {
-    "content": "Check EAS project configuration and credentials in source pod",
-    "status": "completed"
-  },
-  {
-    "content": "Verify app.json project ID and Expo account permissions",
-    "status": "completed"
-  },
-  {
-    "content": "Provide remediation steps and verification strategy",
+    "content": "Verify taxitineo EAS project credentials and permissions",
     "status": "in_progress"
+  },
+  {
+    "content": "Check if talasur-qc app is interfering with taxitineo deployment",
+    "status": "pending"
+  },
+  {
+    "content": "Prepare RCA findings and recommendations",
+    "status": "pending"
   }
 ]
