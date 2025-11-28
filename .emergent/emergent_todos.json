@@ -1,18 +1,14 @@
 [
   {
-    "content": "Analyze EAS job failure root cause - insufficient permissions for EAS project 7492bcf8-48ca-41ba-96e6-920db5fb56eb",
+    "content": "Analyze EAS authorization failure - app entity not authorized",
     "status": "completed"
   },
   {
-    "content": "Verify taxitineo EAS project credentials and permissions",
-    "status": "in_progress"
+    "content": "Verify EAS project credentials and permissions",
+    "status": "completed"
   },
   {
-    "content": "Check if talasur-qc app is interfering with taxitineo deployment",
-    "status": "pending"
-  },
-  {
-    "content": "Prepare RCA findings and recommendations",
-    "status": "pending"
+    "content": "Recommend fix and provide root cause analysis",
+    "status": "completed"
   }
 ]
