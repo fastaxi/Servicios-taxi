@@ -124,29 +124,46 @@ export default function CompaniesScreen() {
     }
   };
 
-  const handleDelete = (company: Company) => {
-    Alert.alert(
-      'Eliminar Empresa',
-      `¿Estás seguro de que deseas eliminar la empresa ${company.nombre}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await axios.delete(`${API_URL}/companies/${company.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              setSnackbar({ visible: true, message: 'Empresa eliminada correctamente' });
-              loadCompanies();
-            } catch (error) {
-              setSnackbar({ visible: true, message: 'Error al eliminar la empresa' });
-            }
+  const handleDelete = async (company: Company) => {
+    // Confirmación compatible con web y móvil
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        `¿Estás seguro de que deseas eliminar la empresa ${company.nombre}?`
+      );
+      if (!confirmed) return;
+    } else {
+      // En móvil usar Alert.alert
+      Alert.alert(
+        'Eliminar Empresa',
+        `¿Estás seguro de que deseas eliminar la empresa ${company.nombre}?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              await performDeleteCompany(company.id);
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+      return;
+    }
+
+    // En web, ejecutar directamente después de la confirmación
+    await performDeleteCompany(company.id);
+  };
+
+  const performDeleteCompany = async (companyId: string) => {
+    try {
+      await axios.delete(`${API_URL}/companies/${companyId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSnackbar({ visible: true, message: 'Empresa eliminada correctamente' });
+      loadCompanies();
+    } catch (error) {
+      setSnackbar({ visible: true, message: 'Error al eliminar la empresa' });
+    }
   };
 
   const renderTableHeader = () => (
