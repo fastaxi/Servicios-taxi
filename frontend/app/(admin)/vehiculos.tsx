@@ -122,29 +122,46 @@ export default function VehiculosScreen() {
     }
   };
 
-  const handleDelete = (vehiculo: Vehiculo) => {
-    Alert.alert(
-      'Eliminar Vehículo',
-      `¿Estás seguro de que deseas eliminar el vehículo ${vehiculo.matricula}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await axios.delete(`${API_URL}/vehiculos/${vehiculo.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              setSnackbar({ visible: true, message: 'Vehículo eliminado correctamente' });
-              loadVehiculos();
-            } catch (error) {
-              setSnackbar({ visible: true, message: 'Error al eliminar el vehículo' });
-            }
+  const handleDelete = async (vehiculo: Vehiculo) => {
+    // Confirmación compatible con web y móvil
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        `¿Estás seguro de que deseas eliminar el vehículo ${vehiculo.matricula}?`
+      );
+      if (!confirmed) return;
+    } else {
+      // En móvil usar Alert.alert
+      Alert.alert(
+        'Eliminar Vehículo',
+        `¿Estás seguro de que deseas eliminar el vehículo ${vehiculo.matricula}?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              await performDelete(vehiculo.id);
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+      return;
+    }
+
+    // En web, ejecutar directamente después de la confirmación
+    await performDelete(vehiculo.id);
+  };
+
+  const performDelete = async (vehiculoId: string) => {
+    try {
+      await axios.delete(`${API_URL}/vehiculos/${vehiculoId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSnackbar({ visible: true, message: 'Vehículo eliminado correctamente' });
+      loadVehiculos();
+    } catch (error) {
+      setSnackbar({ visible: true, message: 'Error al eliminar el vehículo' });
+    }
   };
 
   const renderTableHeader = () => (
