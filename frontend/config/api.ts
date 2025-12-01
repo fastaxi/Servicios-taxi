@@ -12,8 +12,8 @@ const getBackendUrl = () => {
   // En desarrollo, viene de process.env
   const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
   
-  // Fallback a la URL de producción
-  const defaultUrl = 'https://taxitineo.preview.emergentagent.com';
+  // Fallback a la URL de producción permanente
+  const defaultUrl = 'https://taxitineo.emergent.host';
   
   return extraUrl || envUrl || defaultUrl;
 };
