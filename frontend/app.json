@@ -24,7 +24,7 @@
         "backgroundColor": "#0066CC"
       },
       "package": "com.taxitineo.asturias",
-      "versionCode": 3,
+      "versionCode": 4,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
