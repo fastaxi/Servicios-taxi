@@ -1195,3 +1195,50 @@ agent_communication:
       El sistema backend está completamente validado y listo para el despliegue
       del APK v1.1.0 en producción. Todas las funcionalidades solicitadas
       están implementadas, probadas y operativas al 100%.
+  - task: "Multi-tenancy - CRUD Organizations"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implementado sistema multi-tenant completo. Endpoints: POST/GET/PUT/DELETE /api/organizations. Solo superadmin puede gestionar organizaciones. Incluye campos: nombre, slug, cif, direccion, localidad, provincia, telefono, email, web, logo_base64, color_primario, color_secundario, activa. Estadísticas calculadas (total_taxistas, total_vehiculos, total_clientes)."
+
+  - task: "Multi-tenancy - Superadmin Role"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Nuevo rol 'superadmin' implementado. Usuario por defecto creado en startup: superadmin/superadmin123. Puede ver y gestionar todas las organizaciones. Endpoint POST /api/organizations/{org_id}/admin para crear admins de organizaciones."
+
+  - task: "Multi-tenancy - Data Isolation"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Aislamiento de datos implementado en todos los endpoints. Cada organización solo ve sus propios: usuarios, empresas/clientes, vehículos, turnos y servicios. Filtrado automático por organization_id. Superadmin puede ver todo. Probado manualmente con 2 organizaciones: Taxi Tineo y Radio Taxi Madrid - aislamiento verificado."
+
+  - task: "Multi-tenancy - Organization-scoped indexes"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Índices de MongoDB actualizados para multi-tenancy. Nuevos índices en organization_id para: services, turnos, users, vehiculos, companies. Índices compuestos para queries comunes por organización."
