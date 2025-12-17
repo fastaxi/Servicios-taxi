@@ -2176,62 +2176,100 @@ async def startup_event():
     # Create database indexes for performance
     print("[STARTUP] Creating database indexes...")
     try:
-        # Services indexes
+        # Services indexes - Multi-tenant
         await db.services.create_index("turno_id")
         await db.services.create_index("taxista_id")
         await db.services.create_index("fecha")
         await db.services.create_index("tipo")
-        await db.services.create_index([("fecha", 1), ("taxista_id", 1)])  # Compound index
+        await db.services.create_index("organization_id")  # Multi-tenant index
+        await db.services.create_index([("fecha", 1), ("taxista_id", 1)])
+        await db.services.create_index([("organization_id", 1), ("fecha", 1)])  # Multi-tenant compound
         
-        # Turnos indexes
+        # Turnos indexes - Multi-tenant
         await db.turnos.create_index("taxista_id")
         await db.turnos.create_index("cerrado")
         await db.turnos.create_index("liquidado")
         await db.turnos.create_index("fecha_inicio")
-        await db.turnos.create_index([("taxista_id", 1), ("cerrado", 1)])  # Compound index
+        await db.turnos.create_index("organization_id")  # Multi-tenant index
+        await db.turnos.create_index([("taxista_id", 1), ("cerrado", 1)])
+        await db.turnos.create_index([("organization_id", 1), ("cerrado", 1)])  # Multi-tenant compound
         
-        # Users indexes
+        # Users indexes - Multi-tenant
         await db.users.create_index("username", unique=True)
         await db.users.create_index("role")
+        await db.users.create_index("organization_id")  # Multi-tenant index
+        await db.users.create_index([("organization_id", 1), ("role", 1)])  # Multi-tenant compound
         
-        # Vehiculos indexes
+        # Vehiculos indexes - Multi-tenant
         await db.vehiculos.create_index("matricula", unique=True)
+        await db.vehiculos.create_index("organization_id")  # Multi-tenant index
         
-        # Companies indexes
+        # Companies indexes - Multi-tenant
         await db.companies.create_index("numero_cliente", unique=True, sparse=True)
+        await db.companies.create_index("organization_id")  # Multi-tenant index
+        
+        # Organizations indexes (NEW)
+        await db.organizations.create_index("slug", unique=True)
+        await db.organizations.create_index("activa")
         
         print("[STARTUP] Database indexes created successfully")
     except Exception as e:
         print(f"[STARTUP WARNING] Error creating indexes: {e}")
         # No fallar si los índices ya existen
     
-    # Create default admin if not exists
+    # Create default SUPERADMIN if not exists
+    superadmin = await db.users.find_one({"role": "superadmin"})
+    if not superadmin:
+        superadmin_data = {
+            "username": "superadmin",
+            "password": get_password_hash("superadmin123"),
+            "nombre": "Super Administrador TaxiFast",
+            "role": "superadmin",
+            "organization_id": None,  # Superadmin no pertenece a ninguna organización
+            "created_at": datetime.utcnow()
+        }
+        await db.users.insert_one(superadmin_data)
+        logger.info("Default superadmin user created: username=superadmin, password=superadmin123")
+        print("[STARTUP] ⚡ SUPERADMIN created: superadmin / superadmin123")
+    
+    # Migrate existing admin to have organization_id field (backward compatibility)
     admin = await db.users.find_one({"username": "admin"})
+    if admin and "organization_id" not in admin:
+        await db.users.update_one(
+            {"_id": admin["_id"]},
+            {"$set": {"organization_id": None}}
+        )
+        logger.info("Existing admin user updated with organization_id field")
+    
+    # Create default admin if not exists (legacy support)
     if not admin:
         admin_data = {
             "username": "admin",
             "password": get_password_hash("admin123"),
             "nombre": "Administrador",
             "role": "admin",
+            "organization_id": None,  # Legacy admin sin organización
             "created_at": datetime.utcnow()
         }
         await db.users.insert_one(admin_data)
         logger.info("Default admin user created: username=admin, password=admin123")
     
-    # Create default config if not exists
+    # Create default config if not exists (global config / legacy)
     config = await db.config.find_one()
     if not config:
         default_config = {
-            "nombre_radio_taxi": "Taxi Tineo",
-            "telefono": "985 80 15 15",
-            "web": "www.taxitineo.com",
-            "direccion": "Tineo, Asturias",
-            "email": "",
+            "nombre_radio_taxi": "TaxiFast",
+            "telefono": "900 000 000",
+            "web": "www.taxifast.com",
+            "direccion": "España",
+            "email": "info@taxifast.com",
             "logo_base64": None,
             "updated_at": datetime.utcnow()
         }
         await db.config.insert_one(default_config)
         logger.info("Default config created")
+    
+    print("[STARTUP] ✅ TaxiFast Multi-tenant SaaS Platform ready!")
 
 # Include router
 app.include_router(api_router)
