@@ -177,14 +177,69 @@ class PyObjectId(ObjectId):
     def __get_pydantic_json_schema__(cls, field_schema):
         field_schema.update(type="string")
 
-# Models
+# ==========================================
+# ORGANIZATION MODELS (Multi-tenant SaaS)
+# ==========================================
+class OrganizationBase(BaseModel):
+    nombre: str  # Nombre de la empresa de taxis (ej: "Taxi Tineo", "Radio Taxi Madrid")
+    slug: Optional[str] = None  # URL-friendly identifier (auto-generated if not provided)
+    cif: Optional[str] = ""  # CIF/NIF de la empresa
+    direccion: Optional[str] = ""
+    codigo_postal: Optional[str] = ""
+    localidad: Optional[str] = ""
+    provincia: Optional[str] = ""
+    telefono: Optional[str] = ""
+    email: Optional[str] = ""
+    web: Optional[str] = ""
+    logo_base64: Optional[str] = None  # Logo de la empresa en base64
+    color_primario: Optional[str] = "#0066CC"  # Color principal de la marca
+    color_secundario: Optional[str] = "#FFD700"  # Color secundario
+    notas: Optional[str] = ""
+    activa: bool = True  # Si la organización está activa
+
+class OrganizationCreate(OrganizationBase):
+    pass
+
+class OrganizationUpdate(BaseModel):
+    nombre: Optional[str] = None
+    slug: Optional[str] = None
+    cif: Optional[str] = None
+    direccion: Optional[str] = None
+    codigo_postal: Optional[str] = None
+    localidad: Optional[str] = None
+    provincia: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+    web: Optional[str] = None
+    logo_base64: Optional[str] = None
+    color_primario: Optional[str] = None
+    color_secundario: Optional[str] = None
+    notas: Optional[str] = None
+    activa: Optional[bool] = None
+
+class OrganizationResponse(OrganizationBase):
+    id: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    # Estadísticas calculadas
+    total_taxistas: Optional[int] = 0
+    total_vehiculos: Optional[int] = 0
+    total_clientes: Optional[int] = 0
+
+    class Config:
+        from_attributes = True
+
+# ==========================================
+# USER MODELS (Multi-tenant aware)
+# ==========================================
 class UserBase(BaseModel):
     username: str
     nombre: str
-    role: str = "taxista"  # admin or taxista
+    role: str = "taxista"  # superadmin, admin or taxista
     licencia: Optional[str] = None
     vehiculo_id: Optional[str] = None
     vehiculo_matricula: Optional[str] = None  # Para mostrar sin hacer joins
+    organization_id: Optional[str] = None  # ID de la organización (null para superadmin)
 
 class UserCreate(UserBase):
     password: str
@@ -192,6 +247,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: str
     created_at: datetime
+    organization_nombre: Optional[str] = None  # Nombre de la organización para display
 
     class Config:
         from_attributes = True
