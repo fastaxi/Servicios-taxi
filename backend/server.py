@@ -375,7 +375,9 @@ class VehiculoResponse(VehiculoBase):
     class Config:
         from_attributes = True
 
-# Turno models
+# ==========================================
+# TURNO MODELS (Multi-tenant aware)
+# ==========================================
 class TurnoBase(BaseModel):
     taxista_id: str
     taxista_nombre: str
@@ -389,6 +391,7 @@ class TurnoBase(BaseModel):
     km_fin: Optional[int] = None
     cerrado: bool = False
     liquidado: bool = False
+    # organization_id se asigna automáticamente del usuario actual
 
 class TurnoCreate(BaseModel):
     taxista_id: str
@@ -418,6 +421,7 @@ class TurnoFinalizarUpdate(BaseModel):
 class TurnoResponse(TurnoBase):
     id: str
     created_at: datetime
+    organization_id: Optional[str] = None
     # Totales calculados
     total_importe_clientes: Optional[float] = 0
     total_importe_particulares: Optional[float] = 0
