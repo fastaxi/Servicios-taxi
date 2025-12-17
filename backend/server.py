@@ -352,7 +352,9 @@ class ConfigResponse(ConfigBase):
 class ServiceSync(BaseModel):
     services: List[ServiceBase]
 
-# Vehículo models
+# ==========================================
+# VEHICULO MODELS (Multi-tenant aware)
+# ==========================================
 class VehiculoBase(BaseModel):
     matricula: str
     plazas: int
@@ -361,12 +363,14 @@ class VehiculoBase(BaseModel):
     km_iniciales: int
     fecha_compra: str  # formato dd/mm/yyyy
     activo: bool = True
+    # organization_id se asigna automáticamente del usuario actual
 
 class VehiculoCreate(VehiculoBase):
     pass
 
 class VehiculoResponse(VehiculoBase):
     id: str
+    organization_id: Optional[str] = None
 
     class Config:
         from_attributes = True
