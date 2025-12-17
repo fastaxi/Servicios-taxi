@@ -431,7 +431,9 @@ class TurnoResponse(TurnoBase):
     class Config:
         from_attributes = True
 
-# Auth helpers
+# ==========================================
+# AUTH HELPERS (Multi-tenant support)
+# ==========================================
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -444,6 +446,21 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def generate_slug(nombre: str) -> str:
+    """Genera un slug URL-friendly a partir del nombre"""
+    import re
+    # Convertir a minúsculas y reemplazar espacios por guiones
+    slug = nombre.lower().strip()
+    # Reemplazar caracteres especiales españoles
+    replacements = {'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n', 'ü': 'u'}
+    for old, new in replacements.items():
+        slug = slug.replace(old, new)
+    # Solo permitir alfanuméricos y guiones
+    slug = re.sub(r'[^a-z0-9\s-]', '', slug)
+    slug = re.sub(r'[\s_]+', '-', slug)
+    slug = re.sub(r'-+', '-', slug)
+    return slug.strip('-')
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     credentials_exception = HTTPException(
@@ -463,15 +480,56 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     user = await db.users.find_one({"username": username})
     if user is None:
         raise credentials_exception
+    
+    # Verificar que la organización del usuario esté activa (excepto superadmin)
+    if user.get("role") != "superadmin" and user.get("organization_id"):
+        org = await db.organizations.find_one({"_id": ObjectId(user["organization_id"])})
+        if org and not org.get("activa", True):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Tu organización está desactivada. Contacta con el administrador."
+            )
+    
     return user
 
 async def get_current_admin(current_user: dict = Depends(get_current_user)):
-    if current_user.get("role") != "admin":
+    """Permite acceso a admin y superadmin"""
+    if current_user.get("role") not in ["admin", "superadmin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
         )
     return current_user
+
+async def get_current_superadmin(current_user: dict = Depends(get_current_user)):
+    """Solo permite acceso a superadmin"""
+    if current_user.get("role") != "superadmin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super admin permissions required"
+        )
+    return current_user
+
+def get_user_organization_id(user: dict) -> Optional[str]:
+    """Obtiene el organization_id del usuario actual"""
+    return user.get("organization_id")
+
+def is_superadmin(user: dict) -> bool:
+    """Verifica si el usuario es superadmin"""
+    return user.get("role") == "superadmin"
+
+async def get_org_filter(user: dict) -> dict:
+    """
+    Retorna el filtro de organización para queries.
+    Superadmin ve todo, otros usuarios solo ven datos de su organización.
+    """
+    if is_superadmin(user):
+        return {}  # Sin filtro, ve todo
+    
+    org_id = get_user_organization_id(user)
+    if org_id:
+        return {"organization_id": org_id}
+    return {"organization_id": None}  # Datos legacy sin organización
 
 # Auth endpoints
 @api_router.post("/auth/login", response_model=Token)
