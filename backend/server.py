@@ -531,7 +531,9 @@ async def get_org_filter(user: dict) -> dict:
         return {"organization_id": org_id}
     return {"organization_id": None}  # Datos legacy sin organización
 
-# Auth endpoints
+# ==========================================
+# AUTH ENDPOINTS
+# ==========================================
 @api_router.post("/auth/login", response_model=Token)
 async def login(user_login: UserLogin):
     user = await db.users.find_one({"username": user_login.username})
@@ -541,24 +543,228 @@ async def login(user_login: UserLogin):
             detail="Incorrect username or password"
         )
     
+    # Obtener nombre de la organización si existe
+    org_nombre = None
+    if user.get("organization_id"):
+        org = await db.organizations.find_one({"_id": ObjectId(user["organization_id"])})
+        if org:
+            org_nombre = org.get("nombre")
+    
     access_token = create_access_token(data={"sub": user["username"]})
     user_response = UserResponse(
         id=str(user["_id"]),
         username=user["username"],
         nombre=user["nombre"],
         role=user["role"],
+        organization_id=user.get("organization_id"),
+        organization_nombre=org_nombre,
         created_at=user["created_at"]
     )
     return Token(access_token=access_token, token_type="bearer", user=user_response)
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
+    # Obtener nombre de la organización si existe
+    org_nombre = None
+    if current_user.get("organization_id"):
+        org = await db.organizations.find_one({"_id": ObjectId(current_user["organization_id"])})
+        if org:
+            org_nombre = org.get("nombre")
+    
     return UserResponse(
         id=str(current_user["_id"]),
         username=current_user["username"],
         nombre=current_user["nombre"],
         role=current_user["role"],
+        organization_id=current_user.get("organization_id"),
+        organization_nombre=org_nombre,
+        licencia=current_user.get("licencia"),
+        vehiculo_id=current_user.get("vehiculo_id"),
+        vehiculo_matricula=current_user.get("vehiculo_matricula"),
         created_at=current_user["created_at"]
+    )
+
+# ==========================================
+# ORGANIZATION ENDPOINTS (Superadmin only)
+# ==========================================
+@api_router.post("/organizations", response_model=OrganizationResponse)
+async def create_organization(org: OrganizationCreate, current_user: dict = Depends(get_current_superadmin)):
+    """Crear nueva organización (solo superadmin)"""
+    org_dict = org.dict()
+    
+    # Generar slug si no se proporciona
+    if not org_dict.get("slug"):
+        org_dict["slug"] = generate_slug(org_dict["nombre"])
+    
+    # Verificar slug único
+    existing = await db.organizations.find_one({"slug": org_dict["slug"]})
+    if existing:
+        # Agregar número al slug
+        count = await db.organizations.count_documents({"slug": {"$regex": f"^{org_dict['slug']}"}})
+        org_dict["slug"] = f"{org_dict['slug']}-{count + 1}"
+    
+    org_dict["created_at"] = datetime.utcnow()
+    org_dict["updated_at"] = datetime.utcnow()
+    
+    result = await db.organizations.insert_one(org_dict)
+    created_org = await db.organizations.find_one({"_id": result.inserted_id})
+    
+    return OrganizationResponse(
+        id=str(created_org["_id"]),
+        **{k: v for k, v in created_org.items() if k != "_id"},
+        total_taxistas=0,
+        total_vehiculos=0,
+        total_clientes=0
+    )
+
+@api_router.get("/organizations", response_model=List[OrganizationResponse])
+async def get_organizations(
+    current_user: dict = Depends(get_current_superadmin),
+    activa: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo")
+):
+    """Listar todas las organizaciones (solo superadmin)"""
+    query = {}
+    if activa is not None:
+        query["activa"] = activa
+    
+    organizations = await db.organizations.find(query).sort("created_at", -1).to_list(1000)
+    
+    result = []
+    for org in organizations:
+        org_id = str(org["_id"])
+        # Contar estadísticas
+        total_taxistas = await db.users.count_documents({"organization_id": org_id, "role": "taxista"})
+        total_vehiculos = await db.vehiculos.count_documents({"organization_id": org_id})
+        total_clientes = await db.companies.count_documents({"organization_id": org_id})
+        
+        result.append(OrganizationResponse(
+            id=org_id,
+            **{k: v for k, v in org.items() if k != "_id"},
+            total_taxistas=total_taxistas,
+            total_vehiculos=total_vehiculos,
+            total_clientes=total_clientes
+        ))
+    
+    return result
+
+@api_router.get("/organizations/{org_id}", response_model=OrganizationResponse)
+async def get_organization(org_id: str, current_user: dict = Depends(get_current_superadmin)):
+    """Obtener detalle de una organización (solo superadmin)"""
+    org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    # Contar estadísticas
+    total_taxistas = await db.users.count_documents({"organization_id": org_id, "role": "taxista"})
+    total_vehiculos = await db.vehiculos.count_documents({"organization_id": org_id})
+    total_clientes = await db.companies.count_documents({"organization_id": org_id})
+    
+    return OrganizationResponse(
+        id=str(org["_id"]),
+        **{k: v for k, v in org.items() if k != "_id"},
+        total_taxistas=total_taxistas,
+        total_vehiculos=total_vehiculos,
+        total_clientes=total_clientes
+    )
+
+@api_router.put("/organizations/{org_id}", response_model=OrganizationResponse)
+async def update_organization(org_id: str, org_update: OrganizationUpdate, current_user: dict = Depends(get_current_superadmin)):
+    """Actualizar organización (solo superadmin)"""
+    existing = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    update_data = {k: v for k, v in org_update.dict().items() if v is not None}
+    
+    # Si se actualiza el nombre y no el slug, regenerar slug
+    if "nombre" in update_data and "slug" not in update_data:
+        update_data["slug"] = generate_slug(update_data["nombre"])
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    await db.organizations.update_one(
+        {"_id": ObjectId(org_id)},
+        {"$set": update_data}
+    )
+    
+    updated_org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    
+    # Contar estadísticas
+    total_taxistas = await db.users.count_documents({"organization_id": org_id, "role": "taxista"})
+    total_vehiculos = await db.vehiculos.count_documents({"organization_id": org_id})
+    total_clientes = await db.companies.count_documents({"organization_id": org_id})
+    
+    return OrganizationResponse(
+        id=str(updated_org["_id"]),
+        **{k: v for k, v in updated_org.items() if k != "_id"},
+        total_taxistas=total_taxistas,
+        total_vehiculos=total_vehiculos,
+        total_clientes=total_clientes
+    )
+
+@api_router.delete("/organizations/{org_id}")
+async def delete_organization(org_id: str, current_user: dict = Depends(get_current_superadmin)):
+    """Eliminar organización y todos sus datos (solo superadmin)"""
+    org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    # Eliminar todos los datos relacionados
+    deleted_users = await db.users.delete_many({"organization_id": org_id})
+    deleted_companies = await db.companies.delete_many({"organization_id": org_id})
+    deleted_vehiculos = await db.vehiculos.delete_many({"organization_id": org_id})
+    deleted_turnos = await db.turnos.delete_many({"organization_id": org_id})
+    deleted_services = await db.services.delete_many({"organization_id": org_id})
+    
+    # Eliminar la organización
+    await db.organizations.delete_one({"_id": ObjectId(org_id)})
+    
+    return {
+        "message": f"Organización '{org['nombre']}' eliminada correctamente",
+        "deleted": {
+            "users": deleted_users.deleted_count,
+            "companies": deleted_companies.deleted_count,
+            "vehiculos": deleted_vehiculos.deleted_count,
+            "turnos": deleted_turnos.deleted_count,
+            "services": deleted_services.deleted_count
+        }
+    }
+
+# Endpoint para crear admin de organización (superadmin)
+@api_router.post("/organizations/{org_id}/admin", response_model=UserResponse)
+async def create_organization_admin(
+    org_id: str,
+    user: UserCreate,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Crear administrador para una organización (solo superadmin)"""
+    # Verificar que la organización existe
+    org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    # Verificar username único
+    existing_user = await db.users.find_one({"username": user.username})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    user_dict = user.dict()
+    user_dict["password"] = get_password_hash(user_dict["password"])
+    user_dict["role"] = "admin"  # Forzar rol admin
+    user_dict["organization_id"] = org_id
+    user_dict["created_at"] = datetime.utcnow()
+    
+    result = await db.users.insert_one(user_dict)
+    created_user = await db.users.find_one({"_id": result.inserted_id})
+    
+    return UserResponse(
+        id=str(created_user["_id"]),
+        username=created_user["username"],
+        nombre=created_user["nombre"],
+        role=created_user["role"],
+        organization_id=created_user.get("organization_id"),
+        organization_nombre=org.get("nombre"),
+        created_at=created_user["created_at"]
     )
 
 # User endpoints (admin only)
