@@ -1635,7 +1635,7 @@ async def export_turnos_pdf(
     elements = []
     
     styles = getSampleStyleSheet()
-    title = Paragraph("<b>Turnos Detallados - Taxi Tineo</b>", styles['Title'])
+    title = Paragraph("<b>Turnos Detallados - TaxiFast</b>", styles['Title'])
     elements.append(title)
     elements.append(Spacer(1, 0.2*inch))
     
