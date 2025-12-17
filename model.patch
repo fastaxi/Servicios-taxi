@@ -125,7 +125,7 @@ index 3527027..e69de29 100644
 ---------+import os
 ---------+
 ---------+# Get backend URL from environment
----------+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxitineo.preview.emergentagent.com')
+---------+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxi-platform-47.preview.emergentagent.com')
 ---------+API_BASE = f"{BACKEND_URL}/api"
 ---------+
 ---------+def test_invalid_login():
@@ -458,7 +458,7 @@ index 3527027..e69de29 100644
 -----------------+import time
 -----------------+
 -----------------+# Configuration
------------------+BASE_URL = "https://taxitineo.preview.emergentagent.com/api"
+-----------------+BASE_URL = "https://taxi-platform-47.preview.emergentagent.com/api"
 -----------------+ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 -----------------+
 -----------------+class AdditionalTester:

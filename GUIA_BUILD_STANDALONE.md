@@ -123,7 +123,7 @@ Cuando hagas cambios:
 ## 💡 Notas Importantes
 
 ### **Backend URL:**
-- La app usa: `https://taxitineo.preview.emergentagent.com`
+- La app usa: `https://taxi-platform-47.preview.emergentagent.com`
 - Asegúrate de que el backend esté siempre desplegado y funcionando
 
 ### **Conexión a Internet:**

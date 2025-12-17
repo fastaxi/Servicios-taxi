@@ -43,12 +43,12 @@ Contraseña: taxista123
 
 ### Vista Web (Preview)
 ```
-https://taxitineo.preview.emergentagent.com
+https://taxi-platform-47.preview.emergentagent.com
 ```
 
 ### API Backend
 ```
-https://taxitineo.preview.emergentagent.com/api
+https://taxi-platform-47.preview.emergentagent.com/api
 ```
 
 ## 📱 Cómo Usar en Dispositivo Móvil Real
