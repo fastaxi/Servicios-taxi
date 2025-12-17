@@ -2240,7 +2240,7 @@ async def get_config():
     
     return ConfigResponse(
         id=str(config["_id"]),
-        nombre_radio_taxi=config.get("nombre_radio_taxi", "Taxi Tineo"),
+        nombre_radio_taxi=config.get("nombre_radio_taxi", "TaxiFast"),
         telefono=config.get("telefono", ""),
         web=config.get("web", ""),
         direccion=config.get("direccion", ""),
