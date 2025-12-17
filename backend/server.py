@@ -767,9 +767,12 @@ async def create_organization_admin(
         created_at=created_user["created_at"]
     )
 
-# User endpoints (admin only)
+# ==========================================
+# USER ENDPOINTS (Multi-tenant - admin only)
+# ==========================================
 @api_router.post("/users", response_model=UserResponse)
 async def create_user(user: UserCreate, current_user: dict = Depends(get_current_admin)):
+    """Crear taxista - se asigna automáticamente a la organización del admin"""
     # Check if user exists
     existing_user = await db.users.find_one({"username": user.username})
     if existing_user:
@@ -782,8 +785,22 @@ async def create_user(user: UserCreate, current_user: dict = Depends(get_current
     user_dict["password"] = get_password_hash(user_dict["password"])
     user_dict["created_at"] = datetime.utcnow()
     
+    # Multi-tenant: Asignar organization_id del admin que crea el usuario
+    # Superadmin puede crear usuarios sin organización
+    if not is_superadmin(current_user):
+        user_dict["organization_id"] = get_user_organization_id(current_user)
+    elif not user_dict.get("organization_id"):
+        user_dict["organization_id"] = None
+    
     result = await db.users.insert_one(user_dict)
     created_user = await db.users.find_one({"_id": result.inserted_id})
+    
+    # Obtener nombre de organización
+    org_nombre = None
+    if created_user.get("organization_id"):
+        org = await db.organizations.find_one({"_id": ObjectId(created_user["organization_id"])})
+        if org:
+            org_nombre = org.get("nombre")
     
     return UserResponse(
         id=str(created_user["_id"]),
@@ -793,16 +810,31 @@ async def create_user(user: UserCreate, current_user: dict = Depends(get_current
         licencia=created_user.get("licencia"),
         vehiculo_id=created_user.get("vehiculo_id"),
         vehiculo_matricula=created_user.get("vehiculo_matricula"),
+        organization_id=created_user.get("organization_id"),
+        organization_nombre=org_nombre,
         created_at=created_user["created_at"]
     )
 
 @api_router.get("/users", response_model=List[UserResponse])
 async def get_users(current_user: dict = Depends(get_current_admin)):
-    # Proyección: excluir password únicamente (no se puede mezclar inclusión y exclusión)
+    """Listar taxistas - filtrado por organización del admin"""
+    # Multi-tenant filter
+    org_filter = await get_org_filter(current_user)
+    query = {"role": "taxista", **org_filter}
+    
     users = await db.users.find(
-        {"role": "taxista"},
-        {"password": 0}  # Solo excluir password, traer todos los demás campos
+        query,
+        {"password": 0}
     ).to_list(1000)
+    
+    # Obtener nombres de organizaciones
+    org_names = {}
+    org_ids = set(u.get("organization_id") for u in users if u.get("organization_id"))
+    for org_id in org_ids:
+        org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+        if org:
+            org_names[org_id] = org.get("nombre")
+    
     return [
         UserResponse(
             id=str(user["_id"]),
@@ -812,6 +844,8 @@ async def get_users(current_user: dict = Depends(get_current_admin)):
             licencia=user.get("licencia"),
             vehiculo_id=user.get("vehiculo_id"),
             vehiculo_matricula=user.get("vehiculo_matricula"),
+            organization_id=user.get("organization_id"),
+            organization_nombre=org_names.get(user.get("organization_id")),
             created_at=user["created_at"]
         )
         for user in users
