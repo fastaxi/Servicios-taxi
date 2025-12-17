@@ -1,15 +1,15 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
-import { Text, Card, Button, Divider } from 'react-native-paper';
+import { Text, Card, Button, Divider, Chip } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
-import { useConfig } from '../../contexts/ConfigContext';
+import { useOrganization } from '../../contexts/OrganizationContext';
 import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { pendingServices } = useSync();
-  const { config } = useConfig();
+  const { organization } = useOrganization();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -19,19 +19,19 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        {config.logo_base64 ? (
+      <View style={[styles.header, { backgroundColor: organization.color_primario || '#0066CC' }]}>
+        {organization.logo_base64 ? (
           <Image
-            source={{ uri: config.logo_base64 }}
+            source={{ uri: organization.logo_base64 }}
             style={styles.logo}
             resizeMode="contain"
           />
         ) : (
-          <Image
-            source={require('../../assets/images/logo-taxi-tineo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <View style={styles.orgNameContainer}>
+            <Text variant="headlineMedium" style={styles.orgName}>
+              {organization.nombre}
+            </Text>
+          </View>
         )}
       </View>
 
