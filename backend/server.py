@@ -2172,7 +2172,7 @@ async def export_pdf(
     elements = []
     
     styles = getSampleStyleSheet()
-    title = Paragraph("<b>Servicios de Taxi - Taxi Tineo</b>", styles['Title'])
+    title = Paragraph("<b>Servicios de Taxi - TaxiFast</b>", styles['Title'])
     elements.append(title)
     elements.append(Spacer(1, 0.3*inch))
     
