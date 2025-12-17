@@ -19,7 +19,7 @@ interface ConfigContextType {
 }
 
 const defaultConfig: ConfigType = {
-  nombre_radio_taxi: 'Taxi Tineo',
+  nombre_radio_taxi: 'TaxiFast',
   telefono: '985 80 15 15',
   web: 'www.taxitineo.com',
   direccion: 'Tineo, Asturias',
