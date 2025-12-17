@@ -2231,7 +2231,7 @@ async def get_config():
             id="default",
             nombre_radio_taxi="TaxiFast",
             telefono="985 80 15 15",
-            web="www.taxitineo.com",
+            web="www.taxifast.com",
             direccion="Tineo, Asturias",
             email="",
             logo_base64=None,
