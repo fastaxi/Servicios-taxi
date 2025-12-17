@@ -1072,9 +1072,12 @@ async def delete_vehiculo(vehiculo_id: str, current_user: dict = Depends(get_cur
         raise HTTPException(status_code=404, detail="Vehículo not found")
     return {"message": "Vehículo deleted successfully"}
 
-# Turno endpoints
+# ==========================================
+# TURNO ENDPOINTS (Multi-tenant)
+# ==========================================
 @api_router.post("/turnos", response_model=TurnoResponse)
 async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_current_user)):
+    """Crear turno - se asigna a la organización del usuario"""
     # Validar que no tenga un turno abierto
     existing_turno = await db.turnos.find_one({
         "taxista_id": str(current_user["_id"]),
@@ -1089,6 +1092,9 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     turno_dict["taxista_nombre"] = current_user["nombre"]
     turno_dict["created_at"] = datetime.utcnow()
     turno_dict["cerrado"] = False
+    
+    # Multi-tenant: Asignar organization_id del usuario
+    turno_dict["organization_id"] = get_user_organization_id(current_user)
     
     result = await db.turnos.insert_one(turno_dict)
     created_turno = await db.turnos.find_one({"_id": result.inserted_id})
