@@ -41,7 +41,7 @@ export default function AdminSidebar() {
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <MaterialCommunityIcons name="taxi" size={32} color="#0066CC" />
-          <Text variant="headlineSmall" style={styles.title}>Taxi Tineo</Text>
+          <Text variant="headlineSmall" style={styles.title}>TaxiFast</Text>
         </View>
         <Text variant="bodySmall" style={styles.subtitle}>Panel de Administración</Text>
       </View>
