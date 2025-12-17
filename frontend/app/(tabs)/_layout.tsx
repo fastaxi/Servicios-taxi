@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Portal, Dialog, Button, Text } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
+import { useOrganization } from '../../contexts/OrganizationContext';
 import IniciarTurnoModal from '../../components/IniciarTurnoModal';
 import axios from 'axios';
 
@@ -10,6 +11,7 @@ import { API_URL } from '../../config/api';
 
 export default function TabsLayout() {
   const { user, token } = useAuth();
+  const { organization } = useOrganization();
   const [turnoActivo, setTurnoActivo] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmarTurnoVisible, setConfirmarTurnoVisible] = useState(false);
