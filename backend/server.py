@@ -2229,7 +2229,7 @@ async def get_config():
         # Devolver configuración por defecto
         return ConfigResponse(
             id="default",
-            nombre_radio_taxi="Taxi Tineo",
+            nombre_radio_taxi="TaxiFast",
             telefono="985 80 15 15",
             web="www.taxitineo.com",
             direccion="Tineo, Asturias",
