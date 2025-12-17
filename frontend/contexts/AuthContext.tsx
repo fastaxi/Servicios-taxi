@@ -9,6 +9,8 @@ interface User {
   username: string;
   nombre: string;
   role: string;
+  organization_id?: string | null;
+  organization_nombre?: string | null;
 }
 
 interface AuthContextType {
