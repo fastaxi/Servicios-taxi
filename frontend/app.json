@@ -15,15 +15,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.taxitineo.asturias",
-      "buildNumber": "1.0.0"
+      "bundleIdentifier": "com.taxifast.saas",
+      "buildNumber": "2.0.0"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0066CC"
       },
-      "package": "com.taxitineo.asturias",
+      "package": "com.taxifast.saas",
       "versionCode": 4,
       "permissions": [
         "INTERNET",
