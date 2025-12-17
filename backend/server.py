@@ -987,15 +987,25 @@ async def delete_company(company_id: str, current_user: dict = Depends(get_curre
         raise HTTPException(status_code=404, detail="Company not found")
     return {"message": "Company deleted successfully"}
 
-# Vehículo endpoints
+# ==========================================
+# VEHICULO ENDPOINTS (Multi-tenant)
+# ==========================================
 @api_router.post("/vehiculos", response_model=VehiculoResponse)
 async def create_vehiculo(vehiculo: VehiculoCreate, current_user: dict = Depends(get_current_admin)):
-    # Verificar que la matrícula no exista
-    existing = await db.vehiculos.find_one({"matricula": vehiculo.matricula})
+    """Crear vehículo - se asigna a la organización del admin"""
+    # Multi-tenant: Asignar organization_id
+    org_id = get_user_organization_id(current_user) if not is_superadmin(current_user) else None
+    
+    # Verificar que la matrícula no exista dentro de la organización
+    query = {"matricula": vehiculo.matricula}
+    if org_id:
+        query["organization_id"] = org_id
+    existing = await db.vehiculos.find_one(query)
     if existing:
         raise HTTPException(status_code=400, detail="La matrícula ya existe")
     
     vehiculo_dict = vehiculo.dict()
+    vehiculo_dict["organization_id"] = org_id
     vehiculo_dict["created_at"] = datetime.utcnow()
     
     result = await db.vehiculos.insert_one(vehiculo_dict)
@@ -1008,7 +1018,9 @@ async def create_vehiculo(vehiculo: VehiculoCreate, current_user: dict = Depends
 
 @api_router.get("/vehiculos", response_model=List[VehiculoResponse])
 async def get_vehiculos(current_user: dict = Depends(get_current_user)):
-    vehiculos = await db.vehiculos.find().to_list(1000)
+    """Listar vehículos - filtrado por organización"""
+    org_filter = await get_org_filter(current_user)
+    vehiculos = await db.vehiculos.find(org_filter).to_list(1000)
     return [
         VehiculoResponse(
             id=str(vehiculo["_id"]),
@@ -1019,10 +1031,19 @@ async def get_vehiculos(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/vehiculos/{vehiculo_id}", response_model=VehiculoResponse)
 async def update_vehiculo(vehiculo_id: str, vehiculo: VehiculoCreate, current_user: dict = Depends(get_current_admin)):
-    # Verificar que la matrícula no esté en uso por otro vehículo
+    """Actualizar vehículo - solo de la propia organización"""
+    org_filter = await get_org_filter(current_user)
+    
+    # Verificar que el vehículo pertenece a la organización
+    existing_vehiculo = await db.vehiculos.find_one({"_id": ObjectId(vehiculo_id), **org_filter})
+    if not existing_vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo not found")
+    
+    # Verificar que la matrícula no esté en uso por otro vehículo de la organización
     existing = await db.vehiculos.find_one({
         "matricula": vehiculo.matricula,
-        "_id": {"$ne": ObjectId(vehiculo_id)}
+        "_id": {"$ne": ObjectId(vehiculo_id)},
+        **org_filter
     })
     if existing:
         raise HTTPException(status_code=400, detail="La matrícula ya existe")
@@ -1044,7 +1065,9 @@ async def update_vehiculo(vehiculo_id: str, vehiculo: VehiculoCreate, current_us
 
 @api_router.delete("/vehiculos/{vehiculo_id}")
 async def delete_vehiculo(vehiculo_id: str, current_user: dict = Depends(get_current_admin)):
-    result = await db.vehiculos.delete_one({"_id": ObjectId(vehiculo_id)})
+    """Eliminar vehículo - solo de la propia organización"""
+    org_filter = await get_org_filter(current_user)
+    result = await db.vehiculos.delete_one({"_id": ObjectId(vehiculo_id), **org_filter})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Vehículo not found")
     return {"message": "Vehículo deleted successfully"}
