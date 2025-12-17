@@ -68,17 +68,29 @@ export default function ProfileScreen() {
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Contacto
+            Mi Organización
           </Text>
-          <Text variant="bodyMedium" style={styles.contact}>
-            {config.web}
+          <Text variant="bodyLarge" style={[styles.orgTitle, { color: organization.color_primario }]}>
+            {organization.nombre}
           </Text>
-          <Text variant="bodyMedium" style={styles.contact}>
-            {config.telefono}
-          </Text>
-          {config.email && (
+          {organization.localidad && (
             <Text variant="bodyMedium" style={styles.contact}>
-              {config.email}
+              📍 {organization.localidad}{organization.provincia ? `, ${organization.provincia}` : ''}
+            </Text>
+          )}
+          {organization.telefono && (
+            <Text variant="bodyMedium" style={styles.contact}>
+              📞 {organization.telefono}
+            </Text>
+          )}
+          {organization.email && (
+            <Text variant="bodyMedium" style={styles.contact}>
+              ✉️ {organization.email}
+            </Text>
+          )}
+          {organization.web && (
+            <Text variant="bodyMedium" style={styles.contact}>
+              🌐 {organization.web}
             </Text>
           )}
         </Card.Content>
