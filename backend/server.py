@@ -895,14 +895,24 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_adm
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
 
-# Company endpoints
+# ==========================================
+# COMPANY/CLIENT ENDPOINTS (Multi-tenant)
+# ==========================================
 @api_router.post("/companies", response_model=CompanyResponse)
 async def create_company(company: CompanyCreate, current_user: dict = Depends(get_current_admin)):
+    """Crear cliente/empresa - se asigna automáticamente a la organización del admin"""
     company_dict = company.dict()
     
-    # Validar numero_cliente único si se proporciona
+    # Multi-tenant: Asignar organization_id
+    org_id = get_user_organization_id(current_user) if not is_superadmin(current_user) else None
+    company_dict["organization_id"] = org_id
+    
+    # Validar numero_cliente único dentro de la organización
     if company_dict.get("numero_cliente"):
-        existing = await db.companies.find_one({"numero_cliente": company_dict["numero_cliente"]})
+        query = {"numero_cliente": company_dict["numero_cliente"]}
+        if org_id:
+            query["organization_id"] = org_id
+        existing = await db.companies.find_one(query)
         if existing:
             raise HTTPException(status_code=400, detail="Número de cliente ya existe")
     
@@ -918,7 +928,11 @@ async def create_company(company: CompanyCreate, current_user: dict = Depends(ge
 
 @api_router.get("/companies", response_model=List[CompanyResponse])
 async def get_companies(current_user: dict = Depends(get_current_user)):
-    companies = await db.companies.find().to_list(1000)
+    """Listar clientes/empresas - filtrado por organización"""
+    # Multi-tenant filter
+    org_filter = await get_org_filter(current_user)
+    
+    companies = await db.companies.find(org_filter).to_list(1000)
     return [
         CompanyResponse(
             id=str(company["_id"]),
@@ -929,14 +943,23 @@ async def get_companies(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/companies/{company_id}", response_model=CompanyResponse)
 async def update_company(company_id: str, company: CompanyCreate, current_user: dict = Depends(get_current_admin)):
+    """Actualizar cliente/empresa - solo de la propia organización"""
     company_dict = company.dict()
     
-    # Validar numero_cliente único si se proporciona (excepto el actual)
+    # Multi-tenant: Verificar que la empresa pertenece a la organización del usuario
+    org_filter = await get_org_filter(current_user)
+    existing_company = await db.companies.find_one({"_id": ObjectId(company_id), **org_filter})
+    if not existing_company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    # Validar numero_cliente único dentro de la organización (excepto el actual)
     if company_dict.get("numero_cliente"):
-        existing = await db.companies.find_one({
+        query = {
             "numero_cliente": company_dict["numero_cliente"],
-            "_id": {"$ne": ObjectId(company_id)}
-        })
+            "_id": {"$ne": ObjectId(company_id)},
+            **org_filter
+        }
+        existing = await db.companies.find_one(query)
         if existing:
             raise HTTPException(status_code=400, detail="Número de cliente ya existe")
     
@@ -956,7 +979,10 @@ async def update_company(company_id: str, company: CompanyCreate, current_user: 
 
 @api_router.delete("/companies/{company_id}")
 async def delete_company(company_id: str, current_user: dict = Depends(get_current_admin)):
-    result = await db.companies.delete_one({"_id": ObjectId(company_id)})
+    """Eliminar cliente/empresa - solo de la propia organización"""
+    # Multi-tenant: Verificar que la empresa pertenece a la organización
+    org_filter = await get_org_filter(current_user)
+    result = await db.companies.delete_one({"_id": ObjectId(company_id), **org_filter})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Company not found")
     return {"message": "Company deleted successfully"}
