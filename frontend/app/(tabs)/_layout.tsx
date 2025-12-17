@@ -73,12 +73,13 @@ export default function TabsLayout() {
     <>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#0066CC',
+          tabBarActiveTintColor: organization.color_primario || '#0066CC',
           tabBarInactiveTintColor: '#666',
           headerStyle: {
-            backgroundColor: '#0066CC',
+            backgroundColor: organization.color_primario || '#0066CC',
           },
           headerTintColor: '#fff',
+          headerTitle: organization.nombre || 'TaxiFast',
           tabBarStyle: {
             backgroundColor: '#FFFFFF',
             borderTopWidth: 1,
