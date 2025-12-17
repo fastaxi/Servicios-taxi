@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Taxi Tineo",
-    "slug": "taxi-tineo-asturias",
-    "version": "1.2.0",
+    "name": "TaxiFast",
+    "slug": "taxifast-saas",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "taxitineo",
+    "scheme": "taxifast",
     "userInterfaceStyle": "automatic",
-    "description": "Sistema de gestión de servicios de taxi para Radio Taxi Tineo - Asturias",
+    "description": "TaxiFast - Plataforma SaaS Multi-tenant para gestión de flotas de taxi",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
