@@ -261,6 +261,9 @@ class Token(BaseModel):
     token_type: str
     user: UserResponse
 
+# ==========================================
+# COMPANY/CLIENT MODELS (Multi-tenant aware)
+# ==========================================
 class CompanyBase(BaseModel):
     nombre: str
     cif: Optional[str] = ""
@@ -274,6 +277,7 @@ class CompanyBase(BaseModel):
     contacto: Optional[str] = ""
     fecha_alta: Optional[str] = None  # formato dd/mm/yyyy
     notas: Optional[str] = ""
+    # organization_id se asigna automáticamente del usuario actual
 
 class CompanyCreate(CompanyBase):
     pass
@@ -281,6 +285,7 @@ class CompanyCreate(CompanyBase):
 class CompanyResponse(CompanyBase):
     id: str
     created_at: datetime
+    organization_id: Optional[str] = None
 
     class Config:
         from_attributes = True
