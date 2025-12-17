@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { SyncProvider } from '../contexts/SyncContext';
 import { ConfigProvider } from '../contexts/ConfigContext';
+import { OrganizationProvider } from '../contexts/OrganizationContext';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 
 const theme = {
@@ -20,13 +21,16 @@ export default function RootLayout() {
     <PaperProvider theme={theme}>
       <ConfigProvider>
         <AuthProvider>
-          <SyncProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="(admin)" />
-            </Stack>
-          </SyncProvider>
+          <OrganizationProvider>
+            <SyncProvider>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="(admin)" />
+                <Stack.Screen name="(superadmin)" />
+              </Stack>
+            </SyncProvider>
+          </OrganizationProvider>
         </AuthProvider>
       </ConfigProvider>
     </PaperProvider>
