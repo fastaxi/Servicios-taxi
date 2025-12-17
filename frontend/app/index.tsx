@@ -16,7 +16,9 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (user && !authLoading) {
-      if (user.role === 'admin') {
+      if (user.role === 'superadmin') {
+        router.replace('/(superadmin)/dashboard');
+      } else if (user.role === 'admin') {
         router.replace('/(admin)/dashboard');
       } else {
         router.replace('/(tabs)/services');
