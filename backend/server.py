@@ -128,8 +128,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create the main app
-app = FastAPI(title="Taxi Tineo API", version="1.0.0")
+# Create the main app - TaxiFast Multi-tenant SaaS Platform
+app = FastAPI(title="TaxiFast API", version="2.0.0", description="Multi-tenant taxi management SaaS platform")
 api_router = APIRouter(prefix="/api")
 
 # Root health check endpoint for deployment systems
