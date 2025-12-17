@@ -138,7 +138,7 @@ async def root_health_check():
     """Health check endpoint for deployment verification"""
     return {
         "status": "healthy",
-        "service": "taxi-tineo-api",
+        "service": "taxifast-api",
         "version": "1.0.0",
         "timestamp": datetime.utcnow().isoformat()
     }
