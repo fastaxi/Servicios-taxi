@@ -1168,10 +1168,13 @@ async def get_turnos(
     liquidado: Optional[bool] = Query(None),
     limit: int = Query(500, le=1000, description="Límite de resultados")
 ):
-    query = {}
+    """Listar turnos - filtrado por organización"""
+    # Multi-tenant filter
+    org_filter = await get_org_filter(current_user)
+    query = {**org_filter}
     
-    # Si no es admin, solo sus propios turnos
-    if current_user.get("role") != "admin":
+    # Si no es admin/superadmin, solo sus propios turnos
+    if current_user.get("role") not in ["admin", "superadmin"]:
         query["taxista_id"] = str(current_user["_id"])
     elif taxista_id:
         query["taxista_id"] = taxista_id
