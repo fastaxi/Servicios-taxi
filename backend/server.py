@@ -585,6 +585,50 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     )
 
 # ==========================================
+# ORGANIZATION BRANDING (For mobile app)
+# ==========================================
+@api_router.get("/my-organization")
+async def get_my_organization(current_user: dict = Depends(get_current_user)):
+    """Obtener información de branding de la organización del usuario actual (para app móvil)"""
+    org_id = current_user.get("organization_id")
+    
+    if not org_id:
+        # Usuario sin organización (legacy o superadmin) - devolver branding por defecto
+        return {
+            "id": None,
+            "nombre": "TaxiFast",
+            "slug": "taxifast",
+            "logo_base64": None,
+            "color_primario": "#0066CC",
+            "color_secundario": "#FFD700",
+            "telefono": "",
+            "email": "",
+            "web": "www.taxifast.com",
+            "direccion": "",
+            "localidad": "",
+            "provincia": "",
+        }
+    
+    org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    return {
+        "id": str(org["_id"]),
+        "nombre": org.get("nombre", "TaxiFast"),
+        "slug": org.get("slug", ""),
+        "logo_base64": org.get("logo_base64"),
+        "color_primario": org.get("color_primario", "#0066CC"),
+        "color_secundario": org.get("color_secundario", "#FFD700"),
+        "telefono": org.get("telefono", ""),
+        "email": org.get("email", ""),
+        "web": org.get("web", ""),
+        "direccion": org.get("direccion", ""),
+        "localidad": org.get("localidad", ""),
+        "provincia": org.get("provincia", ""),
+    }
+
+# ==========================================
 # ORGANIZATION ENDPOINTS (Superadmin only)
 # ==========================================
 @api_router.post("/organizations", response_model=OrganizationResponse)
