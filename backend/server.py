@@ -666,27 +666,53 @@ async def get_organizations(
     current_user: dict = Depends(get_current_superadmin),
     activa: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo")
 ):
-    """Listar todas las organizaciones (solo superadmin)"""
+    """Listar todas las organizaciones (solo superadmin) - Optimizado para evitar N+1 queries"""
     query = {}
     if activa is not None:
         query["activa"] = activa
     
     organizations = await db.organizations.find(query).sort("created_at", -1).to_list(1000)
     
+    if not organizations:
+        return []
+    
+    # Optimización: obtener todas las estadísticas en 3 queries en lugar de N*3 queries
+    org_ids = [str(org["_id"]) for org in organizations]
+    
+    # Query 1: Contar todos los taxistas por organización
+    taxistas_pipeline = [
+        {"$match": {"organization_id": {"$in": org_ids}, "role": "taxista"}},
+        {"$group": {"_id": "$organization_id", "count": {"$sum": 1}}}
+    ]
+    taxistas_counts = await db.users.aggregate(taxistas_pipeline).to_list(1000)
+    taxistas_map = {c["_id"]: c["count"] for c in taxistas_counts}
+    
+    # Query 2: Contar todos los vehículos por organización
+    vehiculos_pipeline = [
+        {"$match": {"organization_id": {"$in": org_ids}}},
+        {"$group": {"_id": "$organization_id", "count": {"$sum": 1}}}
+    ]
+    vehiculos_counts = await db.vehiculos.aggregate(vehiculos_pipeline).to_list(1000)
+    vehiculos_map = {c["_id"]: c["count"] for c in vehiculos_counts}
+    
+    # Query 3: Contar todas las empresas cliente por organización
+    clientes_pipeline = [
+        {"$match": {"organization_id": {"$in": org_ids}}},
+        {"$group": {"_id": "$organization_id", "count": {"$sum": 1}}}
+    ]
+    clientes_counts = await db.companies.aggregate(clientes_pipeline).to_list(1000)
+    clientes_map = {c["_id"]: c["count"] for c in clientes_counts}
+    
+    # Construir la respuesta usando los mapas precalculados
     result = []
     for org in organizations:
         org_id = str(org["_id"])
-        # Contar estadísticas
-        total_taxistas = await db.users.count_documents({"organization_id": org_id, "role": "taxista"})
-        total_vehiculos = await db.vehiculos.count_documents({"organization_id": org_id})
-        total_clientes = await db.companies.count_documents({"organization_id": org_id})
-        
         result.append(OrganizationResponse(
             id=org_id,
             **{k: v for k, v in org.items() if k != "_id"},
-            total_taxistas=total_taxistas,
-            total_vehiculos=total_vehiculos,
-            total_clientes=total_clientes
+            total_taxistas=taxistas_map.get(org_id, 0),
+            total_vehiculos=vehiculos_map.get(org_id, 0),
+            total_clientes=clientes_map.get(org_id, 0)
         ))
     
     return result
