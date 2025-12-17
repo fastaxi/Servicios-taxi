@@ -1849,12 +1849,15 @@ async def get_reporte_diario(
     
     return reporte
 
-# Service endpoints
+# ==========================================
+# SERVICE ENDPOINTS (Multi-tenant)
+# ==========================================
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
-    # Si no es admin, buscar turno activo y asignar automáticamente
+    """Crear servicio - se asigna a la organización del usuario"""
+    # Si no es admin/superadmin, buscar turno activo y asignar automáticamente
     turno_activo = None
-    if current_user.get("role") != "admin":
+    if current_user.get("role") not in ["admin", "superadmin"]:
         turno_activo = await db.turnos.find_one({
             "taxista_id": str(current_user["_id"]),
             "cerrado": False
@@ -1872,7 +1875,10 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
     service_dict["created_at"] = datetime.utcnow()
     service_dict["synced"] = True
     
-    # Asignar turno_id automáticamente si no es admin y hay turno activo
+    # Multi-tenant: Asignar organization_id
+    service_dict["organization_id"] = get_user_organization_id(current_user)
+    
+    # Asignar turno_id automáticamente si hay turno activo
     if turno_activo:
         service_dict["turno_id"] = str(turno_activo["_id"])
     
@@ -1889,13 +1895,17 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
 
 @api_router.post("/services/sync")
 async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(get_current_user)):
+    """Sincronizar servicios offline - se asignan a la organización del usuario"""
     created_services = []
+    org_id = get_user_organization_id(current_user)
+    
     for service in service_sync.services:
         service_dict = service.dict()
         service_dict["taxista_id"] = str(current_user["_id"])
         service_dict["taxista_nombre"] = current_user["nombre"]
         service_dict["created_at"] = datetime.utcnow()
         service_dict["synced"] = True
+        service_dict["organization_id"] = org_id  # Multi-tenant
         
         result = await db.services.insert_one(service_dict)
         created_services.append(str(result.inserted_id))
@@ -1913,10 +1923,13 @@ async def get_services(
     fecha_fin: Optional[str] = Query(None),
     limit: int = Query(1000, le=10000, description="Límite de resultados")
 ):
-    query = {}
+    """Listar servicios - filtrado por organización"""
+    # Multi-tenant filter
+    org_filter = await get_org_filter(current_user)
+    query = {**org_filter}
     
-    # If not admin, only show own services
-    if current_user.get("role") != "admin":
+    # If not admin/superadmin, only show own services
+    if current_user.get("role") not in ["admin", "superadmin"]:
         query["taxista_id"] = str(current_user["_id"])
     else:
         # If admin and taxista_id filter provided
