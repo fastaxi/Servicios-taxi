@@ -122,6 +122,18 @@ const styles = StyleSheet.create({
     width: 150,
     height: 100,
   },
+  orgNameContainer: {
+    padding: 16,
+  },
+  orgName: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  orgTitle: {
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
   card: {
     margin: 16,
     backgroundColor: 'white',
