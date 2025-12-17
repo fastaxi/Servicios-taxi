@@ -22,8 +22,7 @@ const getApiUrl = () => {
   throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL environment variable.');
 };
 
-export const API_BASE_URL = getBackendUrl();
-export const API_URL = `${API_BASE_URL}/api`;
+export const API_URL = `${getApiUrl()}/api`;
 
 console.log('[API Config] API_BASE_URL:', API_BASE_URL);
 console.log('[API Config] API_URL:', API_URL);
