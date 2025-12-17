@@ -24,5 +24,4 @@ const getApiUrl = () => {
 
 export const API_URL = `${getApiUrl()}/api`;
 
-console.log('[API Config] API_BASE_URL:', API_BASE_URL);
 console.log('[API Config] API_URL:', API_URL);
