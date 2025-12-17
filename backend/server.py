@@ -329,6 +329,7 @@ class ServiceResponse(BaseModel):
     facturar: Optional[bool] = False
     created_at: datetime
     synced: bool = True
+    organization_id: Optional[str] = None  # Multi-tenant support
 
     class Config:
         from_attributes = True
