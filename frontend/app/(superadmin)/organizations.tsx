@@ -12,6 +12,7 @@ interface Organization {
   slug: string;
   cif: string;
   direccion: string;
+  codigo_postal: string;
   localidad: string;
   provincia: string;
   telefono: string;
@@ -19,6 +20,7 @@ interface Organization {
   web: string;
   color_primario: string;
   color_secundario: string;
+  notas: string;
   activa: boolean;
   total_taxistas: number;
   total_vehiculos: number;
@@ -32,30 +34,35 @@ interface NewAdmin {
   nombre: string;
 }
 
+const emptyFormData = {
+  nombre: '',
+  cif: '',
+  direccion: '',
+  codigo_postal: '',
+  localidad: '',
+  provincia: '',
+  telefono: '',
+  email: '',
+  web: '',
+  color_primario: '#0066CC',
+  color_secundario: '#FFD700',
+  notas: '',
+};
+
 export default function OrganizationsScreen() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [adminModalVisible, setAdminModalVisible] = useState(false);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [saving, setSaving] = useState(false);
   const theme = useTheme();
 
-  // Form states for new organization
-  const [formData, setFormData] = useState({
-    nombre: '',
-    cif: '',
-    direccion: '',
-    localidad: '',
-    provincia: '',
-    telefono: '',
-    email: '',
-    web: '',
-    color_primario: '#0066CC',
-    color_secundario: '#FFD700',
-  });
+  // Form states for new/edit organization
+  const [formData, setFormData] = useState(emptyFormData);
+  const [editFormData, setEditFormData] = useState(emptyFormData);
 
   // Form state for new admin
   const [adminData, setAdminData] = useState<NewAdmin>({
@@ -97,18 +104,7 @@ export default function OrganizationsScreen() {
       });
       
       setModalVisible(false);
-      setFormData({
-        nombre: '',
-        cif: '',
-        direccion: '',
-        localidad: '',
-        provincia: '',
-        telefono: '',
-        email: '',
-        web: '',
-        color_primario: '#0066CC',
-        color_secundario: '#FFD700',
-      });
+      setFormData(emptyFormData);
       loadOrganizations();
       alert('Organización creada correctamente');
     } catch (error: any) {
@@ -117,6 +113,51 @@ export default function OrganizationsScreen() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEditOrganization = async () => {
+    if (!selectedOrg) return;
+    if (!editFormData.nombre.trim()) {
+      alert('El nombre es obligatorio');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(`${API_URL}/organizations/${selectedOrg.id}`, editFormData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setEditModalVisible(false);
+      setSelectedOrg(null);
+      loadOrganizations();
+      alert('Organización actualizada correctamente');
+    } catch (error: any) {
+      console.error('Error updating organization:', error);
+      alert(error.response?.data?.detail || 'Error al actualizar organización');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openEditModal = (org: Organization) => {
+    setSelectedOrg(org);
+    setEditFormData({
+      nombre: org.nombre || '',
+      cif: org.cif || '',
+      direccion: org.direccion || '',
+      codigo_postal: org.codigo_postal || '',
+      localidad: org.localidad || '',
+      provincia: org.provincia || '',
+      telefono: org.telefono || '',
+      email: org.email || '',
+      web: org.web || '',
+      color_primario: org.color_primario || '#0066CC',
+      color_secundario: org.color_secundario || '#FFD700',
+      notas: org.notas || '',
+    });
+    setEditModalVisible(true);
   };
 
   const handleCreateAdmin = async () => {
@@ -186,6 +227,116 @@ export default function OrganizationsScreen() {
     loadOrganizations();
   };
 
+  // Render form fields (reusable for create and edit)
+  const renderFormFields = (data: typeof formData, setData: (data: typeof formData) => void) => (
+    <>
+      <TextInput
+        label="Nombre de la empresa *"
+        value={data.nombre}
+        onChangeText={(text) => setData({...data, nombre: text})}
+        mode="outlined"
+        style={styles.input}
+      />
+      <TextInput
+        label="CIF/NIF"
+        value={data.cif}
+        onChangeText={(text) => setData({...data, cif: text})}
+        mode="outlined"
+        style={styles.input}
+      />
+      <TextInput
+        label="Dirección"
+        value={data.direccion}
+        onChangeText={(text) => setData({...data, direccion: text})}
+        mode="outlined"
+        style={styles.input}
+      />
+      <TextInput
+        label="Código Postal"
+        value={data.codigo_postal}
+        onChangeText={(text) => setData({...data, codigo_postal: text})}
+        mode="outlined"
+        style={styles.input}
+        keyboardType="numeric"
+      />
+      <View style={styles.row}>
+        <TextInput
+          label="Localidad"
+          value={data.localidad}
+          onChangeText={(text) => setData({...data, localidad: text})}
+          mode="outlined"
+          style={[styles.input, { flex: 1, marginRight: 8 }]}
+        />
+        <TextInput
+          label="Provincia"
+          value={data.provincia}
+          onChangeText={(text) => setData({...data, provincia: text})}
+          mode="outlined"
+          style={[styles.input, { flex: 1 }]}
+        />
+      </View>
+      <TextInput
+        label="Teléfono"
+        value={data.telefono}
+        onChangeText={(text) => setData({...data, telefono: text})}
+        mode="outlined"
+        style={styles.input}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        label="Email"
+        value={data.email}
+        onChangeText={(text) => setData({...data, email: text})}
+        mode="outlined"
+        style={styles.input}
+        keyboardType="email-address"
+      />
+      <TextInput
+        label="Web"
+        value={data.web}
+        onChangeText={(text) => setData({...data, web: text})}
+        mode="outlined"
+        style={styles.input}
+      />
+      
+      <Divider style={{ marginVertical: 16 }} />
+      <Text variant="titleSmall" style={{ marginBottom: 12, color: '#666' }}>Personalización de marca</Text>
+      
+      <View style={styles.row}>
+        <View style={[styles.colorPreview, { backgroundColor: data.color_primario }]} />
+        <TextInput
+          label="Color Primario"
+          value={data.color_primario}
+          onChangeText={(text) => setData({...data, color_primario: text})}
+          mode="outlined"
+          style={[styles.input, { flex: 1 }]}
+          placeholder="#0066CC"
+        />
+      </View>
+      <View style={styles.row}>
+        <View style={[styles.colorPreview, { backgroundColor: data.color_secundario }]} />
+        <TextInput
+          label="Color Secundario"
+          value={data.color_secundario}
+          onChangeText={(text) => setData({...data, color_secundario: text})}
+          mode="outlined"
+          style={[styles.input, { flex: 1 }]}
+          placeholder="#FFD700"
+        />
+      </View>
+      
+      <TextInput
+        label="Notas internas"
+        value={data.notas}
+        onChangeText={(text) => setData({...data, notas: text})}
+        mode="outlined"
+        style={styles.input}
+        multiline
+        numberOfLines={3}
+      />
+    </>
+  );
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -217,7 +368,7 @@ export default function OrganizationsScreen() {
                 <View style={styles.orgHeader}>
                   <View style={styles.orgTitleContainer}>
                     <View style={[styles.statusDot, { backgroundColor: org.activa ? '#4caf50' : '#f44336' }]} />
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <Text variant="titleLarge">{org.nombre}</Text>
                       <Text variant="bodySmall" style={styles.slugText}>/{org.slug}</Text>
                     </View>
@@ -231,11 +382,19 @@ export default function OrganizationsScreen() {
                 <Divider style={styles.divider} />
 
                 <View style={styles.orgDetails}>
-                  {org.localidad && (
+                  {org.cif && (
+                    <View style={styles.detailRow}>
+                      <MaterialCommunityIcons name="card-account-details" size={16} color="#666" />
+                      <Text variant="bodySmall" style={styles.detailText}>CIF: {org.cif}</Text>
+                    </View>
+                  )}
+                  {(org.direccion || org.localidad) && (
                     <View style={styles.detailRow}>
                       <MaterialCommunityIcons name="map-marker" size={16} color="#666" />
                       <Text variant="bodySmall" style={styles.detailText}>
-                        {org.localidad}{org.provincia ? `, ${org.provincia}` : ''}
+                        {org.direccion ? `${org.direccion}, ` : ''}
+                        {org.codigo_postal ? `${org.codigo_postal} ` : ''}
+                        {org.localidad}{org.provincia ? ` (${org.provincia})` : ''}
                       </Text>
                     </View>
                   )}
@@ -251,6 +410,24 @@ export default function OrganizationsScreen() {
                       <Text variant="bodySmall" style={styles.detailText}>{org.email}</Text>
                     </View>
                   )}
+                  {org.web && (
+                    <View style={styles.detailRow}>
+                      <MaterialCommunityIcons name="web" size={16} color="#666" />
+                      <Text variant="bodySmall" style={styles.detailText}>{org.web}</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Color preview */}
+                <View style={styles.colorRow}>
+                  <View style={styles.colorItem}>
+                    <View style={[styles.colorSwatch, { backgroundColor: org.color_primario || '#0066CC' }]} />
+                    <Text variant="labelSmall">Primario</Text>
+                  </View>
+                  <View style={styles.colorItem}>
+                    <View style={[styles.colorSwatch, { backgroundColor: org.color_secundario || '#FFD700' }]} />
+                    <Text variant="labelSmall">Secundario</Text>
+                  </View>
                 </View>
 
                 <View style={styles.statsRow}>
@@ -260,7 +437,15 @@ export default function OrganizationsScreen() {
                 </View>
               </Card.Content>
               
-              <Card.Actions>
+              <Card.Actions style={styles.cardActions}>
+                <Button 
+                  mode="contained"
+                  onPress={() => openEditModal(org)}
+                  icon="pencil"
+                  buttonColor="#0066CC"
+                >
+                  Editar
+                </Button>
                 <Button 
                   mode="outlined" 
                   onPress={() => {
@@ -311,69 +496,10 @@ export default function OrganizationsScreen() {
       {/* Modal: Create Organization */}
       <Portal>
         <Modal visible={modalVisible} onDismiss={() => setModalVisible(false)} contentContainerStyle={styles.modal}>
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
             <Text variant="headlineSmall" style={styles.modalTitle}>Nueva Organización</Text>
             
-            <TextInput
-              label="Nombre de la empresa *"
-              value={formData.nombre}
-              onChangeText={(text) => setFormData({...formData, nombre: text})}
-              mode="outlined"
-              style={styles.input}
-            />
-            <TextInput
-              label="CIF/NIF"
-              value={formData.cif}
-              onChangeText={(text) => setFormData({...formData, cif: text})}
-              mode="outlined"
-              style={styles.input}
-            />
-            <TextInput
-              label="Dirección"
-              value={formData.direccion}
-              onChangeText={(text) => setFormData({...formData, direccion: text})}
-              mode="outlined"
-              style={styles.input}
-            />
-            <View style={styles.row}>
-              <TextInput
-                label="Localidad"
-                value={formData.localidad}
-                onChangeText={(text) => setFormData({...formData, localidad: text})}
-                mode="outlined"
-                style={[styles.input, { flex: 1, marginRight: 8 }]}
-              />
-              <TextInput
-                label="Provincia"
-                value={formData.provincia}
-                onChangeText={(text) => setFormData({...formData, provincia: text})}
-                mode="outlined"
-                style={[styles.input, { flex: 1 }]}
-              />
-            </View>
-            <TextInput
-              label="Teléfono"
-              value={formData.telefono}
-              onChangeText={(text) => setFormData({...formData, telefono: text})}
-              mode="outlined"
-              style={styles.input}
-              keyboardType="phone-pad"
-            />
-            <TextInput
-              label="Email"
-              value={formData.email}
-              onChangeText={(text) => setFormData({...formData, email: text})}
-              mode="outlined"
-              style={styles.input}
-              keyboardType="email-address"
-            />
-            <TextInput
-              label="Web"
-              value={formData.web}
-              onChangeText={(text) => setFormData({...formData, web: text})}
-              mode="outlined"
-              style={styles.input}
-            />
+            {renderFormFields(formData, setFormData)}
             
             <View style={styles.modalActions}>
               <Button mode="outlined" onPress={() => setModalVisible(false)} disabled={saving}>
@@ -381,6 +507,31 @@ export default function OrganizationsScreen() {
               </Button>
               <Button mode="contained" onPress={handleCreateOrganization} loading={saving} disabled={saving}>
                 Crear Organización
+              </Button>
+            </View>
+          </ScrollView>
+        </Modal>
+      </Portal>
+
+      {/* Modal: Edit Organization */}
+      <Portal>
+        <Modal visible={editModalVisible} onDismiss={() => setEditModalVisible(false)} contentContainerStyle={styles.modal}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text variant="headlineSmall" style={styles.modalTitle}>Editar Organización</Text>
+            {selectedOrg && (
+              <Text variant="bodyMedium" style={styles.modalSubtitle}>
+                ID: {selectedOrg.id} | Slug: /{selectedOrg.slug}
+              </Text>
+            )}
+            
+            {renderFormFields(editFormData, setEditFormData)}
+            
+            <View style={styles.modalActions}>
+              <Button mode="outlined" onPress={() => setEditModalVisible(false)} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button mode="contained" onPress={handleEditOrganization} loading={saving} disabled={saving}>
+                Guardar Cambios
               </Button>
             </View>
           </ScrollView>
@@ -480,6 +631,7 @@ const styles = StyleSheet.create({
   orgTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   statusDot: {
     width: 12,
@@ -503,6 +655,25 @@ const styles = StyleSheet.create({
   },
   detailText: {
     color: '#666',
+    flex: 1,
+  },
+  colorRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  colorItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  colorSwatch: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   statsRow: {
     flexDirection: 'row',
@@ -512,6 +683,11 @@ const styles = StyleSheet.create({
   },
   statChip: {
     backgroundColor: '#f0f0f0',
+  },
+  cardActions: {
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    gap: 4,
   },
   emptyCard: {
     borderRadius: 12,
@@ -560,6 +736,15 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  colorPreview: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   modalActions: {
     flexDirection: 'row',
