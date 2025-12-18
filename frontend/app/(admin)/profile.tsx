@@ -26,11 +26,7 @@ export default function AdminProfileScreen() {
             resizeMode="contain"
           />
         ) : (
-          <Image
-            source={require('../../assets/images/logo-taxi-tineo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <TaxiFastLogo size="medium" color="#FFFFFF" />
         )}
       </View>
 
