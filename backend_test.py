@@ -29,7 +29,7 @@ import random
 import string
 
 # Configuration
-BASE_URL = "https://taxi-platform-47.preview.emergentagent.com/api"
+BASE_URL = "https://taxifast-saas.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Test counters

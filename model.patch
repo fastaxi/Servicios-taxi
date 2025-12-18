@@ -91,7 +91,7 @@ index 6db5bed..e69de29 100644
 ------+import random
 ------+import string
 ------+
-------+BASE_URL = "https://taxi-platform-47.preview.emergentagent.com/api"
+------+BASE_URL = "https://taxifast-saas.preview.emergentagent.com/api"
 ------+
 ------+def make_request(method, endpoint, data=None, token=None, timeout=15):
 ------+    """Make HTTP request with proper error handling"""
@@ -670,7 +670,7 @@ index 6db5bed..e69de29 100644
 -----------------+import os
 -----------------+
 -----------------+# Get backend URL from environment
------------------+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxi-platform-47.preview.emergentagent.com')
+-----------------+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxifast-saas.preview.emergentagent.com')
 -----------------+API_BASE = f"{BACKEND_URL}/api"
 -----------------+
 -----------------+def test_invalid_login():
@@ -1003,7 +1003,7 @@ index 6db5bed..e69de29 100644
 -------------------------+import time
 -------------------------+
 -------------------------+# Configuration
--------------------------+BASE_URL = "https://taxi-platform-47.preview.emergentagent.com/api"
+-------------------------+BASE_URL = "https://taxifast-saas.preview.emergentagent.com/api"
 -------------------------+ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 -------------------------+
 -------------------------+class AdditionalTester:
@@ -3455,7 +3455,7 @@ index 6db5bed..e69de29 100644
 -------+from typing import Dict, Any, Optional
 -------+
 -------+# Configuration
--------+BACKEND_URL = "https://taxi-platform-47.preview.emergentagent.com/api"
+-------+BACKEND_URL = "https://taxifast-saas.preview.emergentagent.com/api"
 -------+
 -------+# Test credentials
 -------+CREDENTIALS = {
@@ -4732,7 +4732,7 @@ index 6db5bed..e69de29 100644
 ------+import requests
 ------+import json
 ------+
-------+BASE_URL = "https://taxi-platform-47.preview.emergentagent.com/api"
+------+BASE_URL = "https://taxifast-saas.preview.emergentagent.com/api"
 ------+
 ------+def test_login(username, password):
 ------+    """Test login and return token"""
