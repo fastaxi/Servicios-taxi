@@ -70,11 +70,7 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
           ) : (
-            <Image
-              source={require('../assets/images/logo-taxi-tineo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
+            <TaxiFastLogo size="large" />
           )}
         </View>
 
