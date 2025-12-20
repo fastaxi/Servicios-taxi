@@ -1,11 +1,11 @@
-# 📱 Guía Completa: Crear Build Standalone de Taxi Tineo
+# 📱 Guía Completa: Crear Build Standalone de TaxiFast
 
 ## ✅ Configuración Completada
 
 He configurado tu proyecto para crear builds standalone:
 
 ### Archivos Actualizados:
-- ✅ `app.json` - Configurado con nombre "Taxi Tineo", colores Asturias, y permisos
+- ✅ `app.json` - Configurado con nombre "TaxiFast", colores Asturias, y permisos
 - ✅ `eas.json` - Configuración de builds (development, preview, production)
 - ✅ **Iconos personalizados instalados** - Tu imagen de taxi ahora es el icono oficial de la app:
   - `icon.png` (1024x1024) - Icono principal de la app

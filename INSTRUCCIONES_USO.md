@@ -1,4 +1,4 @@
-# 🚕 Aplicación de Gestión de Servicios - Taxi Tineo
+# 🚕 Aplicación de Gestión de Servicios - TaxiFast
 
 ## 📱 Información General
 
@@ -67,7 +67,7 @@ La aplicación utiliza los colores oficiales de la bandera de Asturias:
 - **Azul**: `#0066CC` (Color primario)
 - **Amarillo**: `#FFD700` (Color secundario/acentos)
 
-Logo: Taxi Tineo con escudo de Asturias
+Logo: TaxiFast con escudo de Asturias
 
 ## 📊 Datos de Prueba Incluidos
 
@@ -154,8 +154,8 @@ La aplicación detecta automáticamente cuando no hay conexión a Internet y:
 
 ## 📞 Contacto
 
-**Taxi Tineo**
-- Web: www.taxitineo.com
+**TaxiFast**
+- Web: www.taxifast.com
 - Teléfono: 985 80 15 15
 - Servicio 24 Horas
 

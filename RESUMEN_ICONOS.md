@@ -1,4 +1,4 @@
-# 🎨 Iconos Personalizados de Taxi Tineo - Instalados
+# 🎨 Iconos Personalizados de TaxiFast - Instalados
 
 ## ✅ Iconos Creados Exitosamente
 
@@ -98,6 +98,6 @@ eas build --platform android --profile preview
 
 ## 🎉 ¡Listo!
 
-Tu app "Taxi Tineo" ahora tiene un icono profesional que representa perfectamente tu negocio de taxis en Asturias.
+Tu app "TaxiFast" ahora tiene un icono profesional que representa perfectamente tu negocio de taxis en Asturias.
 
-Cuando los taxistas instalen el APK, verán tu icono de taxi en sus teléfonos junto con el nombre "Taxi Tineo".
+Cuando los taxistas instalen el APK, verán tu icono de taxi en sus teléfonos junto con el nombre "TaxiFast".
