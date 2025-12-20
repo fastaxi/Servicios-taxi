@@ -837,6 +837,72 @@ async def create_organization_admin(
         created_at=created_user["created_at"]
     )
 
+# Endpoint para obtener usuarios sin organización (superadmin)
+@api_router.get("/users/unassigned")
+async def get_unassigned_users(current_user: dict = Depends(get_current_superadmin)):
+    """Obtener usuarios que no tienen organización asignada (solo superadmin)"""
+    users = await db.users.find({
+        "organization_id": {"$in": [None, ""]},
+        "role": {"$ne": "superadmin"}
+    }).to_list(1000)
+    
+    result = []
+    for u in users:
+        result.append({
+            "id": str(u["_id"]),
+            "username": u.get("username"),
+            "nombre": u.get("nombre"),
+            "role": u.get("role"),
+            "created_at": u.get("created_at"),
+        })
+    
+    return result
+
+# Endpoint para asignar usuario a organización (superadmin)
+@api_router.put("/users/{user_id}/assign-organization/{org_id}")
+async def assign_user_to_organization(
+    user_id: str,
+    org_id: str,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Asignar un usuario a una organización (solo superadmin)"""
+    # Verificar que el usuario existe
+    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    if user.get("role") == "superadmin":
+        raise HTTPException(status_code=400, detail="No se puede asignar organización a superadmin")
+    
+    # Verificar que la organización existe
+    org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    # Actualizar el usuario
+    await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"organization_id": org_id}}
+    )
+    
+    # También migrar los datos relacionados del usuario (turnos, servicios)
+    await db.turnos.update_many(
+        {"user_id": user_id, "organization_id": {"$in": [None, ""]}},
+        {"$set": {"organization_id": org_id}}
+    )
+    
+    await db.services.update_many(
+        {"user_id": user_id, "organization_id": {"$in": [None, ""]}},
+        {"$set": {"organization_id": org_id}}
+    )
+    
+    return {
+        "message": f"Usuario '{user.get('nombre')}' asignado a '{org.get('nombre')}'",
+        "user_id": user_id,
+        "organization_id": org_id,
+        "organization_nombre": org.get("nombre")
+    }
+
 # ==========================================
 # USER ENDPOINTS (Multi-tenant - admin only)
 # ==========================================
