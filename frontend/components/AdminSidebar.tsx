@@ -49,6 +49,9 @@ export default function AdminSidebar() {
 
       <Divider />
 
+      {/* Organization Branding */}
+      <OrganizationBranding variant="sidebar" />
+
       {/* User Info */}
       <View style={styles.userInfo}>
         <Avatar.Icon size={48} icon="account" style={styles.avatar} />
