@@ -79,7 +79,7 @@ export default function TabsLayout() {
             backgroundColor: organization.color_primario || '#0066CC',
           },
           headerTintColor: '#fff',
-          headerTitle: organization.nombre || 'TaxiFast',
+          headerTitle: 'TaxiFast',
           tabBarStyle: {
             backgroundColor: '#FFFFFF',
             borderTopWidth: 1,
