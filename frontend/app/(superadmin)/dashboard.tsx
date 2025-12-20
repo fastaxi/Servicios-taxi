@@ -317,4 +317,18 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 16,
   },
+  actionCard: {
+    borderRadius: 12,
+    backgroundColor: '#FFF3E0',
+  },
+  actionContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  actionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
 });
