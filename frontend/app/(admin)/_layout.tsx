@@ -33,6 +33,8 @@ export default function AdminLayout() {
           backgroundColor: '#0066CC',
         },
         headerTintColor: '#fff',
+        headerRight: () => <OrganizationBranding variant="header" />,
+        headerRightContainerStyle: { paddingRight: 16 },
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
