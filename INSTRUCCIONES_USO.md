@@ -78,7 +78,7 @@ Logo: TaxiFast con escudo de Asturias
 
 ### Servicio de Ejemplo
 - Fecha: 23/01/2025 - 10:30
-- Ruta: Tineo → Oviedo
+- Ruta: tu localidad → Oviedo
 - Importe: 45.50€ (IVA 10% incluido)
 - Kilómetros: 52.3 km
 - Tipo: Empresa (Hospital Universitario Central de Asturias)
@@ -130,7 +130,7 @@ La aplicación detecta automáticamente cuando no hay conexión a Internet y:
 {
   "fecha": "2025-01-23",
   "hora": "10:30",
-  "origen": "Tineo",
+  "origen": "tu localidad",
   "destino": "Oviedo",
   "importe": 45.50,
   "tiempo_espera": 5,

@@ -177,7 +177,7 @@ Verá un formulario con los siguientes campos:
 
 1. **Fecha:** Se completa automáticamente (puede cambiarla si es necesario)
 2. **Hora:** Se completa automáticamente (puede cambiarla si es necesario)
-3. **Origen:** Dirección o lugar de recogida (ej: "Calle Mayor 10, Tineo")
+3. **Origen:** Dirección o lugar de recogida (ej: "Calle Mayor 10, tu localidad")
 4. **Destino:** Dirección o lugar de destino (ej: "Hospital de Cangas del Narcea")
 5. **Tipo de Servicio:**
    - **Empresa/Cliente:** Si es un servicio contratado por una empresa

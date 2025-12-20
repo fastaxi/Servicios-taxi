@@ -76,7 +76,7 @@ Para registrar un nuevo servicio de taxi:
    **Información básica:**
    - **Fecha:** Seleccione la fecha del servicio
    - **Hora:** Seleccione la hora del servicio
-   - **Origen:** Localidad de origen (ej: Tineo)
+   - **Origen:** Localidad de origen (ej: tu localidad)
    - **Destino:** Localidad de destino (ej: Oviedo)
 
    **Detalles económicos:**

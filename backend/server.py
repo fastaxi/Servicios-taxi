@@ -181,7 +181,7 @@ class PyObjectId(ObjectId):
 # ORGANIZATION MODELS (Multi-tenant SaaS)
 # ==========================================
 class OrganizationBase(BaseModel):
-    nombre: str  # Nombre de la empresa de taxis (ej: "Taxi Tineo", "Radio Taxi Madrid")
+    nombre: str  # Nombre de la empresa de taxis (ej: "TaxiFast", "Radio Taxi Madrid")
     slug: Optional[str] = None  # URL-friendly identifier (auto-generated if not provided)
     cif: Optional[str] = ""  # CIF/NIF de la empresa
     direccion: Optional[str] = ""
