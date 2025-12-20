@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl, Platform, Image, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, FAB, Portal, Modal, TextInput, useTheme, ActivityIndicator, IconButton, Chip, Divider, Switch } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '../../config/api';
 
 interface Organization {
@@ -20,6 +21,7 @@ interface Organization {
   web: string;
   color_primario: string;
   color_secundario: string;
+  logo_base64: string | null;
   notas: string;
   activa: boolean;
   total_taxistas: number;
@@ -46,6 +48,7 @@ const emptyFormData = {
   web: '',
   color_primario: '#0066CC',
   color_secundario: '#FFD700',
+  logo_base64: '' as string | null,
   notas: '',
 };
 
@@ -87,6 +90,45 @@ export default function OrganizationsScreen() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const pickImage = async (isEdit: boolean) => {
+    try {
+      // Request permission
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Se necesita permiso para acceder a la galería');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+        if (isEdit) {
+          setEditFormData({ ...editFormData, logo_base64: base64Image });
+        } else {
+          setFormData({ ...formData, logo_base64: base64Image });
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      alert('Error al seleccionar imagen');
+    }
+  };
+
+  const removeLogo = (isEdit: boolean) => {
+    if (isEdit) {
+      setEditFormData({ ...editFormData, logo_base64: null });
+    } else {
+      setFormData({ ...formData, logo_base64: null });
     }
   };
 
@@ -155,6 +197,7 @@ export default function OrganizationsScreen() {
       web: org.web || '',
       color_primario: org.color_primario || '#0066CC',
       color_secundario: org.color_secundario || '#FFD700',
+      logo_base64: org.logo_base64 || null,
       notas: org.notas || '',
     });
     setEditModalVisible(true);
@@ -205,7 +248,6 @@ export default function OrganizationsScreen() {
     if (Platform.OS === 'web') {
       if (!window.confirm(confirmMsg)) return;
     } else {
-      // For mobile, we'd use Alert.alert but for simplicity:
       return; // Disable delete on mobile for safety
     }
 
@@ -227,8 +269,51 @@ export default function OrganizationsScreen() {
     loadOrganizations();
   };
 
+  // Render logo picker component
+  const renderLogoPicker = (logoBase64: string | null, isEdit: boolean) => (
+    <View style={styles.logoSection}>
+      <Text variant="titleSmall" style={styles.sectionTitle}>Logo de la empresa</Text>
+      <View style={styles.logoContainer}>
+        {logoBase64 ? (
+          <View style={styles.logoPreviewContainer}>
+            <Image source={{ uri: logoBase64 }} style={styles.logoPreview} />
+            <View style={styles.logoActions}>
+              <Button 
+                mode="outlined" 
+                onPress={() => pickImage(isEdit)}
+                icon="pencil"
+                compact
+              >
+                Cambiar
+              </Button>
+              <Button 
+                mode="outlined" 
+                onPress={() => removeLogo(isEdit)}
+                icon="delete"
+                textColor="#f44336"
+                compact
+              >
+                Quitar
+              </Button>
+            </View>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.logoPlaceholder} onPress={() => pickImage(isEdit)}>
+            <MaterialCommunityIcons name="image-plus" size={40} color="#999" />
+            <Text variant="bodySmall" style={styles.logoPlaceholderText}>
+              Pulsa para añadir logo
+            </Text>
+            <Text variant="labelSmall" style={styles.logoHint}>
+              Recomendado: imagen cuadrada
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+
   // Render form fields (reusable for create and edit)
-  const renderFormFields = (data: typeof formData, setData: (data: typeof formData) => void) => (
+  const renderFormFields = (data: typeof formData, setData: (data: typeof formData) => void, isEdit: boolean) => (
     <>
       <TextInput
         label="Nombre de la empresa *"
@@ -237,6 +322,13 @@ export default function OrganizationsScreen() {
         mode="outlined"
         style={styles.input}
       />
+
+      {/* Logo picker */}
+      {renderLogoPicker(data.logo_base64, isEdit)}
+
+      <Divider style={{ marginVertical: 16 }} />
+      <Text variant="titleSmall" style={styles.sectionTitle}>Datos fiscales</Text>
+
       <TextInput
         label="CIF/NIF"
         value={data.cif}
@@ -275,6 +367,10 @@ export default function OrganizationsScreen() {
           style={[styles.input, { flex: 1 }]}
         />
       </View>
+
+      <Divider style={{ marginVertical: 16 }} />
+      <Text variant="titleSmall" style={styles.sectionTitle}>Contacto</Text>
+
       <TextInput
         label="Teléfono"
         value={data.telefono}
@@ -300,7 +396,10 @@ export default function OrganizationsScreen() {
       />
       
       <Divider style={{ marginVertical: 16 }} />
-      <Text variant="titleSmall" style={{ marginBottom: 12, color: '#666' }}>Personalización de marca</Text>
+      <Text variant="titleSmall" style={styles.sectionTitle}>Personalización de marca</Text>
+      <Text variant="bodySmall" style={styles.brandingHint}>
+        Estos colores se mostrarán en la app de los taxistas
+      </Text>
       
       <View style={styles.row}>
         <View style={[styles.colorPreview, { backgroundColor: data.color_primario }]} />
@@ -368,7 +467,14 @@ export default function OrganizationsScreen() {
                 <View style={styles.orgHeader}>
                   <View style={styles.orgTitleContainer}>
                     <View style={[styles.statusDot, { backgroundColor: org.activa ? '#4caf50' : '#f44336' }]} />
-                    <View style={{ flex: 1 }}>
+                    {org.logo_base64 ? (
+                      <Image source={{ uri: org.logo_base64 }} style={styles.orgLogo} />
+                    ) : (
+                      <View style={[styles.orgLogoPlaceholder, { backgroundColor: org.color_primario || '#0066CC' }]}>
+                        <MaterialCommunityIcons name="office-building" size={24} color="#FFF" />
+                      </View>
+                    )}
+                    <View style={{ flex: 1, marginLeft: 12 }}>
                       <Text variant="titleLarge">{org.nombre}</Text>
                       <Text variant="bodySmall" style={styles.slugText}>/{org.slug}</Text>
                     </View>
@@ -499,7 +605,7 @@ export default function OrganizationsScreen() {
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text variant="headlineSmall" style={styles.modalTitle}>Nueva Organización</Text>
             
-            {renderFormFields(formData, setFormData)}
+            {renderFormFields(formData, setFormData, false)}
             
             <View style={styles.modalActions}>
               <Button mode="outlined" onPress={() => setModalVisible(false)} disabled={saving}>
@@ -524,7 +630,7 @@ export default function OrganizationsScreen() {
               </Text>
             )}
             
-            {renderFormFields(editFormData, setEditFormData)}
+            {renderFormFields(editFormData, setEditFormData, true)}
             
             <View style={styles.modalActions}>
               <Button mode="outlined" onPress={() => setEditModalVisible(false)} disabled={saving}>
@@ -639,6 +745,18 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginRight: 12,
   },
+  orgLogo: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+  },
+  orgLogoPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   slugText: {
     color: '#666',
   },
@@ -751,5 +869,56 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: 12,
     marginTop: 16,
+  },
+  // Logo styles
+  logoSection: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    color: '#666',
+    marginBottom: 12,
+    fontWeight: '600',
+  },
+  brandingHint: {
+    color: '#999',
+    marginBottom: 12,
+  },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  logoPreviewContainer: {
+    alignItems: 'center',
+  },
+  logoPreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  logoActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  logoPlaceholder: {
+    width: 150,
+    height: 150,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#ddd',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fafafa',
+  },
+  logoPlaceholderText: {
+    color: '#999',
+    marginTop: 8,
+  },
+  logoHint: {
+    color: '#bbb',
+    marginTop: 4,
   },
 });
