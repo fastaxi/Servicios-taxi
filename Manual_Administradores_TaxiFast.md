@@ -1,16 +1,16 @@
 # MANUAL DE USUARIO - PANEL DE ADMINISTRACIÓN
-## Taxi Tineo Sociedad Cooperativa
+## TaxiFast Plataforma Multi-Tenant
 
 ---
 
 ### INFORMACIÓN DEL SISTEMA
 
-**Nombre:** Panel de Administración - Taxi Tineo  
+**Nombre:** Panel de Administración - TaxiFast  
 **Versión:** 1.2.0  
 **URL de Acceso:** https://servicios-taxi.vercel.app  
-**Teléfono:** 985 801 515  
-**Web:** https://www.taxitineo.com  
-**Email:** info@taxitineo.com
+**Teléfono:** Contacta con soporte  
+**Web:** https://www.taxifast.com  
+**Email:** info@taxifast.com
 
 ---
 
@@ -39,7 +39,7 @@
 
 ### Paso 2: Ingresar Credenciales
 
-Verá la pantalla de inicio de sesión con el logo de Taxi Tineo.
+Verá la pantalla de inicio de sesión con el logo de TaxiFast.
 
 **Campos a completar:**
 - **Usuario:** Ingrese su nombre de usuario de administrador
@@ -478,10 +478,10 @@ En la tabla de servicios podrá ver:
 - El logo aparecerá en la pantalla de login
 
 **Información General:**
-- **Nombre del Radio Taxi:** Taxi Tineo Sociedad Cooperativa
+- **Nombre del Radio Taxi:** TaxiFast Plataforma Multi-Tenant
 - **Teléfono:** 985801515
-- **Página Web:** https://www.taxitineo.com
-- **Email:** info@taxitineo.com
+- **Página Web:** https://www.taxifast.com
+- **Email:** info@taxifast.com
 - **Dirección:** Tineo
 
 ### Guardar Configuración
@@ -543,9 +543,9 @@ Sí. El sistema usa:
 
 **Si tiene problemas técnicos o preguntas:**
 
-📞 **Teléfono:** 985 801 515  
-🌐 **Web:** https://www.taxitineo.com  
-📧 **Email:** info@taxitineo.com
+📞 **Teléfono:** Contacta con soporte  
+🌐 **Web:** https://www.taxifast.com  
+📧 **Email:** info@taxifast.com
 
 **Horario de atención:** Lunes a Viernes, 9:00 - 18:00
 
@@ -555,10 +555,10 @@ Sí. El sistema usa:
 
 **Manual:** v1.0  
 **Fecha:** Diciembre 2025  
-**Sistema:** Taxi Tineo - Panel de Administración v1.2.0  
+**Sistema:** TaxiFast - Panel de Administración v1.2.0  
 **URL:** https://servicios-taxi.vercel.app
 
 ---
 
-**Taxi Tineo Sociedad Cooperativa**  
+**TaxiFast Plataforma Multi-Tenant**  
 *Gestión profesional de servicios de taxi en Asturias*
