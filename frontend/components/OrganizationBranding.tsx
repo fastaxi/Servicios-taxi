@@ -48,13 +48,14 @@ export default function OrganizationBranding({ variant = 'header' }: Organizatio
   }
 
   const primaryColor = organization.color_primario || '#0066CC';
+  const logoSource = organization.logo_base64 || organization.logo_url;
 
   if (variant === 'compact') {
     return (
       <View style={styles.compactContainer}>
-        {organization.logo_url ? (
+        {logoSource ? (
           <Image 
-            source={{ uri: organization.logo_url }} 
+            source={{ uri: logoSource }} 
             style={styles.compactLogo}
             resizeMode="contain"
           />
@@ -73,9 +74,9 @@ export default function OrganizationBranding({ variant = 'header' }: Organizatio
   if (variant === 'sidebar') {
     return (
       <View style={styles.sidebarContainer}>
-        {organization.logo_url ? (
+        {logoSource ? (
           <Image 
-            source={{ uri: organization.logo_url }} 
+            source={{ uri: logoSource }} 
             style={styles.sidebarLogo}
             resizeMode="contain"
           />
@@ -96,9 +97,9 @@ export default function OrganizationBranding({ variant = 'header' }: Organizatio
   // Default: header variant
   return (
     <View style={styles.headerContainer}>
-      {organization.logo_url ? (
+      {logoSource ? (
         <Image 
-          source={{ uri: organization.logo_url }} 
+          source={{ uri: logoSource }} 
           style={styles.headerLogo}
           resizeMode="contain"
         />
