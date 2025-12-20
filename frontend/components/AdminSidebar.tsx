@@ -4,6 +4,7 @@ import { Text, Divider, Avatar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
+import OrganizationBranding from './OrganizationBranding';
 
 interface MenuItem {
   icon: string;
