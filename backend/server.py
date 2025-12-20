@@ -2366,10 +2366,10 @@ async def get_config():
         return ConfigResponse(
             id="default",
             nombre_radio_taxi="TaxiFast",
-            telefono="985 80 15 15",
+            telefono="",
             web="www.taxifast.com",
-            direccion="Tineo, Asturias",
-            email="",
+            direccion="",
+            email="soporte@taxifast.com",
             logo_base64=None,
             updated_at=datetime.utcnow()
         )
