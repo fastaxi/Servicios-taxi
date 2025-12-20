@@ -10,6 +10,7 @@ interface Organization {
   id: string;
   nombre: string;
   logo_url?: string;
+  logo_base64?: string;
   color_primario?: string;
   color_secundario?: string;
 }
