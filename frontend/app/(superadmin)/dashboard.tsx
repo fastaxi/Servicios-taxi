@@ -149,6 +149,28 @@ export default function SuperAdminDashboard() {
           </Button>
         </View>
         
+        {/* Quick Action: Unassigned Users */}
+        <Card style={[styles.actionCard, { marginBottom: 16 }]}>
+          <Card.Content style={styles.actionContent}>
+            <View style={styles.actionInfo}>
+              <MaterialCommunityIcons name="account-alert" size={32} color="#FF9800" />
+              <View style={{ marginLeft: 16, flex: 1 }}>
+                <Text variant="titleMedium">Usuarios Sin Asignar</Text>
+                <Text variant="bodySmall" style={{ color: '#666' }}>
+                  Usuarios creados antes del sistema multi-tenant
+                </Text>
+              </View>
+            </View>
+            <Button 
+              mode="outlined" 
+              onPress={() => router.push('/(superadmin)/users' as any)}
+              icon="arrow-right"
+            >
+              Gestionar
+            </Button>
+          </Card.Content>
+        </Card>
+        
         {organizations.slice(0, 5).map((org) => (
           <Card key={org.id} style={styles.orgCard}>
             <Card.Content style={styles.orgContent}>
