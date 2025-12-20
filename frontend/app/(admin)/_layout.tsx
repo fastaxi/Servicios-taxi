@@ -3,6 +3,7 @@ import { View, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import { Tabs, Slot } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AdminSidebar from '../../components/AdminSidebar';
+import OrganizationBranding from '../../components/OrganizationBranding';
 
 export default function AdminLayout() {
   const { width } = useWindowDimensions();
