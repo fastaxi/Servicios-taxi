@@ -1,16 +1,16 @@
 # MANUAL DE USUARIO - APP MÓVIL PARA TAXISTAS
-## Taxi Tineo Sociedad Cooperativa
+## TaxiFast Plataforma Multi-Tenant
 
 ---
 
 ### INFORMACIÓN DE LA APLICACIÓN
 
-**Nombre:** Taxi Tineo - App Móvil  
+**Nombre:** TaxiFast - App Móvil  
 **Versión:** 1.2.0  
 **Plataforma:** Android  
-**Teléfono:** 985 801 515  
-**Web:** https://www.taxitineo.com  
-**Email:** info@taxitineo.com
+**Teléfono:** Contacta con tu administrador  
+**Web:** https://www.taxifast.com  
+**Email:** info@taxifast.com
 
 ---
 
@@ -70,7 +70,7 @@
 ### Paso 3: Instalar la App
 
 1. Abra la carpeta **"Descargas"** o **"Archivos"** en su teléfono
-2. Busque el archivo **"TaxiTineo.apk"** o similar
+2. Busque el archivo **"TaxiFast.apk"** o similar
 3. Toque sobre el archivo
 4. Aparecerá una pantalla de instalación
 5. Toque **"Instalar"**
@@ -92,7 +92,7 @@ Por seguridad, se recomienda volver a desactivar esta opción:
 
 ### Paso 1: Abrir la App
 
-1. Busque el ícono de **Taxi Tineo** en su pantalla principal
+1. Busque el ícono de **TaxiFast** en su pantalla principal
 2. Toque sobre el ícono para abrir la aplicación
 3. Verá la pantalla de inicio de sesión con el logo
 
@@ -531,9 +531,9 @@ Cuando haya una nueva versión de la app, el administrador le enviará el nuevo 
 
 **Si necesita ayuda:**
 
- **Teléfono:** 985 801 515  
- **Web:** https://www.taxitineo.com  
- **Email:** info@taxitineo.com
+ **Teléfono:** Contacta con tu administrador  
+ **Web:** https://www.taxifast.com  
+ **Email:** info@taxifast.com
 
 **Horario de atención:** Lunes a Viernes, 9:00 - 18:00
 
@@ -543,19 +543,19 @@ Cuando haya una nueva versión de la app, el administrador le enviará el nuevo 
 
 **Manual:** v1.0  
 **Fecha:** Diciembre 2025  
-**App:** Taxi Tineo v1.2.0  
+**App:** TaxiFast v1.2.0  
 **Plataforma:** Android
 
 ---
 
-**Taxi Tineo Sociedad Cooperativa**  
+**TaxiFast Plataforma Multi-Tenant**  
 *Su compañero de trabajo digital*
 
 ---
 
 ## NOTAS FINALES
 
-Este manual ha sido creado para facilitar el uso de la aplicación móvil de Taxi Tineo. Si tiene sugerencias para mejorar la app o este manual, no dude en comunicárselo al administrador.
+Este manual ha sido creado para facilitar el uso de la aplicación móvil de TaxiFast. Si tiene sugerencias para mejorar la app o este manual, no dude en comunicárselo al administrador.
 
-**¡Gracias por usar Taxi Tineo!**  
+**¡Gracias por usar TaxiFast!**  
 *Juntos hacemos un mejor servicio*
