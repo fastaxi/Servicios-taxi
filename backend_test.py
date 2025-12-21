@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
-TaxiFast Multi-tenant SaaS Platform - Comprehensive Backend Testing
+TaxiFast Backend API Testing Suite
+Comprehensive testing for all TaxiFast endpoints as requested in review
 ================================================================
 
-Testing all multi-tenant functionality including:
-- Authentication and roles (superadmin, admin, taxista)
-- Organization management (CRUD)
-- Multi-tenant data isolation
-- MY-ORGANIZATION branding endpoint
-- Multi-tenant CRUD operations
-- Security and permissions
-- Legacy compatibility
+Testing all endpoints of the TaxiFast system, focusing on:
+1. Authentication endpoints
+2. Superadmin organization management endpoints  
+3. Superadmin global taxi driver management endpoints
+4. Superadmin global vehicle management endpoints
+5. Configuration endpoints
 
-Credentials:
-- Super Admin: superadmin / superadmin123
-- Admin Tineo: admin_tineo / tineo123 (Taxi Tineo)
-- Admin Madrid: admin_madrid / madrid123 (Radio Taxi Madrid)
-- Taxista Tineo: taxista_tineo1 / tax123
-- Taxista Madrid: taxista_madrid1 / tax123
-- Legacy Admin: admin / admin123
+Base URL: https://taxitineo.emergent.host/api
+Superadmin credentials: superadmin/superadmin123
+
+Key verification points:
+- Vehicle fields include: plazas, km_iniciales, fecha_compra, activo
+- Taxi driver fields include: licencia, email, activo  
+- Vehicle assignment works bidirectionally
+- Global configuration returns "TaxiFast" as name
 """
 
 import requests
@@ -27,9 +27,10 @@ import sys
 from datetime import datetime
 import random
 import string
+import time
 
 # Configuration
-BASE_URL = "https://taxifast-admin.preview.emergentagent.com/api"
+BASE_URL = "https://taxitineo.emergent.host/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Test counters
