@@ -929,6 +929,7 @@ async def superadmin_list_taxistas(current_user: dict = Depends(get_current_supe
             "nombre": t.get("nombre"),
             "telefono": t.get("telefono"),
             "email": t.get("email"),
+            "licencia": t.get("licencia"),  # Campo de licencia del taxista
             "organization_id": t.get("organization_id"),
             "organization_nombre": org_map.get(t.get("organization_id"), "Sin asignar"),
             "vehiculo_asignado_id": vehiculo_id,
