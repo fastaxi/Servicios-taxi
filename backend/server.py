@@ -1086,7 +1086,9 @@ async def superadmin_list_vehiculos(current_user: dict = Depends(get_current_sup
             "modelo": v.get("modelo"),
             "licencia": v.get("licencia"),
             "organization_id": v.get("organization_id"),
-            "organization_nombre": org_map.get(v.get("organization_id"), "Sin asignar")
+            "organization_nombre": org_map.get(v.get("organization_id"), "Sin asignar"),
+            "taxista_asignado_id": v.get("taxista_asignado_id"),
+            "taxista_asignado_nombre": v.get("taxista_asignado_nombre")
         })
     return result
 
