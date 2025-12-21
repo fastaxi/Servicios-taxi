@@ -640,6 +640,14 @@ export default function GestionScreen() {
               style={styles.input}
               keyboardType="email-address"
             />
+
+            <TextInput
+              label="Número de Licencia"
+              value={taxistaForm.licencia}
+              onChangeText={(v) => setTaxistaForm({...taxistaForm, licencia: v})}
+              mode="outlined"
+              style={styles.input}
+            />
             
             <Divider style={{ marginVertical: 16 }} />
             <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organización *</Text>
