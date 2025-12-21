@@ -70,6 +70,7 @@ export default function GestionScreen() {
     nombre: '',
     telefono: '',
     email: '',
+    licencia: '',
     organization_id: '',
     activo: true
   });
@@ -79,6 +80,10 @@ export default function GestionScreen() {
     marca: '',
     modelo: '',
     licencia: '',
+    plazas: 4,
+    km_iniciales: 0,
+    fecha_compra: '',
+    activo: true,
     organization_id: ''
   });
 
