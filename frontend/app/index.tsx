@@ -106,7 +106,7 @@ export default function LoginScreen() {
 
           {__DEV__ && (
             <Text variant="bodySmall" style={styles.debugText}>
-              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxifast-saas.preview.emergentagent.com'}
+              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://taxifast-admin.preview.emergentagent.com'}
             </Text>
           )}
 

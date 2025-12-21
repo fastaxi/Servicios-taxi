@@ -43,12 +43,12 @@ Contraseña: taxista123
 
 ### Vista Web (Preview)
 ```
-https://taxifast-saas.preview.emergentagent.com
+https://taxifast-admin.preview.emergentagent.com
 ```
 
 ### API Backend
 ```
-https://taxifast-saas.preview.emergentagent.com/api
+https://taxifast-admin.preview.emergentagent.com/api
 ```
 
 ## 📱 Cómo Usar en Dispositivo Móvil Real
