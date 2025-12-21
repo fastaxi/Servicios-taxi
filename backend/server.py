@@ -960,12 +960,16 @@ async def superadmin_create_taxista(
     if not org:
         raise HTTPException(status_code=404, detail="Organización no encontrada")
     
+    # Incluir TODOS los campos que usa el admin para compatibilidad completa
     user_dict = {
         "username": taxista["username"],
         "password": get_password_hash(taxista["password"]),
         "nombre": taxista["nombre"],
         "telefono": taxista.get("telefono", ""),
+        "email": taxista.get("email", ""),
+        "licencia": taxista.get("licencia", ""),  # Campo de licencia del taxista
         "role": "taxista",
+        "activo": taxista.get("activo", True),
         "organization_id": taxista["organization_id"],
         "created_at": datetime.utcnow()
     }
