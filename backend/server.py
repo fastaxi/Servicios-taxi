@@ -994,6 +994,12 @@ async def superadmin_update_taxista(
         update_data["nombre"] = taxista["nombre"]
     if taxista.get("telefono") is not None:
         update_data["telefono"] = taxista["telefono"]
+    if taxista.get("email") is not None:
+        update_data["email"] = taxista["email"]
+    if taxista.get("licencia") is not None:
+        update_data["licencia"] = taxista["licencia"]
+    if taxista.get("activo") is not None:
+        update_data["activo"] = taxista["activo"]
     if taxista.get("organization_id"):
         # Verificar que la organización existe
         org = await db.organizations.find_one({"_id": ObjectId(taxista["organization_id"])})
