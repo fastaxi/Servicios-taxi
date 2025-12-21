@@ -923,8 +923,12 @@ async def superadmin_list_taxistas(current_user: dict = Depends(get_current_supe
             "username": t.get("username"),
             "nombre": t.get("nombre"),
             "telefono": t.get("telefono"),
+            "email": t.get("email"),
             "organization_id": t.get("organization_id"),
             "organization_nombre": org_map.get(t.get("organization_id"), "Sin asignar"),
+            "vehiculo_asignado_id": t.get("vehiculo_asignado_id"),
+            "vehiculo_asignado_matricula": t.get("vehiculo_asignado_matricula"),
+            "activo": t.get("activo", True),
             "created_at": t.get("created_at")
         })
     return result
