@@ -1166,6 +1166,14 @@ async def superadmin_update_vehiculo(
         update_data["modelo"] = vehiculo["modelo"]
     if vehiculo.get("licencia") is not None:
         update_data["licencia"] = vehiculo["licencia"]
+    if vehiculo.get("plazas") is not None:
+        update_data["plazas"] = vehiculo["plazas"]
+    if vehiculo.get("km_iniciales") is not None:
+        update_data["km_iniciales"] = vehiculo["km_iniciales"]
+    if vehiculo.get("fecha_compra") is not None:
+        update_data["fecha_compra"] = vehiculo["fecha_compra"]
+    if vehiculo.get("activo") is not None:
+        update_data["activo"] = vehiculo["activo"]
     if vehiculo.get("organization_id"):
         org = await db.organizations.find_one({"_id": ObjectId(vehiculo["organization_id"])})
         if not org:
