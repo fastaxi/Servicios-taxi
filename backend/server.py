@@ -1026,10 +1026,11 @@ async def superadmin_assign_vehiculo_to_taxista(
     
     vehiculo_id = data.get("vehiculo_id")
     
-    # Si hay un vehículo anterior asignado, quitarlo
-    if taxista.get("vehiculo_asignado_id"):
+    # Si hay un vehículo anterior asignado, quitarlo (buscar en ambos campos por compatibilidad)
+    old_vehiculo_id = taxista.get("vehiculo_asignado_id") or taxista.get("vehiculo_id")
+    if old_vehiculo_id:
         await db.vehiculos.update_one(
-            {"_id": ObjectId(taxista["vehiculo_asignado_id"])},
+            {"_id": ObjectId(old_vehiculo_id)},
             {"$unset": {"taxista_asignado_id": "", "taxista_asignado_nombre": ""}}
         )
     
@@ -1045,13 +1046,21 @@ async def superadmin_assign_vehiculo_to_taxista(
         if vehiculo.get("taxista_asignado_id") and vehiculo.get("taxista_asignado_id") != taxista_id:
             await db.users.update_one(
                 {"_id": ObjectId(vehiculo["taxista_asignado_id"])},
-                {"$unset": {"vehiculo_asignado_id": "", "vehiculo_asignado_matricula": ""}}
+                {"$unset": {
+                    "vehiculo_asignado_id": "", "vehiculo_asignado_matricula": "",
+                    "vehiculo_id": "", "vehiculo_matricula": ""  # También limpiar campos legacy
+                }}
             )
         
-        # Asignar vehículo al taxista
+        # Asignar vehículo al taxista (guardar en AMBOS campos para compatibilidad)
         await db.users.update_one(
             {"_id": ObjectId(taxista_id)},
-            {"$set": {"vehiculo_asignado_id": vehiculo_id, "vehiculo_asignado_matricula": vehiculo.get("matricula")}}
+            {"$set": {
+                "vehiculo_asignado_id": vehiculo_id, 
+                "vehiculo_asignado_matricula": vehiculo.get("matricula"),
+                "vehiculo_id": vehiculo_id,  # Campo legacy usado por admin de org
+                "vehiculo_matricula": vehiculo.get("matricula")  # Campo legacy
+            }}
         )
         
         # Asignar taxista al vehículo
@@ -1062,10 +1071,13 @@ async def superadmin_assign_vehiculo_to_taxista(
         
         return {"message": f"Vehículo {vehiculo.get('matricula')} asignado a {taxista.get('nombre')}"}
     else:
-        # Desasignar vehículo
+        # Desasignar vehículo (limpiar AMBOS campos)
         await db.users.update_one(
             {"_id": ObjectId(taxista_id)},
-            {"$unset": {"vehiculo_asignado_id": "", "vehiculo_asignado_matricula": ""}}
+            {"$unset": {
+                "vehiculo_asignado_id": "", "vehiculo_asignado_matricula": "",
+                "vehiculo_id": "", "vehiculo_matricula": ""  # También limpiar campos legacy
+            }}
         )
         return {"message": "Vehículo desasignado"}
 
