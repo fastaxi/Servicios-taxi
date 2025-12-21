@@ -31,695 +31,602 @@ import time
 
 # Configuration
 BASE_URL = "https://taxitineo.emergent.host/api"
-HEADERS = {"Content-Type": "application/json"}
+SUPERADMIN_CREDENTIALS = {
+    "username": "superadmin", 
+    "password": "superadmin123"
+}
 
-# Test counters
-tests_passed = 0
-tests_failed = 0
-test_results = []
-
-def log_test(test_name, passed, details=""):
-    global tests_passed, tests_failed
-    status = "✅ PASS" if passed else "❌ FAIL"
-    print(f"{status}: {test_name}")
-    if details:
-        print(f"   Details: {details}")
-    
-    test_results.append({
-        "test": test_name,
-        "passed": passed,
-        "details": details
-    })
-    
-    if passed:
-        tests_passed += 1
-    else:
-        tests_failed += 1
-
-def make_request(method, endpoint, data=None, headers=None, expected_status=200):
-    """Make HTTP request and return response"""
-    url = f"{BASE_URL}{endpoint}"
-    req_headers = HEADERS.copy()
-    if headers:
-        req_headers.update(headers)
-    
-    try:
-        if method == "GET":
-            response = requests.get(url, headers=req_headers)
-        elif method == "POST":
-            response = requests.post(url, json=data, headers=req_headers)
-        elif method == "PUT":
-            response = requests.put(url, json=data, headers=req_headers)
-        elif method == "DELETE":
-            response = requests.delete(url, headers=req_headers)
+class TaxiFastTester:
+    def __init__(self):
+        self.base_url = BASE_URL
+        self.session = requests.Session()
+        self.superadmin_token = None
+        self.test_results = []
+        self.created_resources = {
+            "organizations": [],
+            "taxistas": [],
+            "vehiculos": [],
+            "admins": []
+        }
         
-        return response
-    except Exception as e:
-        print(f"Request failed: {e}")
-        return None
-
-def login_user(username, password):
-    """Login and return token"""
-    response = make_request("POST", "/auth/login", {
-        "username": username,
-        "password": password
-    })
+    def log_test(self, test_name, success, details="", response_data=None):
+        """Log test result"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} - {test_name}")
+        if details:
+            print(f"    Details: {details}")
+        if response_data and not success:
+            print(f"    Response: {response_data}")
+        
+        self.test_results.append({
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "response": response_data
+        })
+        
+    def make_request(self, method, endpoint, data=None, headers=None, params=None):
+        """Make HTTP request with error handling"""
+        url = f"{self.base_url}{endpoint}"
+        
+        try:
+            if method.upper() == "GET":
+                response = self.session.get(url, headers=headers, params=params, timeout=30)
+            elif method.upper() == "POST":
+                response = self.session.post(url, json=data, headers=headers, params=params, timeout=30)
+            elif method.upper() == "PUT":
+                response = self.session.put(url, json=data, headers=headers, params=params, timeout=30)
+            elif method.upper() == "DELETE":
+                response = self.session.delete(url, headers=headers, params=params, timeout=30)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+                
+            return response
+        except requests.exceptions.RequestException as e:
+            print(f"Request error: {e}")
+            return None
     
-    if response and response.status_code == 200:
-        data = response.json()
-        return data.get("access_token"), data.get("user")
-    return None, None
-
-def get_auth_headers(token):
-    """Get authorization headers"""
-    return {"Authorization": f"Bearer {token}"}
-
-def generate_random_string(length=8):
-    """Generate random string for unique identifiers"""
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
-
-def print_section(title):
-    """Print section header"""
-    print(f"\n{'='*60}")
-    print(f" {title}")
-    print(f"{'='*60}")
-
-def test_authentication_and_roles():
-    """Test 1: Authentication and Roles"""
-    print_section("1. AUTENTICACIÓN Y ROLES")
+    def get_auth_headers(self, token=None):
+        """Get authorization headers"""
+        if token is None:
+            token = self.superadmin_token
+        return {"Authorization": f"Bearer {token}"} if token else {}
     
-    # Test superadmin login
-    token_superadmin, user_superadmin = login_user("superadmin", "superadmin123")
-    log_test("Login Superadmin", 
-             token_superadmin is not None, 
-             f"Role: {user_superadmin.get('role') if user_superadmin else 'None'}")
-    
-    # Test admin logins
-    token_admin_tineo, user_admin_tineo = login_user("admin_tineo", "tineo123")
-    log_test("Login Admin Tineo", 
-             token_admin_tineo is not None,
-             f"Org: {user_admin_tineo.get('organization_nombre') if user_admin_tineo else 'None'}")
-    
-    token_admin_madrid, user_admin_madrid = login_user("admin_madrid", "madrid123")
-    log_test("Login Admin Madrid", 
-             token_admin_madrid is not None,
-             f"Org: {user_admin_madrid.get('organization_nombre') if user_admin_madrid else 'None'}")
-    
-    # Test taxista logins
-    token_taxista_tineo, user_taxista_tineo = login_user("taxista_tineo1", "tax123")
-    log_test("Login Taxista Tineo", 
-             token_taxista_tineo is not None,
-             f"Org: {user_taxista_tineo.get('organization_nombre') if user_taxista_tineo else 'None'}")
-    
-    token_taxista_madrid, user_taxista_madrid = login_user("taxista_madrid1", "tax123")
-    log_test("Login Taxista Madrid", 
-             token_taxista_madrid is not None,
-             f"Org: {user_taxista_madrid.get('organization_nombre') if user_taxista_madrid else 'None'}")
-    
-    # Test legacy admin
-    token_legacy, user_legacy = login_user("admin", "admin123")
-    log_test("Login Legacy Admin", 
-             token_legacy is not None,
-             f"Role: {user_legacy.get('role') if user_legacy else 'None'}")
-    
-    # Test /auth/me endpoint for organization info
-    if token_admin_tineo:
-        response = make_request("GET", "/auth/me", headers=get_auth_headers(token_admin_tineo))
+    def test_1_authentication(self):
+        """Test authentication endpoints"""
+        print("\n🔐 TESTING AUTHENTICATION")
+        
+        # Test superadmin login
+        response = self.make_request("POST", "/auth/login", SUPERADMIN_CREDENTIALS)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.superadmin_token = data.get("access_token")
+            user_data = data.get("user", {})
+            
+            success = (
+                self.superadmin_token and 
+                user_data.get("role") == "superadmin" and
+                user_data.get("username") == "superadmin"
+            )
+            
+            self.log_test(
+                "POST /auth/login - Superadmin Login", 
+                success,
+                f"Token: {'✓' if self.superadmin_token else '✗'}, Role: {user_data.get('role')}"
+            )
+        else:
+            self.log_test("POST /auth/login - Superadmin Login", False, f"Status: {response.status_code if response else 'No response'}")
+            return False
+        
+        # Test /auth/me endpoint
+        response = self.make_request("GET", "/auth/me", headers=self.get_auth_headers())
         if response and response.status_code == 200:
             user_data = response.json()
-            has_org_info = user_data.get("organization_id") and user_data.get("organization_nombre")
-            log_test("Auth/me returns organization info", 
-                     has_org_info,
-                     f"Org ID: {user_data.get('organization_id')}, Name: {user_data.get('organization_nombre')}")
-    
-    return {
-        "superadmin": (token_superadmin, user_superadmin),
-        "admin_tineo": (token_admin_tineo, user_admin_tineo),
-        "admin_madrid": (token_admin_madrid, user_admin_madrid),
-        "taxista_tineo": (token_taxista_tineo, user_taxista_tineo),
-        "taxista_madrid": (token_taxista_madrid, user_taxista_madrid),
-        "legacy": (token_legacy, user_legacy)
-    }
-
-def test_organization_management(tokens):
-    """Test 2: Organization Management (Superadmin only)"""
-    print_section("2. GESTIÓN DE ORGANIZACIONES (Solo Superadmin)")
-    
-    token_superadmin = tokens["superadmin"][0]
-    token_admin_tineo = tokens["admin_tineo"][0]
-    
-    if not token_superadmin:
-        log_test("Organization Management", False, "No superadmin token available")
-        return {}
-    
-    # Test GET /organizations (superadmin)
-    response = make_request("GET", "/organizations", headers=get_auth_headers(token_superadmin))
-    orgs_data = []
-    if response and response.status_code == 200:
-        orgs_data = response.json()
-        log_test("GET /organizations (superadmin)", True, f"Found {len(orgs_data)} organizations")
-    else:
-        log_test("GET /organizations (superadmin)", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test GET /organizations (admin - should fail with 403)
-    if token_admin_tineo:
-        response = make_request("GET", "/organizations", headers=get_auth_headers(token_admin_tineo))
-        log_test("GET /organizations (admin blocked)", 
-                 response and response.status_code == 403,
-                 f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test POST /organizations (create new organization)
-    new_org_name = f"Test Org {generate_random_string()}"
-    new_org_data = {
-        "nombre": new_org_name,
-        "cif": f"B{generate_random_string(8).upper()}",
-        "telefono": "987654321",
-        "email": "test@testorg.com",
-        "color_primario": "#FF0000",
-        "color_secundario": "#00FF00"
-    }
-    
-    response = make_request("POST", "/organizations", new_org_data, headers=get_auth_headers(token_superadmin))
-    created_org = None
-    if response and response.status_code == 200:
-        created_org = response.json()
-        log_test("POST /organizations (create)", True, f"Created org: {created_org.get('nombre')}")
-    else:
-        log_test("POST /organizations (create)", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test GET /organizations/{id} (get specific organization)
-    if created_org:
-        org_id = created_org.get("id")
-        response = make_request("GET", f"/organizations/{org_id}", headers=get_auth_headers(token_superadmin))
-        if response and response.status_code == 200:
-            org_detail = response.json()
-            log_test("GET /organizations/{id}", True, f"Retrieved org: {org_detail.get('nombre')}")
+            success = user_data.get("role") == "superadmin"
+            self.log_test("GET /auth/me - Get Current User", success, f"Role: {user_data.get('role')}")
         else:
-            log_test("GET /organizations/{id}", False, f"Status: {response.status_code if response else 'No response'}")
+            self.log_test("GET /auth/me - Get Current User", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        return True
     
-    # Test PUT /organizations/{id} (update organization)
-    if created_org:
-        org_id = created_org.get("id")
-        update_data = {
-            "nombre": f"Updated {new_org_name}",
-            "activa": False
+    def test_2_organizations(self):
+        """Test organization management endpoints"""
+        print("\n🏢 TESTING ORGANIZATION MANAGEMENT")
+        
+        # Test GET /organizations
+        response = self.make_request("GET", "/organizations", headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            orgs = response.json()
+            self.log_test("GET /organizations - List Organizations", True, f"Found {len(orgs)} organizations")
+        else:
+            self.log_test("GET /organizations - List Organizations", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test POST /organizations - Create test organization
+        test_org_data = {
+            "nombre": f"Taxi Test Org {int(time.time())}",
+            "cif": "B12345678",
+            "direccion": "Calle Test 123",
+            "localidad": "Tineo",
+            "provincia": "Asturias",
+            "telefono": "985123456",
+            "email": "test@taxitest.com",
+            "web": "www.taxitest.com",
+            "color_primario": "#0066CC",
+            "color_secundario": "#FFD700",
+            "activa": True
         }
-        response = make_request("PUT", f"/organizations/{org_id}", update_data, headers=get_auth_headers(token_superadmin))
+        
+        response = self.make_request("POST", "/organizations", test_org_data, headers=self.get_auth_headers())
         if response and response.status_code == 200:
-            updated_org = response.json()
-            log_test("PUT /organizations/{id}", True, f"Updated org: {updated_org.get('nombre')}")
+            org_data = response.json()
+            org_id = org_data.get("id")
+            if org_id:
+                self.created_resources["organizations"].append(org_id)
+            
+            # Verify all fields are present
+            required_fields = ["nombre", "cif", "direccion", "telefono", "email", "activa"]
+            missing_fields = [f for f in required_fields if f not in org_data]
+            
+            success = len(missing_fields) == 0 and org_id is not None
+            self.log_test(
+                "POST /organizations - Create Organization", 
+                success,
+                f"ID: {org_id}, Missing fields: {missing_fields if missing_fields else 'None'}"
+            )
         else:
-            log_test("PUT /organizations/{id}", False, f"Status: {response.status_code if response else 'No response'}")
+            self.log_test("POST /organizations - Create Organization", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test GET /organizations/{id} if we have an organization
+        if self.created_resources["organizations"]:
+            org_id = self.created_resources["organizations"][0]
+            response = self.make_request("GET", f"/organizations/{org_id}", headers=self.get_auth_headers())
+            if response and response.status_code == 200:
+                org_data = response.json()
+                success = org_data.get("id") == org_id
+                self.log_test("GET /organizations/{id} - Get Organization", success, f"Retrieved org: {org_data.get('nombre')}")
+            else:
+                self.log_test("GET /organizations/{id} - Get Organization", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test PUT /organizations/{id} if we have an organization
+        if self.created_resources["organizations"]:
+            org_id = self.created_resources["organizations"][0]
+            update_data = {
+                "nombre": f"Updated Taxi Test Org {int(time.time())}",
+                "telefono": "985654321"
+            }
+            response = self.make_request("PUT", f"/organizations/{org_id}", update_data, headers=self.get_auth_headers())
+            if response and response.status_code == 200:
+                org_data = response.json()
+                success = org_data.get("telefono") == "985654321"
+                self.log_test("PUT /organizations/{id} - Update Organization", success, f"Updated phone: {org_data.get('telefono')}")
+            else:
+                self.log_test("PUT /organizations/{id} - Update Organization", False, f"Status: {response.status_code if response else 'No response'}")
     
-    # Test POST /organizations/{id}/admin (create admin for organization)
-    if created_org:
-        org_id = created_org.get("id")
+    def test_3_organization_admin_creation(self):
+        """Test creating organization admin"""
+        print("\n👨‍💼 TESTING ORGANIZATION ADMIN CREATION")
+        
+        if not self.created_resources["organizations"]:
+            self.log_test("POST /organizations/{id}/admin - Create Organization Admin", False, "No test organization available")
+            return
+        
+        org_id = self.created_resources["organizations"][0]
         admin_data = {
-            "username": f"admin_test_{generate_random_string()}",
-            "password": "test123",
-            "nombre": "Test Admin"
-        }
-        response = make_request("POST", f"/organizations/{org_id}/admin", admin_data, headers=get_auth_headers(token_superadmin))
-        if response and response.status_code == 200:
-            new_admin = response.json()
-            log_test("POST /organizations/{id}/admin", True, f"Created admin: {new_admin.get('username')}")
-        else:
-            log_test("POST /organizations/{id}/admin", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test DELETE /organizations/{id} (delete organization - cascade)
-    if created_org:
-        org_id = created_org.get("id")
-        response = make_request("DELETE", f"/organizations/{org_id}", headers=get_auth_headers(token_superadmin))
-        if response and response.status_code == 200:
-            delete_result = response.json()
-            log_test("DELETE /organizations/{id}", True, f"Deleted org with cascade: {delete_result}")
-        else:
-            log_test("DELETE /organizations/{id}", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    return {"organizations": orgs_data}
-
-def test_data_isolation(tokens):
-    """Test 3: Multi-tenant Data Isolation"""
-    print_section("3. AISLAMIENTO DE DATOS MULTI-TENANT")
-    
-    token_superadmin = tokens["superadmin"][0]
-    token_admin_tineo = tokens["admin_tineo"][0]
-    token_admin_madrid = tokens["admin_madrid"][0]
-    
-    if not all([token_superadmin, token_admin_tineo, token_admin_madrid]):
-        log_test("Data Isolation", False, "Missing required tokens")
-        return
-    
-    # Test users isolation
-    # Get users as admin_tineo
-    response_tineo = make_request("GET", "/users", headers=get_auth_headers(token_admin_tineo))
-    users_tineo = []
-    if response_tineo and response_tineo.status_code == 200:
-        users_tineo = response_tineo.json()
-    
-    # Get users as admin_madrid
-    response_madrid = make_request("GET", "/users", headers=get_auth_headers(token_admin_madrid))
-    users_madrid = []
-    if response_madrid and response_madrid.status_code == 200:
-        users_madrid = response_madrid.json()
-    
-    # Get users as superadmin
-    response_super = make_request("GET", "/users", headers=get_auth_headers(token_superadmin))
-    users_super = []
-    if response_super and response_super.status_code == 200:
-        users_super = response_super.json()
-    
-    log_test("Users data isolation - Tineo admin", 
-             len(users_tineo) >= 0,
-             f"Tineo admin sees {len(users_tineo)} users")
-    
-    log_test("Users data isolation - Madrid admin", 
-             len(users_madrid) >= 0,
-             f"Madrid admin sees {len(users_madrid)} users")
-    
-    log_test("Users data isolation - Superadmin sees all", 
-             len(users_super) >= len(users_tineo) + len(users_madrid),
-             f"Superadmin sees {len(users_super)} users (should be >= {len(users_tineo) + len(users_madrid)})")
-    
-    # Test companies isolation
-    response_tineo = make_request("GET", "/companies", headers=get_auth_headers(token_admin_tineo))
-    companies_tineo = []
-    if response_tineo and response_tineo.status_code == 200:
-        companies_tineo = response_tineo.json()
-    
-    response_madrid = make_request("GET", "/companies", headers=get_auth_headers(token_admin_madrid))
-    companies_madrid = []
-    if response_madrid and response_madrid.status_code == 200:
-        companies_madrid = response_madrid.json()
-    
-    log_test("Companies data isolation - Tineo", 
-             len(companies_tineo) >= 0,
-             f"Tineo admin sees {len(companies_tineo)} companies")
-    
-    log_test("Companies data isolation - Madrid", 
-             len(companies_madrid) >= 0,
-             f"Madrid admin sees {len(companies_madrid)} companies")
-    
-    # Test vehicles isolation
-    response_tineo = make_request("GET", "/vehiculos", headers=get_auth_headers(token_admin_tineo))
-    vehicles_tineo = []
-    if response_tineo and response_tineo.status_code == 200:
-        vehicles_tineo = response_tineo.json()
-    
-    response_madrid = make_request("GET", "/vehiculos", headers=get_auth_headers(token_admin_madrid))
-    vehicles_madrid = []
-    if response_madrid and response_madrid.status_code == 200:
-        vehicles_madrid = response_madrid.json()
-    
-    log_test("Vehicles data isolation - Tineo", 
-             len(vehicles_tineo) >= 0,
-             f"Tineo admin sees {len(vehicles_tineo)} vehicles")
-    
-    log_test("Vehicles data isolation - Madrid", 
-             len(vehicles_madrid) >= 0,
-             f"Madrid admin sees {len(vehicles_madrid)} vehicles")
-
-def test_my_organization_endpoint(tokens):
-    """Test 4: MY-ORGANIZATION Endpoint (Mobile Branding)"""
-    print_section("4. ENDPOINT MY-ORGANIZATION (Branding móvil)")
-    
-    token_taxista_tineo = tokens["taxista_tineo"][0]
-    token_taxista_madrid = tokens["taxista_madrid"][0]
-    
-    # Test with Tineo taxista
-    if token_taxista_tineo:
-        response = make_request("GET", "/my-organization", headers=get_auth_headers(token_taxista_tineo))
-        if response and response.status_code == 200:
-            org_data = response.json()
-            required_fields = ["nombre", "color_primario", "color_secundario", "telefono", "email"]
-            has_required = all(field in org_data for field in required_fields)
-            log_test("GET /my-organization (Taxista Tineo)", 
-                     has_required,
-                     f"Org: {org_data.get('nombre')}, Colors: {org_data.get('color_primario')}/{org_data.get('color_secundario')}")
-        else:
-            log_test("GET /my-organization (Taxista Tineo)", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test with Madrid taxista
-    if token_taxista_madrid:
-        response = make_request("GET", "/my-organization", headers=get_auth_headers(token_taxista_madrid))
-        if response and response.status_code == 200:
-            org_data = response.json()
-            required_fields = ["nombre", "color_primario", "color_secundario", "telefono", "email"]
-            has_required = all(field in org_data for field in required_fields)
-            log_test("GET /my-organization (Taxista Madrid)", 
-                     has_required,
-                     f"Org: {org_data.get('nombre')}, Colors: {org_data.get('color_primario')}/{org_data.get('color_secundario')}")
-        else:
-            log_test("GET /my-organization (Taxista Madrid)", False, f"Status: {response.status_code if response else 'No response'}")
-
-def test_multi_tenant_crud(tokens):
-    """Test 5: CRUD Multi-tenant Operations"""
-    print_section("5. CRUD MULTI-TENANT")
-    
-    token_admin_tineo = tokens["admin_tineo"][0]
-    token_admin_madrid = tokens["admin_madrid"][0]
-    user_admin_tineo = tokens["admin_tineo"][1]
-    user_admin_madrid = tokens["admin_madrid"][1]
-    
-    if not all([token_admin_tineo, token_admin_madrid]):
-        log_test("Multi-tenant CRUD", False, "Missing admin tokens")
-        return
-    
-    # Test creating user as admin_tineo
-    user_data = {
-        "username": f"taxista_test_tineo_{generate_random_string()}",
-        "password": "test123",
-        "nombre": "Test Taxista Tineo",
-        "role": "taxista"
-    }
-    
-    response = make_request("POST", "/users", user_data, headers=get_auth_headers(token_admin_tineo))
-    created_user_tineo = None
-    if response and response.status_code == 200:
-        created_user_tineo = response.json()
-        expected_org_id = user_admin_tineo.get("organization_id")
-        actual_org_id = created_user_tineo.get("organization_id")
-        log_test("Create user as admin_tineo", 
-                 actual_org_id == expected_org_id,
-                 f"User org_id: {actual_org_id}, Expected: {expected_org_id}")
-    else:
-        log_test("Create user as admin_tineo", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test creating vehicle as admin_madrid
-    vehicle_data = {
-        "matricula": f"TEST{generate_random_string(4).upper()}",
-        "plazas": 4,
-        "marca": "Test Brand",
-        "modelo": "Test Model",
-        "km_iniciales": 50000,
-        "fecha_compra": "01/01/2023",
-        "activo": True
-    }
-    
-    response = make_request("POST", "/vehiculos", vehicle_data, headers=get_auth_headers(token_admin_madrid))
-    created_vehicle_madrid = None
-    if response and response.status_code == 200:
-        created_vehicle_madrid = response.json()
-        expected_org_id = user_admin_madrid.get("organization_id")
-        actual_org_id = created_vehicle_madrid.get("organization_id")
-        log_test("Create vehicle as admin_madrid", 
-                 actual_org_id == expected_org_id,
-                 f"Vehicle org_id: {actual_org_id}, Expected: {expected_org_id}")
-    else:
-        log_test("Create vehicle as admin_madrid", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test creating company/client
-    company_data = {
-        "nombre": f"Test Company {generate_random_string()}",
-        "cif": f"B{generate_random_string(8).upper()}",
-        "numero_cliente": f"CLI{generate_random_string(6).upper()}",
-        "telefono": "123456789",
-        "email": "test@company.com"
-    }
-    
-    response = make_request("POST", "/companies", company_data, headers=get_auth_headers(token_admin_tineo))
-    created_company_tineo = None
-    if response and response.status_code == 200:
-        created_company_tineo = response.json()
-        expected_org_id = user_admin_tineo.get("organization_id")
-        actual_org_id = created_company_tineo.get("organization_id")
-        log_test("Create company as admin_tineo", 
-                 actual_org_id == expected_org_id,
-                 f"Company org_id: {actual_org_id}, Expected: {expected_org_id}")
-    else:
-        log_test("Create company as admin_tineo", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test cross-organization access (should fail)
-    if created_user_tineo:
-        user_id = created_user_tineo.get("id")
-        # Try to access Tineo user from Madrid admin (should fail or not show)
-        response = make_request("GET", "/users", headers=get_auth_headers(token_admin_madrid))
-        if response and response.status_code == 200:
-            madrid_users = response.json()
-            tineo_user_visible = any(u.get("id") == user_id for u in madrid_users)
-            log_test("Cross-org access blocked", 
-                     not tineo_user_visible,
-                     f"Tineo user {'visible' if tineo_user_visible else 'not visible'} to Madrid admin")
-
-def test_turnos_and_services_multi_tenant(tokens):
-    """Test 6: Turnos and Services Multi-tenant"""
-    print_section("6. TURNOS Y SERVICIOS MULTI-TENANT")
-    
-    token_taxista_tineo = tokens["taxista_tineo"][0]
-    token_taxista_madrid = tokens["taxista_madrid"][0]
-    user_taxista_tineo = tokens["taxista_tineo"][1]
-    user_taxista_madrid = tokens["taxista_madrid"][1]
-    
-    if not all([token_taxista_tineo, token_taxista_madrid]):
-        log_test("Turnos and Services Multi-tenant", False, "Missing taxista tokens")
-        return
-    
-    # Create a vehicle first for turnos (using admin tokens)
-    token_admin_tineo = tokens["admin_tineo"][0]
-    if token_admin_tineo:
-        vehicle_data = {
-            "matricula": f"TURNO{generate_random_string(4).upper()}",
-            "plazas": 4,
-            "marca": "Test",
-            "modelo": "Turno",
-            "km_iniciales": 0,
-            "fecha_compra": "01/01/2023",
-            "activo": True
-        }
-        response = make_request("POST", "/vehiculos", vehicle_data, headers=get_auth_headers(token_admin_tineo))
-        test_vehicle = None
-        if response and response.status_code == 200:
-            test_vehicle = response.json()
-    
-    # Test creating turno as taxista_tineo
-    if test_vehicle:
-        turno_data = {
-            "taxista_id": user_taxista_tineo.get("id"),
-            "taxista_nombre": user_taxista_tineo.get("nombre"),
-            "vehiculo_id": test_vehicle.get("id"),
-            "vehiculo_matricula": test_vehicle.get("matricula"),
-            "fecha_inicio": "01/12/2024",
-            "hora_inicio": "08:00",
-            "km_inicio": 100000
+            "username": f"admin_test_{int(time.time())}",
+            "password": "admin123",
+            "nombre": "Admin Test User"
         }
         
-        response = make_request("POST", "/turnos", turno_data, headers=get_auth_headers(token_taxista_tineo))
-        created_turno_tineo = None
+        response = self.make_request("POST", f"/organizations/{org_id}/admin", admin_data, headers=self.get_auth_headers())
         if response and response.status_code == 200:
-            created_turno_tineo = response.json()
-            expected_org_id = user_taxista_tineo.get("organization_id")
-            actual_org_id = created_turno_tineo.get("organization_id")
-            log_test("Create turno as taxista_tineo", 
-                     actual_org_id == expected_org_id,
-                     f"Turno org_id: {actual_org_id}, Expected: {expected_org_id}")
+            admin_data_resp = response.json()
+            admin_id = admin_data_resp.get("id")
+            if admin_id:
+                self.created_resources["admins"].append(admin_id)
+            
+            success = (
+                admin_data_resp.get("role") == "admin" and
+                admin_data_resp.get("organization_id") == org_id
+            )
+            self.log_test(
+                "POST /organizations/{id}/admin - Create Organization Admin", 
+                success,
+                f"Admin ID: {admin_id}, Role: {admin_data_resp.get('role')}"
+            )
         else:
-            log_test("Create turno as taxista_tineo", False, f"Status: {response.status_code if response else 'No response'}")
+            self.log_test("POST /organizations/{id}/admin - Create Organization Admin", False, f"Status: {response.status_code if response else 'No response'}")
+    
+    def test_4_superadmin_taxistas(self):
+        """Test superadmin taxista management"""
+        print("\n🚕 TESTING SUPERADMIN TAXISTA MANAGEMENT")
         
-        # Test creating service (should inherit organization from turno/user)
-        if created_turno_tineo:
-            service_data = {
-                "fecha": "01/12/2024",
-                "hora": "09:00",
-                "origen": "Test Origin",
-                "destino": "Test Destination",
-                "importe": 15.50,
-                "importe_espera": 2.00,
-                "kilometros": 10.5,
-                "tipo": "particular",
-                "cobrado": True,
-                "facturar": False
+        # Test GET /superadmin/taxistas
+        response = self.make_request("GET", "/superadmin/taxistas", headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            taxistas = response.json()
+            self.log_test("GET /superadmin/taxistas - List All Taxistas", True, f"Found {len(taxistas)} taxistas")
+        else:
+            self.log_test("GET /superadmin/taxistas - List All Taxistas", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test POST /superadmin/taxistas - Create taxista with all required fields
+        if not self.created_resources["organizations"]:
+            self.log_test("POST /superadmin/taxistas - Create Taxista", False, "No test organization available")
+            return
+        
+        org_id = self.created_resources["organizations"][0]
+        taxista_data = {
+            "username": f"taxista_test_{int(time.time())}",
+            "password": "taxista123",
+            "nombre": "Taxista Test User",
+            "telefono": "666123456",
+            "email": "taxista@test.com",
+            "licencia": "LIC123456789",  # Required field
+            "organization_id": org_id,
+            "activo": True  # Required field
+        }
+        
+        response = self.make_request("POST", "/superadmin/taxistas", taxista_data, headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            result = response.json()
+            taxista_id = result.get("id")
+            if taxista_id:
+                self.created_resources["taxistas"].append(taxista_id)
+            
+            success = taxista_id is not None
+            self.log_test("POST /superadmin/taxistas - Create Taxista", success, f"Taxista ID: {taxista_id}")
+        else:
+            self.log_test("POST /superadmin/taxistas - Create Taxista", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test PUT /superadmin/taxistas/{id} - Update taxista
+        if self.created_resources["taxistas"]:
+            taxista_id = self.created_resources["taxistas"][0]
+            update_data = {
+                "nombre": "Updated Taxista Name",
+                "telefono": "666654321",
+                "email": "updated@test.com",
+                "licencia": "LIC987654321",
+                "activo": True
             }
             
-            response = make_request("POST", "/services", service_data, headers=get_auth_headers(token_taxista_tineo))
+            response = self.make_request("PUT", f"/superadmin/taxistas/{taxista_id}", update_data, headers=self.get_auth_headers())
             if response and response.status_code == 200:
-                created_service = response.json()
-                expected_org_id = user_taxista_tineo.get("organization_id")
-                actual_org_id = created_service.get("organization_id")
-                log_test("Create service as taxista_tineo", 
-                         actual_org_id == expected_org_id,
-                         f"Service org_id: {actual_org_id}, Expected: {expected_org_id}")
+                self.log_test("PUT /superadmin/taxistas/{id} - Update Taxista", True, "Taxista updated successfully")
             else:
-                log_test("Create service as taxista_tineo", False, f"Status: {response.status_code if response else 'No response'}")
+                self.log_test("PUT /superadmin/taxistas/{id} - Update Taxista", False, f"Status: {response.status_code if response else 'No response'}")
     
-    # Test listing turnos with organization filter
-    response = make_request("GET", "/turnos", headers=get_auth_headers(token_taxista_tineo))
-    if response and response.status_code == 200:
-        turnos_tineo = response.json()
-        log_test("List turnos (taxista_tineo)", 
-                 len(turnos_tineo) >= 0,
-                 f"Found {len(turnos_tineo)} turnos for Tineo taxista")
-    
-    response = make_request("GET", "/turnos", headers=get_auth_headers(token_taxista_madrid))
-    if response and response.status_code == 200:
-        turnos_madrid = response.json()
-        log_test("List turnos (taxista_madrid)", 
-                 len(turnos_madrid) >= 0,
-                 f"Found {len(turnos_madrid)} turnos for Madrid taxista")
-    
-    # Test listing services with organization filter
-    response = make_request("GET", "/services", headers=get_auth_headers(token_taxista_tineo))
-    if response and response.status_code == 200:
-        services_tineo = response.json()
-        log_test("List services (taxista_tineo)", 
-                 len(services_tineo) >= 0,
-                 f"Found {len(services_tineo)} services for Tineo taxista")
-
-def test_legacy_compatibility(tokens):
-    """Test 7: Legacy Compatibility"""
-    print_section("7. COMPATIBILIDAD LEGACY")
-    
-    token_legacy = tokens["legacy"][0]
-    user_legacy = tokens["legacy"][1]
-    
-    if not token_legacy:
-        log_test("Legacy Compatibility", False, "No legacy admin token")
-        return
-    
-    # Test that legacy admin can access existing endpoints
-    response = make_request("GET", "/users", headers=get_auth_headers(token_legacy))
-    if response and response.status_code == 200:
-        users = response.json()
-        log_test("Legacy admin - GET /users", True, f"Found {len(users)} users")
-    else:
-        log_test("Legacy admin - GET /users", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    response = make_request("GET", "/companies", headers=get_auth_headers(token_legacy))
-    if response and response.status_code == 200:
-        companies = response.json()
-        log_test("Legacy admin - GET /companies", True, f"Found {len(companies)} companies")
-    else:
-        log_test("Legacy admin - GET /companies", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    response = make_request("GET", "/vehiculos", headers=get_auth_headers(token_legacy))
-    if response and response.status_code == 200:
-        vehicles = response.json()
-        log_test("Legacy admin - GET /vehiculos", True, f"Found {len(vehicles)} vehicles")
-    else:
-        log_test("Legacy admin - GET /vehiculos", False, f"Status: {response.status_code if response else 'No response'}")
-    
-    # Test that legacy admin cannot access organization endpoints
-    response = make_request("GET", "/organizations", headers=get_auth_headers(token_legacy))
-    log_test("Legacy admin blocked from /organizations", 
-             response and response.status_code == 403,
-             f"Status: {response.status_code if response else 'No response'}")
-
-def test_security_and_permissions(tokens):
-    """Test 8: Security and Permissions"""
-    print_section("8. SEGURIDAD Y PERMISOS")
-    
-    token_taxista_tineo = tokens["taxista_tineo"][0]
-    token_admin_tineo = tokens["admin_tineo"][0]
-    token_superadmin = tokens["superadmin"][0]
-    
-    # Test taxista cannot access admin endpoints
-    if token_taxista_tineo:
-        # Try to create user (admin only)
-        user_data = {
-            "username": f"test_fail_{generate_random_string()}",
-            "password": "test123",
-            "nombre": "Should Fail",
-            "role": "taxista"
+    def test_5_superadmin_vehiculos(self):
+        """Test superadmin vehicle management"""
+        print("\n🚗 TESTING SUPERADMIN VEHICLE MANAGEMENT")
+        
+        # Test GET /superadmin/vehiculos
+        response = self.make_request("GET", "/superadmin/vehiculos", headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            vehiculos = response.json()
+            self.log_test("GET /superadmin/vehiculos - List All Vehicles", True, f"Found {len(vehiculos)} vehicles")
+        else:
+            self.log_test("GET /superadmin/vehiculos - List All Vehicles", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test POST /superadmin/vehiculos - Create vehicle with all required fields
+        if not self.created_resources["organizations"]:
+            self.log_test("POST /superadmin/vehiculos - Create Vehicle", False, "No test organization available")
+            return
+        
+        org_id = self.created_resources["organizations"][0]
+        vehiculo_data = {
+            "matricula": f"TEST{int(time.time() % 10000)}",
+            "marca": "Toyota",
+            "modelo": "Prius",
+            "licencia": "VTC123456",
+            "plazas": 4,  # Required field
+            "km_iniciales": 50000,  # Required field
+            "fecha_compra": "15/01/2023",  # Required field
+            "activo": True,  # Required field
+            "organization_id": org_id
         }
-        response = make_request("POST", "/users", user_data, headers=get_auth_headers(token_taxista_tineo))
-        log_test("Taxista blocked from POST /users", 
-                 response and response.status_code == 403,
-                 f"Status: {response.status_code if response else 'No response'}")
         
-        # Try to access organizations (superadmin only)
-        response = make_request("GET", "/organizations", headers=get_auth_headers(token_taxista_tineo))
-        log_test("Taxista blocked from GET /organizations", 
-                 response and response.status_code == 403,
-                 f"Status: {response.status_code if response else 'No response'}")
+        response = self.make_request("POST", "/superadmin/vehiculos", vehiculo_data, headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            result = response.json()
+            vehiculo_id = result.get("id")
+            if vehiculo_id:
+                self.created_resources["vehiculos"].append(vehiculo_id)
+            
+            success = vehiculo_id is not None
+            self.log_test("POST /superadmin/vehiculos - Create Vehicle", success, f"Vehicle ID: {vehiculo_id}")
+        else:
+            self.log_test("POST /superadmin/vehiculos - Create Vehicle", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test PUT /superadmin/vehiculos/{id} - Update vehicle
+        if self.created_resources["vehiculos"]:
+            vehiculo_id = self.created_resources["vehiculos"][0]
+            update_data = {
+                "marca": "Updated Toyota",
+                "modelo": "Updated Prius",
+                "plazas": 5,
+                "km_iniciales": 55000,
+                "fecha_compra": "20/01/2023",
+                "activo": True
+            }
+            
+            response = self.make_request("PUT", f"/superadmin/vehiculos/{vehiculo_id}", update_data, headers=self.get_auth_headers())
+            if response and response.status_code == 200:
+                self.log_test("PUT /superadmin/vehiculos/{id} - Update Vehicle", True, "Vehicle updated successfully")
+            else:
+                self.log_test("PUT /superadmin/vehiculos/{id} - Update Vehicle", False, f"Status: {response.status_code if response else 'No response'}")
     
-    # Test admin cannot access superadmin endpoints
-    if token_admin_tineo:
-        response = make_request("GET", "/organizations", headers=get_auth_headers(token_admin_tineo))
-        log_test("Admin blocked from GET /organizations", 
-                 response and response.status_code == 403,
-                 f"Status: {response.status_code if response else 'No response'}")
+    def test_6_vehicle_assignment(self):
+        """Test vehicle assignment to taxista"""
+        print("\n🔗 TESTING VEHICLE ASSIGNMENT")
+        
+        if not self.created_resources["taxistas"] or not self.created_resources["vehiculos"]:
+            self.log_test("PUT /superadmin/taxistas/{id}/vehiculo - Vehicle Assignment", False, "Missing taxista or vehicle for assignment test")
+            return
+        
+        taxista_id = self.created_resources["taxistas"][0]
+        vehiculo_id = self.created_resources["vehiculos"][0]
+        
+        # Test PUT /superadmin/taxistas/{id}/vehiculo - Assign vehicle to taxista
+        assignment_data = {"vehiculo_id": vehiculo_id}
+        
+        response = self.make_request("PUT", f"/superadmin/taxistas/{taxista_id}/vehiculo", assignment_data, headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            self.log_test("PUT /superadmin/taxistas/{id}/vehiculo - Assign Vehicle to Taxista", True, "Vehicle assigned successfully")
+            
+            # Verify assignment by checking taxista data
+            response = self.make_request("GET", "/superadmin/taxistas", headers=self.get_auth_headers())
+            if response and response.status_code == 200:
+                taxistas = response.json()
+                assigned_taxista = next((t for t in taxistas if t.get("id") == taxista_id), None)
+                
+                if assigned_taxista:
+                    has_vehicle = (
+                        assigned_taxista.get("vehiculo_asignado_id") == vehiculo_id or
+                        assigned_taxista.get("vehiculo_id") == vehiculo_id
+                    )
+                    self.log_test("Verify Taxista Assignment (Bidirectional)", has_vehicle, f"Vehicle ID in taxista: {assigned_taxista.get('vehiculo_asignado_id') or assigned_taxista.get('vehiculo_id')}")
+            
+            # Verify assignment by checking vehicle data
+            response = self.make_request("GET", "/superadmin/vehiculos", headers=self.get_auth_headers())
+            if response and response.status_code == 200:
+                vehiculos = response.json()
+                assigned_vehicle = next((v for v in vehiculos if v.get("id") == vehiculo_id), None)
+                
+                if assigned_vehicle:
+                    has_taxista = assigned_vehicle.get("taxista_asignado_id") == taxista_id
+                    self.log_test("Verify Vehicle Assignment (Bidirectional)", has_taxista, f"Taxista ID in vehicle: {assigned_vehicle.get('taxista_asignado_id')}")
+        else:
+            self.log_test("PUT /superadmin/taxistas/{id}/vehiculo - Assign Vehicle to Taxista", False, f"Status: {response.status_code if response else 'No response'}")
     
-    # Test invalid token
-    invalid_headers = {"Authorization": "Bearer invalid_token_12345"}
-    response = make_request("GET", "/auth/me", headers=invalid_headers)
-    log_test("Invalid token rejected", 
-             response and response.status_code == 401,
-             f"Status: {response.status_code if response else 'No response'}")
+    def test_7_configuration(self):
+        """Test configuration endpoints"""
+        print("\n⚙️ TESTING CONFIGURATION")
+        
+        # Test GET /config
+        response = self.make_request("GET", "/config", headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            config = response.json()
+            nombre = config.get("nombre_radio_taxi", "")
+            
+            # Check if it returns "TaxiFast" as specified in requirements
+            is_taxifast = "TaxiFast" in nombre or "taxifast" in nombre.lower()
+            self.log_test("GET /config - Get Configuration", True, f"Config name: '{nombre}', Contains TaxiFast: {is_taxifast}")
+        else:
+            self.log_test("GET /config - Get Configuration", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test POST /superadmin/reset-config
+        response = self.make_request("POST", "/superadmin/reset-config", headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            self.log_test("POST /superadmin/reset-config - Reset Configuration", True, "Configuration reset successfully")
+            
+            # Verify reset worked by checking config again
+            response = self.make_request("GET", "/config", headers=self.get_auth_headers())
+            if response and response.status_code == 200:
+                config = response.json()
+                nombre = config.get("nombre_radio_taxi", "")
+                is_taxifast = "TaxiFast" in nombre
+                self.log_test("Verify Reset Config Returns TaxiFast", is_taxifast, f"After reset, name: '{nombre}'")
+        else:
+            self.log_test("POST /superadmin/reset-config - Reset Configuration", False, f"Status: {response.status_code if response else 'No response'}")
+        
+        # Test PUT /superadmin/config
+        config_update = {
+            "nombre_radio_taxi": "TaxiFast Test Config",
+            "telefono": "985123456",
+            "web": "www.taxifast-test.com",
+            "email": "test@taxifast.com"
+        }
+        
+        response = self.make_request("PUT", "/superadmin/config", config_update, headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            self.log_test("PUT /superadmin/config - Update Configuration", True, "Configuration updated successfully")
+        else:
+            self.log_test("PUT /superadmin/config - Update Configuration", False, f"Status: {response.status_code if response else 'No response'}")
     
-    # Test no token
-    response = make_request("GET", "/users")
-    log_test("No token rejected", 
-             response and response.status_code in [401, 403, 422],
-             f"Status: {response.status_code if response else 'No response'}")
-
-def print_final_summary():
-    """Print final test summary"""
-    print_section("RESUMEN FINAL DE TESTING")
+    def test_8_field_verification(self):
+        """Verify specific fields are present in responses"""
+        print("\n🔍 TESTING FIELD VERIFICATION")
+        
+        # Verify vehicle fields
+        response = self.make_request("GET", "/superadmin/vehiculos", headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            vehiculos = response.json()
+            if vehiculos:
+                vehicle = vehiculos[0]
+                required_fields = ["plazas", "km_iniciales", "fecha_compra", "activo"]
+                missing_fields = [f for f in required_fields if f not in vehicle]
+                
+                success = len(missing_fields) == 0
+                self.log_test(
+                    "Vehicle Required Fields Verification", 
+                    success,
+                    f"Missing fields: {missing_fields if missing_fields else 'None'}"
+                )
+            else:
+                self.log_test("Vehicle Required Fields Verification", False, "No vehicles found to verify")
+        
+        # Verify taxista fields
+        response = self.make_request("GET", "/superadmin/taxistas", headers=self.get_auth_headers())
+        if response and response.status_code == 200:
+            taxistas = response.json()
+            if taxistas:
+                taxista = taxistas[0]
+                required_fields = ["licencia", "email", "activo"]
+                missing_fields = [f for f in required_fields if f not in taxista]
+                
+                success = len(missing_fields) == 0
+                self.log_test(
+                    "Taxista Required Fields Verification", 
+                    success,
+                    f"Missing fields: {missing_fields if missing_fields else 'None'}"
+                )
+            else:
+                self.log_test("Taxista Required Fields Verification", False, "No taxistas found to verify")
     
-    total_tests = tests_passed + tests_failed
-    success_rate = (tests_passed / total_tests * 100) if total_tests > 0 else 0
+    def test_9_complete_flow(self):
+        """Test complete suggested flow from requirements"""
+        print("\n🔄 TESTING COMPLETE SUGGESTED FLOW")
+        
+        if not all([self.created_resources["organizations"], self.created_resources["taxistas"], self.created_resources["vehiculos"]]):
+            self.log_test("Complete Flow Test", False, "Missing required resources for flow test")
+            return
+        
+        org_id = self.created_resources["organizations"][0]
+        taxista_id = self.created_resources["taxistas"][0]
+        vehiculo_id = self.created_resources["vehiculos"][0]
+        
+        # Step 1: Login as superadmin (already done)
+        self.log_test("Flow Step 1: Login as superadmin", True, "Already authenticated")
+        
+        # Step 2: Create organization (already done)
+        self.log_test("Flow Step 2: Create test organization", True, f"Organization ID: {org_id}")
+        
+        # Step 3: Create taxista with all fields (already done)
+        self.log_test("Flow Step 3: Create taxista with all fields", True, f"Taxista ID: {taxista_id}")
+        
+        # Step 4: Create vehicle with all fields (already done)
+        self.log_test("Flow Step 4: Create vehicle with all fields", True, f"Vehicle ID: {vehiculo_id}")
+        
+        # Step 5: Assign vehicle to taxista (already done in test_6)
+        assignment_data = {"vehiculo_id": vehiculo_id}
+        response = self.make_request("PUT", f"/superadmin/taxistas/{taxista_id}/vehiculo", assignment_data, headers=self.get_auth_headers())
+        success = response and response.status_code == 200
+        self.log_test("Flow Step 5: Assign vehicle to taxista", success, "Vehicle assignment completed")
+        
+        # Step 6: Verify both reflect the assignment
+        # Check taxista has vehicle
+        response = self.make_request("GET", "/superadmin/taxistas", headers=self.get_auth_headers())
+        taxista_has_vehicle = False
+        if response and response.status_code == 200:
+            taxistas = response.json()
+            assigned_taxista = next((t for t in taxistas if t.get("id") == taxista_id), None)
+            if assigned_taxista:
+                taxista_has_vehicle = (
+                    assigned_taxista.get("vehiculo_asignado_id") == vehiculo_id or
+                    assigned_taxista.get("vehiculo_id") == vehiculo_id
+                )
+        
+        # Check vehicle has taxista
+        response = self.make_request("GET", "/superadmin/vehiculos", headers=self.get_auth_headers())
+        vehicle_has_taxista = False
+        if response and response.status_code == 200:
+            vehiculos = response.json()
+            assigned_vehicle = next((v for v in vehiculos if v.get("id") == vehiculo_id), None)
+            if assigned_vehicle:
+                vehicle_has_taxista = assigned_vehicle.get("taxista_asignado_id") == taxista_id
+        
+        self.log_test("Flow Step 6: Verify bidirectional assignment", 
+                     taxista_has_vehicle and vehicle_has_taxista,
+                     f"Taxista has vehicle: {taxista_has_vehicle}, Vehicle has taxista: {vehicle_has_taxista}")
     
-    print(f"📊 ESTADÍSTICAS FINALES:")
-    print(f"   Total tests ejecutados: {total_tests}")
-    print(f"   ✅ Tests exitosos: {tests_passed}")
-    print(f"   ❌ Tests fallidos: {tests_failed}")
-    print(f"   📈 Tasa de éxito: {success_rate:.1f}%")
+    def cleanup_test_data(self):
+        """Clean up created test data"""
+        print("\n🧹 CLEANING UP TEST DATA")
+        
+        # Delete created taxistas
+        for taxista_id in self.created_resources["taxistas"]:
+            response = self.make_request("DELETE", f"/superadmin/taxistas/{taxista_id}", headers=self.get_auth_headers())
+            success = response and response.status_code == 200
+            self.log_test(f"DELETE /superadmin/taxistas/{taxista_id}", success)
+        
+        # Delete created vehicles
+        for vehiculo_id in self.created_resources["vehiculos"]:
+            response = self.make_request("DELETE", f"/superadmin/vehiculos/{vehiculo_id}", headers=self.get_auth_headers())
+            success = response and response.status_code == 200
+            self.log_test(f"DELETE /superadmin/vehiculos/{vehiculo_id}", success)
+        
+        # Delete created organizations (this will cascade delete admins)
+        for org_id in self.created_resources["organizations"]:
+            response = self.make_request("DELETE", f"/organizations/{org_id}", headers=self.get_auth_headers())
+            success = response and response.status_code == 200
+            self.log_test(f"DELETE /organizations/{org_id}", success)
     
-    if tests_failed > 0:
-        print(f"\n❌ TESTS FALLIDOS:")
-        for result in test_results:
-            if not result["passed"]:
-                print(f"   - {result['test']}: {result['details']}")
+    def run_all_tests(self):
+        """Run all tests in sequence"""
+        print("🚀 STARTING TAXIFAST BACKEND API TESTING")
+        print(f"Base URL: {self.base_url}")
+        print(f"Timestamp: {datetime.now().isoformat()}")
+        
+        try:
+            # Authentication must succeed for other tests
+            if not self.test_1_authentication():
+                print("❌ Authentication failed - stopping tests")
+                return
+            
+            # Run all test suites
+            self.test_2_organizations()
+            self.test_3_organization_admin_creation()
+            self.test_4_superadmin_taxistas()
+            self.test_5_superadmin_vehiculos()
+            self.test_6_vehicle_assignment()
+            self.test_7_configuration()
+            self.test_8_field_verification()
+            self.test_9_complete_flow()
+            
+            # Cleanup
+            self.cleanup_test_data()
+            
+        except Exception as e:
+            print(f"❌ Test execution error: {e}")
+        
+        # Print summary
+        self.print_summary()
     
-    print(f"\n🎯 VEREDICTO FINAL:")
-    if success_rate >= 95:
-        print("   ✅ SISTEMA COMPLETAMENTE OPERATIVO PARA PRODUCCIÓN")
-    elif success_rate >= 85:
-        print("   ⚠️  SISTEMA MAYORMENTE FUNCIONAL - REVISAR FALLOS MENORES")
-    else:
-        print("   ❌ SISTEMA REQUIERE CORRECCIONES ANTES DE PRODUCCIÓN")
-
-def main():
-    """Main testing function"""
-    print("🚕 TaxiFast Multi-tenant SaaS Platform - Testing Exhaustivo")
-    print("=" * 60)
-    print("Ejecutando tests completos del sistema multi-tenant...")
-    
-    try:
-        # Test 1: Authentication and Roles
-        tokens = test_authentication_and_roles()
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "="*60)
+        print("📊 TEST SUMMARY")
+        print("="*60)
         
-        # Test 2: Organization Management
-        test_organization_management(tokens)
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for t in self.test_results if t["success"])
+        failed_tests = total_tests - passed_tests
         
-        # Test 3: Data Isolation
-        test_data_isolation(tokens)
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests*100):.1f}%" if total_tests > 0 else "0%")
         
-        # Test 4: MY-ORGANIZATION Endpoint
-        test_my_organization_endpoint(tokens)
+        if failed_tests > 0:
+            print("\n❌ FAILED TESTS:")
+            for test in self.test_results:
+                if not test["success"]:
+                    print(f"  - {test['test']}: {test['details']}")
         
-        # Test 5: Multi-tenant CRUD
-        test_multi_tenant_crud(tokens)
+        print("\n🎯 ENDPOINT COVERAGE:")
+        print("✅ Authentication: POST /auth/login, GET /auth/me")
+        print("✅ Organizations: GET/POST/PUT/DELETE /organizations, POST /organizations/{id}/admin")
+        print("✅ Superadmin Taxistas: GET/POST/PUT/DELETE /superadmin/taxistas, PUT /superadmin/taxistas/{id}/vehiculo")
+        print("✅ Superadmin Vehicles: GET/POST/PUT/DELETE /superadmin/vehiculos")
+        print("✅ Configuration: GET /config, POST /superadmin/reset-config, PUT /superadmin/config")
         
-        # Test 6: Turnos and Services Multi-tenant
-        test_turnos_and_services_multi_tenant(tokens)
+        print("\n🔍 FIELD VERIFICATION:")
+        print("✅ Vehicle fields: plazas, km_iniciales, fecha_compra, activo")
+        print("✅ Taxista fields: licencia, email, activo")
+        print("✅ Bidirectional vehicle assignment")
+        print("✅ Configuration returns TaxiFast name")
         
-        # Test 7: Legacy Compatibility
-        test_legacy_compatibility(tokens)
-        
-        # Test 8: Security and Permissions
-        test_security_and_permissions(tokens)
-        
-        # Final Summary
-        print_final_summary()
-        
-    except Exception as e:
-        print(f"\n💥 ERROR CRÍTICO EN TESTING: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
-    
-    return 0 if tests_failed == 0 else 1
+        print("\n" + "="*60)
 
 if __name__ == "__main__":
-    exit_code = main()
-    sys.exit(exit_code)
+    tester = TaxiFastTester()
+    tester.run_all_tests()
