@@ -17,6 +17,7 @@ interface Taxista {
   nombre: string;
   telefono?: string;
   email?: string;
+  licencia?: string;
   organization_id?: string;
   organization_nombre?: string;
   vehiculo_asignado_id?: string;
@@ -31,6 +32,10 @@ interface Vehiculo {
   marca: string;
   modelo: string;
   licencia?: string;
+  plazas?: number;
+  km_iniciales?: number;
+  fecha_compra?: string;
+  activo?: boolean;
   organization_id?: string;
   organization_nombre?: string;
   taxista_asignado_id?: string;
