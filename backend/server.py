@@ -1125,11 +1125,16 @@ async def superadmin_create_vehiculo(
     if not org:
         raise HTTPException(status_code=404, detail="Organización no encontrada")
     
+    # Incluir TODOS los campos que usa el admin para compatibilidad completa
     vehiculo_dict = {
         "matricula": vehiculo["matricula"].upper(),
         "marca": vehiculo.get("marca", ""),
         "modelo": vehiculo.get("modelo", ""),
         "licencia": vehiculo.get("licencia", ""),
+        "plazas": vehiculo.get("plazas", 4),  # Default 4 plazas
+        "km_iniciales": vehiculo.get("km_iniciales", 0),
+        "fecha_compra": vehiculo.get("fecha_compra", ""),
+        "activo": vehiculo.get("activo", True),
         "organization_id": vehiculo["organization_id"],
         "created_at": datetime.utcnow()
     }
