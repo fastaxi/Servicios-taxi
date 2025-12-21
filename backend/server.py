@@ -2714,6 +2714,87 @@ async def update_config(config: ConfigBase, current_user: dict = Depends(get_cur
         **{k: v for k, v in updated_config.items() if k != "_id"}
     )
 
+# Endpoint para que superadmin resetee la configuración global a TaxiFast
+@api_router.post("/superadmin/reset-config")
+async def superadmin_reset_config(current_user: dict = Depends(get_current_superadmin)):
+    """Resetear la configuración global de la plataforma a TaxiFast (solo superadmin)"""
+    default_config = {
+        "nombre_radio_taxi": "TaxiFast",
+        "telefono": "",
+        "web": "www.taxifast.com",
+        "direccion": "",
+        "email": "soporte@taxifast.com",
+        "logo_base64": None,
+        "updated_at": datetime.utcnow()
+    }
+    
+    # Eliminar configuración existente y crear nueva
+    await db.config.delete_many({})
+    result = await db.config.insert_one(default_config)
+    
+    return {
+        "message": "Configuración global reseteada a TaxiFast",
+        "config": {
+            "id": str(result.inserted_id),
+            "nombre_radio_taxi": "TaxiFast",
+            "web": "www.taxifast.com"
+        }
+    }
+
+# Endpoint para que superadmin actualice la configuración global
+@api_router.put("/superadmin/config")
+async def superadmin_update_config(config: dict, current_user: dict = Depends(get_current_superadmin)):
+    """Actualizar la configuración global de la plataforma (solo superadmin)"""
+    update_data = {
+        "updated_at": datetime.utcnow()
+    }
+    
+    if config.get("nombre_radio_taxi"):
+        update_data["nombre_radio_taxi"] = config["nombre_radio_taxi"]
+    if config.get("telefono") is not None:
+        update_data["telefono"] = config["telefono"]
+    if config.get("web") is not None:
+        update_data["web"] = config["web"]
+    if config.get("direccion") is not None:
+        update_data["direccion"] = config["direccion"]
+    if config.get("email") is not None:
+        update_data["email"] = config["email"]
+    if config.get("logo_base64") is not None:
+        update_data["logo_base64"] = config["logo_base64"]
+    
+    existing_config = await db.config.find_one()
+    
+    if existing_config:
+        await db.config.update_one(
+            {"_id": existing_config["_id"]},
+            {"$set": update_data}
+        )
+    else:
+        # Crear con valores por defecto + actualizaciones
+        default_config = {
+            "nombre_radio_taxi": "TaxiFast",
+            "telefono": "",
+            "web": "www.taxifast.com",
+            "direccion": "",
+            "email": "soporte@taxifast.com",
+            "logo_base64": None,
+        }
+        default_config.update(update_data)
+        await db.config.insert_one(default_config)
+    
+    updated_config = await db.config.find_one()
+    
+    return {
+        "message": "Configuración actualizada",
+        "config": {
+            "nombre_radio_taxi": updated_config.get("nombre_radio_taxi"),
+            "telefono": updated_config.get("telefono"),
+            "web": updated_config.get("web"),
+            "direccion": updated_config.get("direccion"),
+            "email": updated_config.get("email")
+        }
+    }
+
 # Initialize default admin user and config
 @app.on_event("startup")
 async def startup_event():
