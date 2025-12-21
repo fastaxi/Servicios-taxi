@@ -145,6 +145,7 @@ export default function GestionScreen() {
         nombre: taxista.nombre,
         telefono: taxista.telefono || '',
         email: taxista.email || '',
+        licencia: taxista.licencia || '',
         organization_id: taxista.organization_id || '',
         activo: taxista.activo !== false
       });
@@ -156,6 +157,7 @@ export default function GestionScreen() {
         nombre: '',
         telefono: '',
         email: '',
+        licencia: '',
         organization_id: organizations[0]?.id || '',
         activo: true
       });
