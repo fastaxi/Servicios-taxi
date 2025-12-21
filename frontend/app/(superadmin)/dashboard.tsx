@@ -170,6 +170,29 @@ export default function SuperAdminDashboard() {
             </Button>
           </Card.Content>
         </Card>
+
+        {/* Quick Action: Gestión de Taxistas y Vehículos */}
+        <Card style={[styles.actionCard, { marginBottom: 16, backgroundColor: '#E3F2FD' }]}>
+          <Card.Content style={styles.actionContent}>
+            <View style={styles.actionInfo}>
+              <MaterialCommunityIcons name="cog" size={32} color="#1976D2" />
+              <View style={{ marginLeft: 16, flex: 1 }}>
+                <Text variant="titleMedium">Gestión Global</Text>
+                <Text variant="bodySmall" style={{ color: '#666' }}>
+                  Administrar taxistas y vehículos de todas las organizaciones
+                </Text>
+              </View>
+            </View>
+            <Button 
+              mode="contained" 
+              onPress={() => router.push('/(superadmin)/gestion' as any)}
+              icon="arrow-right"
+              buttonColor="#1976D2"
+            >
+              Gestionar
+            </Button>
+          </Card.Content>
+        </Card>
         
         {organizations.slice(0, 5).map((org) => (
           <Card key={org.id} style={styles.orgCard}>
