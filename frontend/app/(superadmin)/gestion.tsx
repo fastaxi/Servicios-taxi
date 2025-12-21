@@ -241,6 +241,10 @@ export default function GestionScreen() {
         marca: vehiculo.marca,
         modelo: vehiculo.modelo,
         licencia: vehiculo.licencia || '',
+        plazas: vehiculo.plazas || 4,
+        km_iniciales: vehiculo.km_iniciales || 0,
+        fecha_compra: vehiculo.fecha_compra || '',
+        activo: vehiculo.activo !== false,
         organization_id: vehiculo.organization_id || ''
       });
     } else {
@@ -250,6 +254,10 @@ export default function GestionScreen() {
         marca: '',
         modelo: '',
         licencia: '',
+        plazas: 4,
+        km_iniciales: 0,
+        fecha_compra: '',
+        activo: true,
         organization_id: organizations[0]?.id || ''
       });
     }
