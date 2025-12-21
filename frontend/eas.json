@@ -6,13 +6,19 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "node": "22.11.0"
+      "node": "22.11.0",
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host"
+      }
     },
     "preview": {
       "distribution": "internal",
       "node": "22.11.0",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host"
       }
     },
     "production": {
@@ -22,6 +28,9 @@
       },
       "ios": {
         "buildConfiguration": "Release"
+      },
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host"
       }
     }
   },
