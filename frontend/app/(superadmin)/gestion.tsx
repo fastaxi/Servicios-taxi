@@ -719,6 +719,37 @@ export default function GestionScreen() {
               mode="outlined"
               style={styles.input}
             />
+            <TextInput
+              label="Plazas"
+              value={String(vehiculoForm.plazas)}
+              onChangeText={(v) => setVehiculoForm({...vehiculoForm, plazas: parseInt(v) || 4})}
+              mode="outlined"
+              style={styles.input}
+              keyboardType="numeric"
+            />
+            <TextInput
+              label="Kilómetros Iniciales"
+              value={String(vehiculoForm.km_iniciales)}
+              onChangeText={(v) => setVehiculoForm({...vehiculoForm, km_iniciales: parseInt(v) || 0})}
+              mode="outlined"
+              style={styles.input}
+              keyboardType="numeric"
+            />
+            <TextInput
+              label="Fecha de Compra (dd/mm/yyyy)"
+              value={vehiculoForm.fecha_compra}
+              onChangeText={(v) => setVehiculoForm({...vehiculoForm, fecha_compra: v})}
+              mode="outlined"
+              style={styles.input}
+            />
+
+            <View style={styles.switchRow}>
+              <Text variant="bodyLarge">Vehículo activo</Text>
+              <Switch
+                value={vehiculoForm.activo}
+                onValueChange={(v) => setVehiculoForm({...vehiculoForm, activo: v})}
+              />
+            </View>
             
             <Divider style={{ marginVertical: 16 }} />
             <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organización *</Text>
