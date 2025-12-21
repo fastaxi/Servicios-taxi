@@ -1004,6 +1004,62 @@ async def superadmin_delete_taxista(taxista_id: str, current_user: dict = Depend
     await db.users.delete_one({"_id": ObjectId(taxista_id)})
     return {"message": "Taxista eliminado correctamente"}
 
+@api_router.put("/superadmin/taxistas/{taxista_id}/vehiculo")
+async def superadmin_assign_vehiculo_to_taxista(
+    taxista_id: str,
+    data: dict,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Asignar o desasignar vehículo a taxista (solo superadmin)"""
+    taxista = await db.users.find_one({"_id": ObjectId(taxista_id), "role": "taxista"})
+    if not taxista:
+        raise HTTPException(status_code=404, detail="Taxista no encontrado")
+    
+    vehiculo_id = data.get("vehiculo_id")
+    
+    # Si hay un vehículo anterior asignado, quitarlo
+    if taxista.get("vehiculo_asignado_id"):
+        await db.vehiculos.update_one(
+            {"_id": ObjectId(taxista["vehiculo_asignado_id"])},
+            {"$unset": {"taxista_asignado_id": "", "taxista_asignado_nombre": ""}}
+        )
+    
+    if vehiculo_id:
+        # Verificar que el vehículo existe y es de la misma organización
+        vehiculo = await db.vehiculos.find_one({"_id": ObjectId(vehiculo_id)})
+        if not vehiculo:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+        if vehiculo.get("organization_id") != taxista.get("organization_id"):
+            raise HTTPException(status_code=400, detail="El vehículo debe ser de la misma organización")
+        
+        # Quitar el vehículo de otro taxista si estaba asignado
+        if vehiculo.get("taxista_asignado_id") and vehiculo.get("taxista_asignado_id") != taxista_id:
+            await db.users.update_one(
+                {"_id": ObjectId(vehiculo["taxista_asignado_id"])},
+                {"$unset": {"vehiculo_asignado_id": "", "vehiculo_asignado_matricula": ""}}
+            )
+        
+        # Asignar vehículo al taxista
+        await db.users.update_one(
+            {"_id": ObjectId(taxista_id)},
+            {"$set": {"vehiculo_asignado_id": vehiculo_id, "vehiculo_asignado_matricula": vehiculo.get("matricula")}}
+        )
+        
+        # Asignar taxista al vehículo
+        await db.vehiculos.update_one(
+            {"_id": ObjectId(vehiculo_id)},
+            {"$set": {"taxista_asignado_id": taxista_id, "taxista_asignado_nombre": taxista.get("nombre")}}
+        )
+        
+        return {"message": f"Vehículo {vehiculo.get('matricula')} asignado a {taxista.get('nombre')}"}
+    else:
+        # Desasignar vehículo
+        await db.users.update_one(
+            {"_id": ObjectId(taxista_id)},
+            {"$unset": {"vehiculo_asignado_id": "", "vehiculo_asignado_matricula": ""}}
+        )
+        return {"message": "Vehículo desasignado"}
+
 # ==========================================
 # SUPERADMIN - GESTIÓN DE VEHÍCULOS
 # ==========================================
