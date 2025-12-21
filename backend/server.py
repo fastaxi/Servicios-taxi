@@ -904,6 +904,202 @@ async def assign_user_to_organization(
     }
 
 # ==========================================
+# SUPERADMIN - GESTIÓN DE TAXISTAS
+# ==========================================
+@api_router.get("/superadmin/taxistas")
+async def superadmin_list_taxistas(current_user: dict = Depends(get_current_superadmin)):
+    """Listar todos los taxistas de todas las organizaciones (solo superadmin)"""
+    taxistas = await db.users.find({"role": "taxista"}).to_list(1000)
+    
+    # Get organization names
+    org_ids = list(set([t.get("organization_id") for t in taxistas if t.get("organization_id")]))
+    orgs = await db.organizations.find({"_id": {"$in": [ObjectId(oid) for oid in org_ids if oid]}}).to_list(100)
+    org_map = {str(o["_id"]): o.get("nombre") for o in orgs}
+    
+    result = []
+    for t in taxistas:
+        result.append({
+            "id": str(t["_id"]),
+            "username": t.get("username"),
+            "nombre": t.get("nombre"),
+            "telefono": t.get("telefono"),
+            "organization_id": t.get("organization_id"),
+            "organization_nombre": org_map.get(t.get("organization_id"), "Sin asignar"),
+            "created_at": t.get("created_at")
+        })
+    return result
+
+@api_router.post("/superadmin/taxistas")
+async def superadmin_create_taxista(
+    taxista: dict,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Crear taxista en cualquier organización (solo superadmin)"""
+    # Validar campos requeridos
+    if not taxista.get("username") or not taxista.get("password") or not taxista.get("nombre"):
+        raise HTTPException(status_code=400, detail="Username, password y nombre son obligatorios")
+    if not taxista.get("organization_id"):
+        raise HTTPException(status_code=400, detail="Debe seleccionar una organización")
+    
+    # Verificar que el username no existe
+    existing = await db.users.find_one({"username": taxista["username"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="El username ya existe")
+    
+    # Verificar que la organización existe
+    org = await db.organizations.find_one({"_id": ObjectId(taxista["organization_id"])})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    user_dict = {
+        "username": taxista["username"],
+        "password": get_password_hash(taxista["password"]),
+        "nombre": taxista["nombre"],
+        "telefono": taxista.get("telefono", ""),
+        "role": "taxista",
+        "organization_id": taxista["organization_id"],
+        "created_at": datetime.utcnow()
+    }
+    
+    result = await db.users.insert_one(user_dict)
+    return {"id": str(result.inserted_id), "message": "Taxista creado correctamente"}
+
+@api_router.put("/superadmin/taxistas/{taxista_id}")
+async def superadmin_update_taxista(
+    taxista_id: str,
+    taxista: dict,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Actualizar taxista (solo superadmin)"""
+    existing = await db.users.find_one({"_id": ObjectId(taxista_id), "role": "taxista"})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Taxista no encontrado")
+    
+    update_data = {}
+    if taxista.get("nombre"):
+        update_data["nombre"] = taxista["nombre"]
+    if taxista.get("telefono") is not None:
+        update_data["telefono"] = taxista["telefono"]
+    if taxista.get("organization_id"):
+        # Verificar que la organización existe
+        org = await db.organizations.find_one({"_id": ObjectId(taxista["organization_id"])})
+        if not org:
+            raise HTTPException(status_code=404, detail="Organización no encontrada")
+        update_data["organization_id"] = taxista["organization_id"]
+    if taxista.get("password"):
+        update_data["password"] = get_password_hash(taxista["password"])
+    
+    if update_data:
+        await db.users.update_one({"_id": ObjectId(taxista_id)}, {"$set": update_data})
+    
+    return {"message": "Taxista actualizado correctamente"}
+
+@api_router.delete("/superadmin/taxistas/{taxista_id}")
+async def superadmin_delete_taxista(taxista_id: str, current_user: dict = Depends(get_current_superadmin)):
+    """Eliminar taxista (solo superadmin)"""
+    existing = await db.users.find_one({"_id": ObjectId(taxista_id), "role": "taxista"})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Taxista no encontrado")
+    
+    await db.users.delete_one({"_id": ObjectId(taxista_id)})
+    return {"message": "Taxista eliminado correctamente"}
+
+# ==========================================
+# SUPERADMIN - GESTIÓN DE VEHÍCULOS
+# ==========================================
+@api_router.get("/superadmin/vehiculos")
+async def superadmin_list_vehiculos(current_user: dict = Depends(get_current_superadmin)):
+    """Listar todos los vehículos de todas las organizaciones (solo superadmin)"""
+    vehiculos = await db.vehiculos.find().to_list(1000)
+    
+    # Get organization names
+    org_ids = list(set([v.get("organization_id") for v in vehiculos if v.get("organization_id")]))
+    orgs = await db.organizations.find({"_id": {"$in": [ObjectId(oid) for oid in org_ids if oid]}}).to_list(100)
+    org_map = {str(o["_id"]): o.get("nombre") for o in orgs}
+    
+    result = []
+    for v in vehiculos:
+        result.append({
+            "id": str(v["_id"]),
+            "matricula": v.get("matricula"),
+            "marca": v.get("marca"),
+            "modelo": v.get("modelo"),
+            "licencia": v.get("licencia"),
+            "organization_id": v.get("organization_id"),
+            "organization_nombre": org_map.get(v.get("organization_id"), "Sin asignar")
+        })
+    return result
+
+@api_router.post("/superadmin/vehiculos")
+async def superadmin_create_vehiculo(
+    vehiculo: dict,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Crear vehículo en cualquier organización (solo superadmin)"""
+    if not vehiculo.get("matricula"):
+        raise HTTPException(status_code=400, detail="La matrícula es obligatoria")
+    if not vehiculo.get("organization_id"):
+        raise HTTPException(status_code=400, detail="Debe seleccionar una organización")
+    
+    # Verificar que la organización existe
+    org = await db.organizations.find_one({"_id": ObjectId(vehiculo["organization_id"])})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organización no encontrada")
+    
+    vehiculo_dict = {
+        "matricula": vehiculo["matricula"].upper(),
+        "marca": vehiculo.get("marca", ""),
+        "modelo": vehiculo.get("modelo", ""),
+        "licencia": vehiculo.get("licencia", ""),
+        "organization_id": vehiculo["organization_id"],
+        "created_at": datetime.utcnow()
+    }
+    
+    result = await db.vehiculos.insert_one(vehiculo_dict)
+    return {"id": str(result.inserted_id), "message": "Vehículo creado correctamente"}
+
+@api_router.put("/superadmin/vehiculos/{vehiculo_id}")
+async def superadmin_update_vehiculo(
+    vehiculo_id: str,
+    vehiculo: dict,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Actualizar vehículo (solo superadmin)"""
+    existing = await db.vehiculos.find_one({"_id": ObjectId(vehiculo_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+    
+    update_data = {}
+    if vehiculo.get("matricula"):
+        update_data["matricula"] = vehiculo["matricula"].upper()
+    if vehiculo.get("marca") is not None:
+        update_data["marca"] = vehiculo["marca"]
+    if vehiculo.get("modelo") is not None:
+        update_data["modelo"] = vehiculo["modelo"]
+    if vehiculo.get("licencia") is not None:
+        update_data["licencia"] = vehiculo["licencia"]
+    if vehiculo.get("organization_id"):
+        org = await db.organizations.find_one({"_id": ObjectId(vehiculo["organization_id"])})
+        if not org:
+            raise HTTPException(status_code=404, detail="Organización no encontrada")
+        update_data["organization_id"] = vehiculo["organization_id"]
+    
+    if update_data:
+        await db.vehiculos.update_one({"_id": ObjectId(vehiculo_id)}, {"$set": update_data})
+    
+    return {"message": "Vehículo actualizado correctamente"}
+
+@api_router.delete("/superadmin/vehiculos/{vehiculo_id}")
+async def superadmin_delete_vehiculo(vehiculo_id: str, current_user: dict = Depends(get_current_superadmin)):
+    """Eliminar vehículo (solo superadmin)"""
+    existing = await db.vehiculos.find_one({"_id": ObjectId(vehiculo_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+    
+    await db.vehiculos.delete_one({"_id": ObjectId(vehiculo_id)})
+    return {"message": "Vehículo eliminado correctamente"}
+
+# ==========================================
 # USER ENDPOINTS (Multi-tenant - admin only)
 # ==========================================
 @api_router.post("/users", response_model=UserResponse)
