@@ -918,6 +918,11 @@ async def superadmin_list_taxistas(current_user: dict = Depends(get_current_supe
     
     result = []
     for t in taxistas:
+        # Compatibilidad: buscar en ambos campos (vehiculo_asignado_* y vehiculo_*)
+        # Priorizar vehiculo_asignado_* (nuevo) pero también aceptar vehiculo_* (legacy/admin)
+        vehiculo_id = t.get("vehiculo_asignado_id") or t.get("vehiculo_id")
+        vehiculo_matricula = t.get("vehiculo_asignado_matricula") or t.get("vehiculo_matricula")
+        
         result.append({
             "id": str(t["_id"]),
             "username": t.get("username"),
@@ -926,8 +931,8 @@ async def superadmin_list_taxistas(current_user: dict = Depends(get_current_supe
             "email": t.get("email"),
             "organization_id": t.get("organization_id"),
             "organization_nombre": org_map.get(t.get("organization_id"), "Sin asignar"),
-            "vehiculo_asignado_id": t.get("vehiculo_asignado_id"),
-            "vehiculo_asignado_matricula": t.get("vehiculo_asignado_matricula"),
+            "vehiculo_asignado_id": vehiculo_id,
+            "vehiculo_asignado_matricula": vehiculo_matricula,
             "activo": t.get("activo", True),
             "created_at": t.get("created_at")
         })
