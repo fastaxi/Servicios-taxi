@@ -63,20 +63,12 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.logoContainer}>
-          {config.logo_base64 ? (
-            <Image
-              source={{ uri: config.logo_base64 }}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          ) : (
-            <TaxiFastLogo size="large" />
-          )}
+          <TaxiFastLogo size="large" />
         </View>
 
         <View style={styles.formContainer}>
           <Text variant="headlineMedium" style={styles.title}>
-            {config.nombre_radio_taxi}
+            TaxiFast
           </Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
             Gestión de Servicios
