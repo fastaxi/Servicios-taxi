@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl, Platform } from 'react-native';
-import { Text, Card, Button, Portal, Modal, TextInput, ActivityIndicator, Chip, Divider, SegmentedButtons, IconButton, FAB, Menu } from 'react-native-paper';
+import { Text, Card, Button, Portal, Modal, TextInput, ActivityIndicator, Chip, Divider, SegmentedButtons, FAB, Switch, Menu, List } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,8 +16,12 @@ interface Taxista {
   username: string;
   nombre: string;
   telefono?: string;
+  email?: string;
   organization_id?: string;
   organization_nombre?: string;
+  vehiculo_asignado_id?: string;
+  vehiculo_asignado_matricula?: string;
+  activo?: boolean;
   created_at?: string;
 }
 
@@ -29,6 +33,8 @@ interface Vehiculo {
   licencia?: string;
   organization_id?: string;
   organization_nombre?: string;
+  taxista_asignado_id?: string;
+  taxista_asignado_nombre?: string;
 }
 
 export default function GestionScreen() {
@@ -43,8 +49,13 @@ export default function GestionScreen() {
   // Modals
   const [taxistaModalVisible, setTaxistaModalVisible] = useState(false);
   const [vehiculoModalVisible, setVehiculoModalVisible] = useState(false);
+  const [assignVehiculoModalVisible, setAssignVehiculoModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [editingTaxista, setEditingTaxista] = useState<Taxista | null>(null);
   const [editingVehiculo, setEditingVehiculo] = useState<Vehiculo | null>(null);
+  const [selectedTaxistaForAssign, setSelectedTaxistaForAssign] = useState<Taxista | null>(null);
+  const [selectedDetail, setSelectedDetail] = useState<Taxista | Vehiculo | null>(null);
+  const [detailType, setDetailType] = useState<'taxista' | 'vehiculo'>('taxista');
   const [saving, setSaving] = useState(false);
 
   // Form data
@@ -53,7 +64,9 @@ export default function GestionScreen() {
     password: '',
     nombre: '',
     telefono: '',
-    organization_id: ''
+    email: '',
+    organization_id: '',
+    activo: true
   });
   
   const [vehiculoForm, setVehiculoForm] = useState({
@@ -104,6 +117,14 @@ export default function GestionScreen() {
     ? vehiculos
     : vehiculos.filter(v => v.organization_id === selectedOrg);
 
+  // Get available vehicles for a taxista (same organization, not assigned)
+  const getAvailableVehiculos = (taxista: Taxista) => {
+    return vehiculos.filter(v => 
+      v.organization_id === taxista.organization_id && 
+      (!v.taxista_asignado_id || v.taxista_asignado_id === taxista.id)
+    );
+  };
+
   // TAXISTA CRUD
   const openTaxistaModal = (taxista?: Taxista) => {
     if (taxista) {
@@ -113,7 +134,9 @@ export default function GestionScreen() {
         password: '',
         nombre: taxista.nombre,
         telefono: taxista.telefono || '',
-        organization_id: taxista.organization_id || ''
+        email: taxista.email || '',
+        organization_id: taxista.organization_id || '',
+        activo: taxista.activo !== false
       });
     } else {
       setEditingTaxista(null);
@@ -122,7 +145,9 @@ export default function GestionScreen() {
         password: '',
         nombre: '',
         telefono: '',
-        organization_id: organizations[0]?.id || ''
+        email: '',
+        organization_id: organizations[0]?.id || '',
+        activo: true
       });
     }
     setTaxistaModalVisible(true);
@@ -147,7 +172,9 @@ export default function GestionScreen() {
         await axios.put(`${API_URL}/superadmin/taxistas/${editingTaxista.id}`, {
           nombre: taxistaForm.nombre,
           telefono: taxistaForm.telefono,
+          email: taxistaForm.email,
           organization_id: taxistaForm.organization_id,
+          activo: taxistaForm.activo,
           ...(taxistaForm.password && { password: taxistaForm.password })
         }, { headers });
       } else {
@@ -166,7 +193,7 @@ export default function GestionScreen() {
 
   const deleteTaxista = async (taxista: Taxista) => {
     if (Platform.OS === 'web') {
-      if (!window.confirm(`¿Eliminar taxista "${taxista.nombre}"?`)) return;
+      if (!window.confirm(`¿Eliminar taxista "${taxista.nombre}"? Se eliminarán también sus turnos y servicios.`)) return;
     }
 
     try {
@@ -178,6 +205,18 @@ export default function GestionScreen() {
       alert('Taxista eliminado');
     } catch (error: any) {
       alert(error.response?.data?.detail || 'Error al eliminar');
+    }
+  };
+
+  const toggleTaxistaActivo = async (taxista: Taxista) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(`${API_URL}/superadmin/taxistas/${taxista.id}`, {
+        activo: !taxista.activo
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      loadData();
+    } catch (error: any) {
+      alert(error.response?.data?.detail || 'Error al actualizar');
     }
   };
 
@@ -249,6 +288,39 @@ export default function GestionScreen() {
     }
   };
 
+  // Assign vehicle to taxista
+  const openAssignVehiculoModal = (taxista: Taxista) => {
+    setSelectedTaxistaForAssign(taxista);
+    setAssignVehiculoModalVisible(true);
+  };
+
+  const assignVehiculo = async (vehiculoId: string | null) => {
+    if (!selectedTaxistaForAssign) return;
+
+    setSaving(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(`${API_URL}/superadmin/taxistas/${selectedTaxistaForAssign.id}/vehiculo`, {
+        vehiculo_id: vehiculoId
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      setAssignVehiculoModalVisible(false);
+      loadData();
+      alert(vehiculoId ? 'Vehículo asignado' : 'Vehículo desasignado');
+    } catch (error: any) {
+      alert(error.response?.data?.detail || 'Error al asignar vehículo');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // View details
+  const openDetailModal = (item: Taxista | Vehiculo, type: 'taxista' | 'vehiculo') => {
+    setSelectedDetail(item);
+    setDetailType(type);
+    setDetailModalVisible(true);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -271,47 +343,84 @@ export default function GestionScreen() {
           </Text>
         </View>
 
+        {/* Stats */}
+        <View style={styles.statsContainer}>
+          <Card style={styles.statCard}>
+            <Card.Content style={styles.statContent}>
+              <MaterialCommunityIcons name="account-group" size={32} color="#4CAF50" />
+              <Text variant="headlineMedium" style={styles.statNumber}>{taxistas.length}</Text>
+              <Text variant="bodySmall">Taxistas</Text>
+            </Card.Content>
+          </Card>
+          <Card style={styles.statCard}>
+            <Card.Content style={styles.statContent}>
+              <MaterialCommunityIcons name="car" size={32} color="#2196F3" />
+              <Text variant="headlineMedium" style={styles.statNumber}>{vehiculos.length}</Text>
+              <Text variant="bodySmall">Vehículos</Text>
+            </Card.Content>
+          </Card>
+          <Card style={styles.statCard}>
+            <Card.Content style={styles.statContent}>
+              <MaterialCommunityIcons name="domain" size={32} color="#FF9800" />
+              <Text variant="headlineMedium" style={styles.statNumber}>{organizations.length}</Text>
+              <Text variant="bodySmall">Organizaciones</Text>
+            </Card.Content>
+          </Card>
+        </View>
+
         {/* Tabs */}
         <View style={styles.tabContainer}>
           <SegmentedButtons
             value={activeTab}
             onValueChange={setActiveTab}
             buttons={[
-              { value: 'taxistas', label: `Taxistas (${taxistas.length})`, icon: 'account-group' },
-              { value: 'vehiculos', label: `Vehículos (${vehiculos.length})`, icon: 'car' },
+              { value: 'taxistas', label: `Taxistas (${filteredTaxistas.length})`, icon: 'account-group' },
+              { value: 'vehiculos', label: `Vehículos (${filteredVehiculos.length})`, icon: 'car' },
             ]}
           />
         </View>
 
         {/* Filter by Organization */}
-        <View style={styles.filterContainer}>
-          <Text variant="labelLarge" style={styles.filterLabel}>Filtrar por organización:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <Chip
-              selected={selectedOrg === 'all'}
-              onPress={() => setSelectedOrg('all')}
-              style={styles.filterChip}
-            >
-              Todas
-            </Chip>
-            {organizations.map(org => (
+        {organizations.length > 0 && (
+          <View style={styles.filterContainer}>
+            <Text variant="labelLarge" style={styles.filterLabel}>Filtrar por organización:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <Chip
-                key={org.id}
-                selected={selectedOrg === org.id}
-                onPress={() => setSelectedOrg(org.id)}
+                selected={selectedOrg === 'all'}
+                onPress={() => setSelectedOrg('all')}
                 style={styles.filterChip}
               >
-                {org.nombre}
+                Todas
               </Chip>
-            ))}
-          </ScrollView>
-        </View>
+              {organizations.map(org => (
+                <Chip
+                  key={org.id}
+                  selected={selectedOrg === org.id}
+                  onPress={() => setSelectedOrg(org.id)}
+                  style={styles.filterChip}
+                >
+                  {org.nombre}
+                </Chip>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         <View style={styles.content}>
           {/* TAXISTAS TAB */}
           {activeTab === 'taxistas' && (
             <>
-              {filteredTaxistas.length === 0 ? (
+              {organizations.length === 0 ? (
+                <Card style={styles.warningCard}>
+                  <Card.Content style={styles.warningContent}>
+                    <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
+                    <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organización</Text>
+                    <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
+                      Antes de crear taxistas, debes crear al menos una organización en la sección "Organizaciones"
+                    </Text>
+                  </Card.Content>
+                </Card>
+              ) : filteredTaxistas.length === 0 ? (
                 <Card style={styles.emptyCard}>
                   <Card.Content style={styles.emptyContent}>
                     <MaterialCommunityIcons name="account-off" size={64} color="#ccc" />
@@ -323,24 +432,46 @@ export default function GestionScreen() {
                 </Card>
               ) : (
                 filteredTaxistas.map(taxista => (
-                  <Card key={taxista.id} style={styles.itemCard}>
+                  <Card key={taxista.id} style={[styles.itemCard, taxista.activo === false && styles.itemCardInactive]}>
                     <Card.Content>
                       <View style={styles.itemHeader}>
                         <View style={styles.itemInfo}>
-                          <MaterialCommunityIcons name="account" size={40} color="#4CAF50" />
+                          <View style={[styles.avatarContainer, { backgroundColor: taxista.activo === false ? '#ccc' : '#4CAF50' }]}>
+                            <MaterialCommunityIcons name="account" size={28} color="#fff" />
+                          </View>
                           <View style={{ marginLeft: 12, flex: 1 }}>
-                            <Text variant="titleMedium">{taxista.nombre}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <Text variant="titleMedium">{taxista.nombre}</Text>
+                              {taxista.activo === false && (
+                                <Chip compact style={styles.inactiveChip}>Inactivo</Chip>
+                              )}
+                            </View>
                             <Text variant="bodySmall" style={styles.subText}>@{taxista.username}</Text>
                             {taxista.telefono && (
                               <Text variant="bodySmall" style={styles.subText}>📞 {taxista.telefono}</Text>
                             )}
+                            {taxista.vehiculo_asignado_matricula ? (
+                              <Chip icon="car" compact style={styles.vehiculoChip}>
+                                {taxista.vehiculo_asignado_matricula}
+                              </Chip>
+                            ) : (
+                              <Text variant="bodySmall" style={styles.noVehiculo}>Sin vehículo asignado</Text>
+                            )}
                           </View>
                         </View>
-                        <Chip style={styles.orgChip}>{taxista.organization_nombre || 'Sin asignar'}</Chip>
+                        <View style={styles.itemActions}>
+                          <Chip style={styles.orgChip}>{taxista.organization_nombre || 'Sin org'}</Chip>
+                          <Switch
+                            value={taxista.activo !== false}
+                            onValueChange={() => toggleTaxistaActivo(taxista)}
+                          />
+                        </View>
                       </View>
                     </Card.Content>
-                    <Card.Actions>
+                    <Card.Actions style={styles.cardActions}>
+                      <Button onPress={() => openDetailModal(taxista, 'taxista')} icon="eye">Ver</Button>
                       <Button onPress={() => openTaxistaModal(taxista)} icon="pencil">Editar</Button>
+                      <Button onPress={() => openAssignVehiculoModal(taxista)} icon="car">Vehículo</Button>
                       <Button onPress={() => deleteTaxista(taxista)} icon="delete" textColor="#f44336">Eliminar</Button>
                     </Card.Actions>
                   </Card>
@@ -352,7 +483,17 @@ export default function GestionScreen() {
           {/* VEHICULOS TAB */}
           {activeTab === 'vehiculos' && (
             <>
-              {filteredVehiculos.length === 0 ? (
+              {organizations.length === 0 ? (
+                <Card style={styles.warningCard}>
+                  <Card.Content style={styles.warningContent}>
+                    <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
+                    <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organización</Text>
+                    <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
+                      Antes de crear vehículos, debes crear al menos una organización en la sección "Organizaciones"
+                    </Text>
+                  </Card.Content>
+                </Card>
+              ) : filteredVehiculos.length === 0 ? (
                 <Card style={styles.emptyCard}>
                   <Card.Content style={styles.emptyContent}>
                     <MaterialCommunityIcons name="car-off" size={64} color="#ccc" />
@@ -368,7 +509,9 @@ export default function GestionScreen() {
                     <Card.Content>
                       <View style={styles.itemHeader}>
                         <View style={styles.itemInfo}>
-                          <MaterialCommunityIcons name="car" size={40} color="#2196F3" />
+                          <View style={[styles.avatarContainer, { backgroundColor: '#2196F3' }]}>
+                            <MaterialCommunityIcons name="car" size={28} color="#fff" />
+                          </View>
                           <View style={{ marginLeft: 12, flex: 1 }}>
                             <Text variant="titleMedium">{vehiculo.matricula}</Text>
                             <Text variant="bodySmall" style={styles.subText}>
@@ -377,12 +520,20 @@ export default function GestionScreen() {
                             {vehiculo.licencia && (
                               <Text variant="bodySmall" style={styles.subText}>Licencia: {vehiculo.licencia}</Text>
                             )}
+                            {vehiculo.taxista_asignado_nombre ? (
+                              <Chip icon="account" compact style={styles.taxistaChip}>
+                                {vehiculo.taxista_asignado_nombre}
+                              </Chip>
+                            ) : (
+                              <Text variant="bodySmall" style={styles.noVehiculo}>Sin taxista asignado</Text>
+                            )}
                           </View>
                         </View>
-                        <Chip style={styles.orgChip}>{vehiculo.organization_nombre || 'Sin asignar'}</Chip>
+                        <Chip style={styles.orgChip}>{vehiculo.organization_nombre || 'Sin org'}</Chip>
                       </View>
                     </Card.Content>
-                    <Card.Actions>
+                    <Card.Actions style={styles.cardActions}>
+                      <Button onPress={() => openDetailModal(vehiculo, 'vehiculo')} icon="eye">Ver</Button>
                       <Button onPress={() => openVehiculoModal(vehiculo)} icon="pencil">Editar</Button>
                       <Button onPress={() => deleteVehiculo(vehiculo)} icon="delete" textColor="#f44336">Eliminar</Button>
                     </Card.Actions>
@@ -395,18 +546,19 @@ export default function GestionScreen() {
       </ScrollView>
 
       {/* FAB */}
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => activeTab === 'taxistas' ? openTaxistaModal() : openVehiculoModal()}
-        label={activeTab === 'taxistas' ? 'Nuevo Taxista' : 'Nuevo Vehículo'}
-        disabled={organizations.length === 0}
-      />
+      {organizations.length > 0 && (
+        <FAB
+          icon="plus"
+          style={styles.fab}
+          onPress={() => activeTab === 'taxistas' ? openTaxistaModal() : openVehiculoModal()}
+          label={activeTab === 'taxistas' ? 'Nuevo Taxista' : 'Nuevo Vehículo'}
+        />
+      )}
 
       {/* Modal Taxista */}
       <Portal>
         <Modal visible={taxistaModalVisible} onDismiss={() => setTaxistaModalVisible(false)} contentContainerStyle={styles.modal}>
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
             <Text variant="headlineSmall" style={styles.modalTitle}>
               {editingTaxista ? 'Editar Taxista' : 'Nuevo Taxista'}
             </Text>
@@ -459,8 +611,18 @@ export default function GestionScreen() {
               style={styles.input}
               keyboardType="phone-pad"
             />
+
+            <TextInput
+              label="Email"
+              value={taxistaForm.email}
+              onChangeText={(v) => setTaxistaForm({...taxistaForm, email: v})}
+              mode="outlined"
+              style={styles.input}
+              keyboardType="email-address"
+            />
             
-            <Text variant="labelLarge" style={{ marginTop: 8, marginBottom: 8 }}>Organización *</Text>
+            <Divider style={{ marginVertical: 16 }} />
+            <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organización *</Text>
             <View style={styles.orgSelector}>
               {organizations.map(org => (
                 <Chip
@@ -472,6 +634,14 @@ export default function GestionScreen() {
                   {org.nombre}
                 </Chip>
               ))}
+            </View>
+
+            <View style={styles.switchRow}>
+              <Text variant="bodyLarge">Taxista activo</Text>
+              <Switch
+                value={taxistaForm.activo}
+                onValueChange={(v) => setTaxistaForm({...taxistaForm, activo: v})}
+              />
             </View>
             
             <View style={styles.modalActions}>
@@ -487,7 +657,7 @@ export default function GestionScreen() {
       {/* Modal Vehículo */}
       <Portal>
         <Modal visible={vehiculoModalVisible} onDismiss={() => setVehiculoModalVisible(false)} contentContainerStyle={styles.modal}>
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
             <Text variant="headlineSmall" style={styles.modalTitle}>
               {editingVehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo'}
             </Text>
@@ -522,7 +692,8 @@ export default function GestionScreen() {
               style={styles.input}
             />
             
-            <Text variant="labelLarge" style={{ marginTop: 8, marginBottom: 8 }}>Organización *</Text>
+            <Divider style={{ marginVertical: 16 }} />
+            <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organización *</Text>
             <View style={styles.orgSelector}>
               {organizations.map(org => (
                 <Chip
@@ -545,6 +716,83 @@ export default function GestionScreen() {
           </ScrollView>
         </Modal>
       </Portal>
+
+      {/* Modal Asignar Vehículo */}
+      <Portal>
+        <Modal visible={assignVehiculoModalVisible} onDismiss={() => setAssignVehiculoModalVisible(false)} contentContainerStyle={styles.modal}>
+          <Text variant="headlineSmall" style={styles.modalTitle}>Asignar Vehículo</Text>
+          {selectedTaxistaForAssign && (
+            <Text variant="bodyMedium" style={{ marginBottom: 16, color: '#666' }}>
+              Taxista: <Text style={{ fontWeight: 'bold' }}>{selectedTaxistaForAssign.nombre}</Text>
+            </Text>
+          )}
+          
+          <List.Section>
+            <List.Item
+              title="Sin vehículo"
+              description="Quitar vehículo asignado"
+              left={props => <List.Icon {...props} icon="car-off" />}
+              onPress={() => assignVehiculo(null)}
+              style={styles.listItem}
+            />
+            <Divider />
+            {selectedTaxistaForAssign && getAvailableVehiculos(selectedTaxistaForAssign).map(v => (
+              <List.Item
+                key={v.id}
+                title={v.matricula}
+                description={`${v.marca} ${v.modelo}${v.taxista_asignado_id === selectedTaxistaForAssign.id ? ' (actual)' : ''}`}
+                left={props => <List.Icon {...props} icon="car" color={v.taxista_asignado_id === selectedTaxistaForAssign.id ? '#4CAF50' : undefined} />}
+                onPress={() => assignVehiculo(v.id)}
+                style={[styles.listItem, v.taxista_asignado_id === selectedTaxistaForAssign.id && styles.listItemActive]}
+              />
+            ))}
+          </List.Section>
+          
+          <Button mode="outlined" onPress={() => setAssignVehiculoModalVisible(false)} style={{ marginTop: 16 }}>
+            Cancelar
+          </Button>
+        </Modal>
+      </Portal>
+
+      {/* Modal Detalles */}
+      <Portal>
+        <Modal visible={detailModalVisible} onDismiss={() => setDetailModalVisible(false)} contentContainerStyle={styles.modal}>
+          {selectedDetail && (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text variant="headlineSmall" style={styles.modalTitle}>
+                {detailType === 'taxista' ? '👤 Detalles del Taxista' : '🚗 Detalles del Vehículo'}
+              </Text>
+              
+              {detailType === 'taxista' && (
+                <>
+                  <List.Item title="Nombre" description={(selectedDetail as Taxista).nombre} left={props => <List.Icon {...props} icon="account" />} />
+                  <List.Item title="Usuario" description={(selectedDetail as Taxista).username} left={props => <List.Icon {...props} icon="at" />} />
+                  <List.Item title="Teléfono" description={(selectedDetail as Taxista).telefono || 'No especificado'} left={props => <List.Icon {...props} icon="phone" />} />
+                  <List.Item title="Email" description={(selectedDetail as Taxista).email || 'No especificado'} left={props => <List.Icon {...props} icon="email" />} />
+                  <List.Item title="Organización" description={(selectedDetail as Taxista).organization_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="domain" />} />
+                  <List.Item title="Vehículo" description={(selectedDetail as Taxista).vehiculo_asignado_matricula || 'Sin vehículo'} left={props => <List.Icon {...props} icon="car" />} />
+                  <List.Item title="Estado" description={(selectedDetail as Taxista).activo !== false ? 'Activo' : 'Inactivo'} left={props => <List.Icon {...props} icon={(selectedDetail as Taxista).activo !== false ? "check-circle" : "close-circle"} color={(selectedDetail as Taxista).activo !== false ? '#4CAF50' : '#f44336'} />} />
+                </>
+              )}
+              
+              {detailType === 'vehiculo' && (
+                <>
+                  <List.Item title="Matrícula" description={(selectedDetail as Vehiculo).matricula} left={props => <List.Icon {...props} icon="card-text" />} />
+                  <List.Item title="Marca" description={(selectedDetail as Vehiculo).marca || 'No especificada'} left={props => <List.Icon {...props} icon="car" />} />
+                  <List.Item title="Modelo" description={(selectedDetail as Vehiculo).modelo || 'No especificado'} left={props => <List.Icon {...props} icon="car-side" />} />
+                  <List.Item title="Licencia" description={(selectedDetail as Vehiculo).licencia || 'No especificada'} left={props => <List.Icon {...props} icon="license" />} />
+                  <List.Item title="Organización" description={(selectedDetail as Vehiculo).organization_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="domain" />} />
+                  <List.Item title="Taxista Asignado" description={(selectedDetail as Vehiculo).taxista_asignado_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="account" />} />
+                </>
+              )}
+              
+              <Button mode="outlined" onPress={() => setDetailModalVisible(false)} style={{ marginTop: 16 }}>
+                Cerrar
+              </Button>
+            </ScrollView>
+          )}
+        </Modal>
+      </Portal>
     </View>
   );
 }
@@ -556,24 +804,41 @@ const styles = StyleSheet.create({
   header: { padding: 24, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
   title: { fontWeight: 'bold', color: '#333' },
   subtitle: { color: '#666', marginTop: 4 },
+  statsContainer: { flexDirection: 'row', padding: 16, gap: 12 },
+  statCard: { flex: 1, borderRadius: 12 },
+  statContent: { alignItems: 'center', padding: 8 },
+  statNumber: { fontWeight: 'bold', marginTop: 4 },
   tabContainer: { padding: 16, backgroundColor: '#fff' },
   filterContainer: { padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
   filterLabel: { marginBottom: 8, color: '#666' },
   filterChip: { marginRight: 8 },
   content: { padding: 16, paddingBottom: 100 },
   itemCard: { marginBottom: 12, borderRadius: 12 },
-  itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  itemInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  subText: { color: '#666' },
+  itemCardInactive: { opacity: 0.7, backgroundColor: '#f5f5f5' },
+  itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  itemInfo: { flexDirection: 'row', alignItems: 'flex-start', flex: 1 },
+  itemActions: { alignItems: 'flex-end', gap: 8 },
+  avatarContainer: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  subText: { color: '#666', marginTop: 2 },
   orgChip: { backgroundColor: '#E3F2FD' },
+  vehiculoChip: { backgroundColor: '#E8F5E9', marginTop: 4 },
+  taxistaChip: { backgroundColor: '#FFF3E0', marginTop: 4 },
+  inactiveChip: { backgroundColor: '#ffcdd2' },
+  noVehiculo: { color: '#999', fontStyle: 'italic', marginTop: 4 },
+  cardActions: { flexWrap: 'wrap', justifyContent: 'flex-start', paddingTop: 0 },
   emptyCard: { borderRadius: 12, marginTop: 32 },
   emptyContent: { alignItems: 'center', padding: 48 },
   emptyText: { color: '#666', marginTop: 16 },
+  warningCard: { borderRadius: 12, marginTop: 32, backgroundColor: '#FFF3E0' },
+  warningContent: { alignItems: 'center', padding: 32 },
   fab: { position: 'absolute', margin: 16, right: 0, bottom: 0, backgroundColor: '#0066CC' },
   modal: { backgroundColor: 'white', padding: 24, margin: 20, borderRadius: 12, maxHeight: '90%', maxWidth: 500, alignSelf: 'center', width: '100%' },
   modalTitle: { marginBottom: 16, fontWeight: 'bold' },
   input: { marginBottom: 12 },
   orgSelector: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   orgSelectorChip: { marginBottom: 8 },
+  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 24 },
+  listItem: { paddingVertical: 8 },
+  listItemActive: { backgroundColor: '#E8F5E9' },
 });
