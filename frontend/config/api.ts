@@ -1,27 +1,32 @@
 import Constants from 'expo-constants';
 
-// API configuration
+// API configuration - Robusta para móvil, web y desarrollo
 const getApiUrl = () => {
-  // In Expo app, try to get from expo config first
-  if (typeof window === 'undefined') {
-    // Server-side or mobile - use expo config
-    const expoUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL;
-    if (expoUrl) return expoUrl;
+  // 1. Primero intentar desde expo config (funciona en móvil y puede funcionar en web)
+  const expoUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL;
+  if (expoUrl) {
+    return expoUrl;
   }
   
-  // Client-side - try environment variable
+  // 2. Fallback a variable de entorno (funciona en web/Vercel)
   const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
-  if (envUrl) return envUrl;
+  if (envUrl) {
+    return envUrl;
+  }
   
-  // Development fallback - will be replaced in production
-  if (process.env.NODE_ENV === 'development') {
+  // 3. En desarrollo, usar localhost
+  if (process.env.NODE_ENV === 'development' || __DEV__) {
+    console.warn('[API Config] Using development fallback URL');
     return 'http://localhost:8001';
   }
   
-  // Production should always have EXPO_PUBLIC_BACKEND_URL set
-  throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL environment variable.');
+  // 4. Fallback final a producción conocida (evita crash)
+  console.warn('[API Config] No backend URL configured, using production fallback');
+  return 'https://taxitineo.emergent.host';
 };
 
-export const API_URL = `${getApiUrl()}/api`;
+const API_BASE_URL = getApiUrl();
+export const API_URL = `${API_BASE_URL}/api`;
 
+console.log('[API Config] API_BASE_URL:', API_BASE_URL);
 console.log('[API Config] API_URL:', API_URL);
