@@ -2452,22 +2452,82 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
 
 @api_router.post("/services/sync")
 async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(get_current_user)):
-    """Sincronizar servicios offline - se asignan a la organización del usuario"""
+    """
+    Sincronizar servicios offline - se asignan a la organización del usuario.
+    INTEGRIDAD: Valida todas las referencias (empresa_id, turno_id) antes de insertar.
+    """
     created_services = []
+    errors = []
     org_id = get_user_organization_id(current_user)
+    is_admin_or_super = current_user.get("role") in ["admin", "superadmin"]
     
-    for service in service_sync.services:
-        service_dict = service.dict()
-        service_dict["taxista_id"] = str(current_user["_id"])
-        service_dict["taxista_nombre"] = current_user["nombre"]
-        service_dict["created_at"] = datetime.utcnow()
-        service_dict["synced"] = True
-        service_dict["organization_id"] = org_id  # Multi-tenant
-        
-        result = await db.services.insert_one(service_dict)
-        created_services.append(str(result.inserted_id))
+    # Para taxistas, obtener el turno activo una sola vez
+    turno_activo = None
+    if not is_admin_or_super:
+        turno_activo = await db.turnos.find_one({
+            "taxista_id": str(current_user["_id"]),
+            "cerrado": False
+        })
     
-    return {"message": f"Synced {len(created_services)} services", "ids": created_services}
+    for idx, service in enumerate(service_sync.services):
+        try:
+            service_dict = service.dict()
+            
+            # INTEGRIDAD: Validar empresa_id si viene
+            if service.empresa_id:
+                empresa_query = {"_id": ObjectId(service.empresa_id)}
+                if org_id:
+                    empresa_query["organization_id"] = org_id
+                empresa = await db.companies.find_one(empresa_query)
+                if not empresa:
+                    errors.append(f"Servicio {idx}: empresa_id inválido o de otra organización")
+                    continue
+                # Usar nombre desde BD
+                service_dict["empresa_id"] = str(empresa["_id"])
+                service_dict["empresa_nombre"] = empresa.get("nombre", "")
+            
+            # INTEGRIDAD: Validar turno_id
+            turno_validated = None
+            if service.turno_id:
+                turno_query = {"_id": ObjectId(service.turno_id)}
+                if org_id:
+                    turno_query["organization_id"] = org_id
+                # Para taxista, además verificar que es su turno
+                if not is_admin_or_super:
+                    turno_query["taxista_id"] = str(current_user["_id"])
+                turno_validated = await db.turnos.find_one(turno_query)
+                if not turno_validated:
+                    errors.append(f"Servicio {idx}: turno_id inválido, de otra organización, o no pertenece al taxista")
+                    continue
+                service_dict["turno_id"] = str(turno_validated["_id"])
+            elif not is_admin_or_super:
+                # Para taxista sin turno_id, asignar turno activo
+                if not turno_activo:
+                    errors.append(f"Servicio {idx}: no hay turno activo para asignar el servicio")
+                    continue
+                service_dict["turno_id"] = str(turno_activo["_id"])
+            
+            # Override con datos del usuario actual
+            service_dict["taxista_id"] = str(current_user["_id"])
+            service_dict["taxista_nombre"] = current_user["nombre"]
+            service_dict["created_at"] = datetime.utcnow()
+            service_dict["synced"] = True
+            service_dict["organization_id"] = org_id
+            
+            # Calcular importe_total
+            service_dict["importe_total"] = service_dict.get("importe", 0) + service_dict.get("importe_espera", 0)
+            
+            result = await db.services.insert_one(service_dict)
+            created_services.append(str(result.inserted_id))
+            
+        except Exception as e:
+            errors.append(f"Servicio {idx}: error inesperado - {str(e)}")
+    
+    return {
+        "message": f"Synced {len(created_services)} services",
+        "ids": created_services,
+        "errors": errors if errors else None
+    }
 
 @api_router.get("/services", response_model=List[ServiceResponse])
 async def get_services(
