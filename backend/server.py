@@ -1563,24 +1563,34 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     
     org_id = get_user_organization_id(current_user)
     
-    # INTEGRIDAD: Validar que vehiculo_id pertenece a la misma organización
+    # INTEGRIDAD: Validar vehiculo_id y obtener matrícula desde BD (no confiar en cliente)
+    vehiculo_validated = None
     if turno.vehiculo_id:
         vehiculo_query = {"_id": ObjectId(turno.vehiculo_id)}
         if org_id:
             vehiculo_query["organization_id"] = org_id
-        vehiculo = await db.vehiculos.find_one(vehiculo_query)
-        if not vehiculo:
+        vehiculo_validated = await db.vehiculos.find_one(vehiculo_query)
+        if not vehiculo_validated:
             raise HTTPException(
                 status_code=400, 
                 detail="El vehículo especificado no existe o no pertenece a esta organización"
             )
     
     turno_dict = turno.dict()
+    
     # Override taxista info with current user
     turno_dict["taxista_id"] = str(current_user["_id"])
     turno_dict["taxista_nombre"] = current_user["nombre"]
     turno_dict["created_at"] = datetime.utcnow()
     turno_dict["cerrado"] = False
+    
+    # INTEGRIDAD: Usar matrícula desde BD, ignorar lo que venga del cliente
+    if vehiculo_validated:
+        turno_dict["vehiculo_id"] = str(vehiculo_validated["_id"])
+        turno_dict["vehiculo_matricula"] = vehiculo_validated.get("matricula", "")
+    elif "vehiculo_matricula" in turno_dict:
+        # Si no hay vehiculo_id válido, limpiar matricula para evitar inconsistencias
+        turno_dict["vehiculo_matricula"] = ""
     
     # Multi-tenant: Asignar organization_id del usuario
     turno_dict["organization_id"] = org_id
