@@ -110,11 +110,20 @@ except Exception as e:
 # Security
 # SECRET_KEY debe estar en .env o variables de entorno
 SECRET_KEY = os.environ.get('SECRET_KEY')
+ENV = os.environ.get('ENV', 'development').lower()
+
 if not SECRET_KEY:
-    # En desarrollo, generar una clave temporal (NO USAR EN PRODUCCIÓN)
-    SECRET_KEY = secrets.token_hex(32)
-    print("[STARTUP WARNING] SECRET_KEY not set, using temporary key for development")
-    print("[STARTUP WARNING] Set SECRET_KEY environment variable for production!")
+    if ENV == 'production':
+        # En producción, SECRET_KEY es OBLIGATORIO (fail-fast)
+        raise ValueError(
+            "[FATAL] SECRET_KEY not set in production environment! "
+            "Set SECRET_KEY environment variable before starting the server."
+        )
+    else:
+        # Solo en desarrollo, generar una clave temporal
+        SECRET_KEY = secrets.token_hex(32)
+        print("[STARTUP WARNING] SECRET_KEY not set, using temporary key for development")
+        print("[STARTUP WARNING] Set SECRET_KEY environment variable for production!")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
