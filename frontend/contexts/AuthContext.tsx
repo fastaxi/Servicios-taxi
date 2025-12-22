@@ -74,12 +74,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
+      // Limpiar TODOS los datos de sesión para evitar mezcla entre usuarios/organizaciones
+      const keysToRemove = [
+        'token',
+        'user',
+        'organization',      // Datos de organización cacheados
+        'pendingServices',   // Servicios pendientes de sincronización
+        'config',            // Configuración cacheada
+        'lastSync',          // Última sincronización
+      ];
+      
+      await AsyncStorage.multiRemove(keysToRemove);
+      
       setToken(null);
       setUser(null);
+      
+      console.log('[AuthContext] Logout complete - all cached data cleared');
     } catch (error) {
       console.error('Logout error:', error);
+      // Incluso si hay error, intentar limpiar el estado en memoria
+      setToken(null);
+      setUser(null);
     }
   };
 
