@@ -923,8 +923,12 @@ async def assign_user_to_organization(
     current_user: dict = Depends(get_current_superadmin)
 ):
     """Asignar un usuario a una organización (solo superadmin)"""
+    # ROBUSTEZ: Validar IDs antes de usar
+    user_oid = _get_object_id_or_400(user_id, "user_id")
+    org_oid = _get_object_id_or_400(org_id, "org_id")
+    
     # Verificar que el usuario existe
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    user = await db.users.find_one({"_id": user_oid})
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
@@ -932,24 +936,25 @@ async def assign_user_to_organization(
         raise HTTPException(status_code=400, detail="No se puede asignar organización a superadmin")
     
     # Verificar que la organización existe
-    org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    org = await db.organizations.find_one({"_id": org_oid})
     if not org:
         raise HTTPException(status_code=404, detail="Organización no encontrada")
     
     # Actualizar el usuario
     await db.users.update_one(
-        {"_id": ObjectId(user_id)},
+        {"_id": user_oid},
         {"$set": {"organization_id": org_id}}
     )
     
-    # También migrar los datos relacionados del usuario (turnos, servicios)
+    # BUG FIX: Migrar datos relacionados usando taxista_id (no user_id)
+    # En el modelo de datos, turnos y servicios usan taxista_id para referenciar al usuario
     await db.turnos.update_many(
-        {"user_id": user_id, "organization_id": {"$in": [None, ""]}},
+        {"taxista_id": user_id, "organization_id": {"$in": [None, ""]}},
         {"$set": {"organization_id": org_id}}
     )
     
     await db.services.update_many(
-        {"user_id": user_id, "organization_id": {"$in": [None, ""]}},
+        {"taxista_id": user_id, "organization_id": {"$in": [None, ""]}},
         {"$set": {"organization_id": org_id}}
     )
     
