@@ -2640,21 +2640,31 @@ async def get_services(
     org_filter = await get_org_filter(current_user)
     query = {**org_filter}
     
+    is_admin_or_super = current_user.get("role") in ["admin", "superadmin"]
+    
     # If not admin/superadmin, only show own services
-    if current_user.get("role") not in ["admin", "superadmin"]:
+    if not is_admin_or_super:
         query["taxista_id"] = str(current_user["_id"])
     else:
-        # If admin and taxista_id filter provided
+        # SEGURIDAD: Validar taxista_id pertenece al scope
         if taxista_id:
+            await _get_taxista_or_400(taxista_id, org_filter, db)
             query["taxista_id"] = taxista_id
+    
+    # SEGURIDAD: Validar empresa_id pertenece al scope
+    if empresa_id:
+        await _get_company_or_400(empresa_id, org_filter, db)
+        query["empresa_id"] = empresa_id
+    
+    # SEGURIDAD: Validar turno_id pertenece al scope
+    if turno_id:
+        taxista_check = None if is_admin_or_super else str(current_user["_id"])
+        await _get_turno_or_400(turno_id, org_filter, db, taxista_check)
+        query["turno_id"] = turno_id
     
     # Apply filters
     if tipo:
         query["tipo"] = tipo
-    if empresa_id:
-        query["empresa_id"] = empresa_id
-    if turno_id:
-        query["turno_id"] = turno_id
     if fecha_inicio:
         query["fecha"] = {"$gte": fecha_inicio}
     if fecha_fin:
