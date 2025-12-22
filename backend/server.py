@@ -2627,7 +2627,7 @@ async def update_service(service_id: str, service: ServiceCreate, current_user: 
         if field in service_input and service_input[field] is not None:
             service_dict[field] = service_input[field]
     
-    # INTEGRIDAD: Validar que empresa_id pertenece a la misma organización
+    # INTEGRIDAD: Validar que empresa_id pertenece a la misma organización y normalizar nombre
     if "empresa_id" in service_dict and service_dict["empresa_id"]:
         org_id = existing_service.get("organization_id")
         empresa_query = {"_id": ObjectId(service_dict["empresa_id"])}
@@ -2639,6 +2639,8 @@ async def update_service(service_id: str, service: ServiceCreate, current_user: 
                 status_code=400, 
                 detail="La empresa especificada no existe o no pertenece a esta organización"
             )
+        # INTEGRIDAD: Normalizar empresa_nombre desde BD, ignorar lo que venga del cliente
+        service_dict["empresa_nombre"] = empresa.get("nombre", "")
     
     # Validar turno_id si se está cambiando (solo admin/superadmin)
     if "turno_id" in service_dict and service_dict["turno_id"] != existing_service.get("turno_id"):
