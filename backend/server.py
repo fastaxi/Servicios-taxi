@@ -1535,6 +1535,20 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     if existing_turno:
         raise HTTPException(status_code=400, detail="Ya tienes un turno abierto. Debes finalizarlo antes de abrir uno nuevo.")
     
+    org_id = get_user_organization_id(current_user)
+    
+    # INTEGRIDAD: Validar que vehiculo_id pertenece a la misma organización
+    if turno.vehiculo_id:
+        vehiculo_query = {"_id": ObjectId(turno.vehiculo_id)}
+        if org_id:
+            vehiculo_query["organization_id"] = org_id
+        vehiculo = await db.vehiculos.find_one(vehiculo_query)
+        if not vehiculo:
+            raise HTTPException(
+                status_code=400, 
+                detail="El vehículo especificado no existe o no pertenece a esta organización"
+            )
+    
     turno_dict = turno.dict()
     # Override taxista info with current user
     turno_dict["taxista_id"] = str(current_user["_id"])
@@ -1543,7 +1557,7 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     turno_dict["cerrado"] = False
     
     # Multi-tenant: Asignar organization_id del usuario
-    turno_dict["organization_id"] = get_user_organization_id(current_user)
+    turno_dict["organization_id"] = org_id
     
     result = await db.turnos.insert_one(turno_dict)
     created_turno = await db.turnos.find_one({"_id": result.inserted_id})
