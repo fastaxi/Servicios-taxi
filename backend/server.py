@@ -1933,7 +1933,10 @@ async def export_turnos_excel(
     cerrado: Optional[bool] = Query(None),
     liquidado: Optional[bool] = Query(None)
 ):
-    query = {}
+    # SEGURIDAD: Filtrar por organización
+    org_filter = await get_org_filter(current_user)
+    query = {**org_filter}
+    
     if taxista_id:
         query["taxista_id"] = taxista_id
     if fecha_inicio:
@@ -1950,8 +1953,8 @@ async def export_turnos_excel(
     
     turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
     
-    # Usar helper function para optimizar queries e incluir servicios detallados
-    turnos_con_totales = await get_turnos_with_servicios(turnos, include_servicios_detail=True)
+    # Usar helper function con org_filter para evitar contaminación de servicios
+    turnos_con_totales = await get_turnos_with_servicios(turnos, org_filter=org_filter, include_servicios_detail=True)
     
     wb = Workbook()
     ws = wb.active
