@@ -472,6 +472,53 @@ def generate_slug(nombre: str) -> str:
     slug = re.sub(r'-+', '-', slug)
     return slug.strip('-')
 
+def _get_object_id_or_400(id_str: str, field_name: str = "ID") -> ObjectId:
+    """Convierte string a ObjectId o lanza 400 si es inválido"""
+    try:
+        return ObjectId(id_str)
+    except Exception:
+        raise HTTPException(status_code=400, detail=f"{field_name} tiene formato inválido")
+
+async def _get_taxista_or_400(taxista_id: str, org_filter: dict, db_instance) -> dict:
+    """Valida que el taxista existe y pertenece al scope. Retorna el taxista o lanza 400."""
+    try:
+        oid = ObjectId(taxista_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="taxista_id tiene formato inválido")
+    
+    taxista = await db_instance.users.find_one({"_id": oid, "role": "taxista", **org_filter})
+    if not taxista:
+        raise HTTPException(status_code=400, detail="El taxista especificado no existe o no pertenece a esta organización")
+    return taxista
+
+async def _get_company_or_400(empresa_id: str, org_filter: dict, db_instance) -> dict:
+    """Valida que la empresa existe y pertenece al scope. Retorna la empresa o lanza 400."""
+    try:
+        oid = ObjectId(empresa_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="empresa_id tiene formato inválido")
+    
+    empresa = await db_instance.companies.find_one({"_id": oid, **org_filter})
+    if not empresa:
+        raise HTTPException(status_code=400, detail="La empresa especificada no existe o no pertenece a esta organización")
+    return empresa
+
+async def _get_turno_or_400(turno_id: str, org_filter: dict, db_instance, taxista_id: str = None) -> dict:
+    """Valida que el turno existe y pertenece al scope. Si taxista_id, además verifica que sea suyo."""
+    try:
+        oid = ObjectId(turno_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="turno_id tiene formato inválido")
+    
+    query = {"_id": oid, **org_filter}
+    if taxista_id:
+        query["taxista_id"] = taxista_id
+    
+    turno = await db_instance.turnos.find_one(query)
+    if not turno:
+        raise HTTPException(status_code=400, detail="El turno especificado no existe, no pertenece a esta organización, o no es tuyo")
+    return turno
+
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
