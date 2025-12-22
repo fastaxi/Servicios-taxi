@@ -1554,23 +1554,30 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     )
 
 # HELPER FUNCTION: Batch fetch servicios para turnos (optimiza N+1 queries)
-async def get_turnos_with_servicios(turnos: list, include_servicios_detail: bool = False) -> list:
+async def get_turnos_with_servicios(turnos: list, org_filter: dict = None, include_servicios_detail: bool = False) -> list:
     """
     Optimización: Trae todos los servicios de múltiples turnos en 1 query
     en vez de hacer 1 query por cada turno (N+1 problem)
     
     Args:
         turnos: Lista de turnos
+        org_filter: Filtro de organización (vacío {} para superadmin, con organization_id para admin/taxista)
         include_servicios_detail: Si True, incluye la lista completa de servicios en cada turno
+    
+    SEGURIDAD: org_filter evita que servicios de otras organizaciones se mezclen
+    aunque tengan turno_id apuntando a turnos de este tenant (contaminación de datos)
     """
     if not turnos:
         return []
     
-    # Batch query - traer todos los servicios de una vez
+    # Si no se proporciona org_filter, usar filtro vacío (comportamiento legacy, pero no recomendado)
+    if org_filter is None:
+        org_filter = {}
+    
+    # Batch query - traer servicios con filtro de organización para evitar contaminación
     turno_ids = [str(t["_id"]) for t in turnos]
-    all_servicios = await db.services.find(
-        {"turno_id": {"$in": turno_ids}}
-    ).to_list(100000)
+    services_query = {"turno_id": {"$in": turno_ids}, **org_filter}
+    all_servicios = await db.services.find(services_query).to_list(100000)
     
     # Agrupar servicios por turno_id en memoria
     servicios_by_turno = {}
