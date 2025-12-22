@@ -2219,7 +2219,10 @@ async def get_turnos_estadisticas(
     fecha_inicio: Optional[str] = Query(None),
     fecha_fin: Optional[str] = Query(None)
 ):
-    query = {}
+    # SEGURIDAD: Filtrar por organización
+    org_filter = await get_org_filter(current_user)
+    query = {**org_filter}
+    
     if fecha_inicio:
         query["fecha_inicio"] = {"$gte": fecha_inicio}
     if fecha_fin:
@@ -2235,8 +2238,8 @@ async def get_turnos_estadisticas(
     turnos_liquidados = sum(1 for t in turnos if t.get("liquidado"))
     turnos_activos = total_turnos - turnos_cerrados
     
-    # Usar helper function para optimizar queries y calcular totales globales
-    turnos_con_totales = await get_turnos_with_servicios(turnos)
+    # Usar helper function con org_filter para evitar contaminación de servicios
+    turnos_con_totales = await get_turnos_with_servicios(turnos, org_filter=org_filter)
     
     total_importe = sum(t["total_clientes"] + t["total_particulares"] for t in turnos_con_totales)
     total_km = sum(t["total_km"] for t in turnos_con_totales)
