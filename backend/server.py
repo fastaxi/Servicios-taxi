@@ -2437,21 +2437,61 @@ async def get_services(
 
 @api_router.put("/services/{service_id}", response_model=ServiceResponse)
 async def update_service(service_id: str, service: ServiceCreate, current_user: dict = Depends(get_current_user)):
-    # Check if service exists and belongs to user (unless admin)
-    existing_service = await db.services.find_one({"_id": ObjectId(service_id)})
+    """
+    Actualizar un servicio existente.
+    SEGURIDAD: 
+    - Whitelist de campos editables (no se puede cambiar organization_id, created_at, synced, taxista_id)
+    - Si admin/superadmin cambia turno_id, se valida que el turno sea de la misma organización
+    """
+    # SEGURIDAD: Filtrar por organización
+    org_filter = await get_org_filter(current_user)
+    
+    # Check if service exists y pertenece a la organización
+    existing_service = await db.services.find_one({"_id": ObjectId(service_id), **org_filter})
     if not existing_service:
         raise HTTPException(status_code=404, detail="Service not found")
     
-    if current_user.get("role") != "admin" and existing_service["taxista_id"] != str(current_user["_id"]):
+    # Verificar permisos: admin/superadmin pueden editar cualquiera de su org, taxista solo los suyos
+    user_role = current_user.get("role")
+    is_admin_or_super = user_role in ["admin", "superadmin"]
+    
+    if not is_admin_or_super and existing_service["taxista_id"] != str(current_user["_id"]):
         raise HTTPException(status_code=403, detail="Not authorized to update this service")
     
-    service_dict = service.dict()
+    # SEGURIDAD: Whitelist de campos que se pueden editar
+    # Campos NUNCA editables: organization_id, created_at, synced, taxista_id
+    EDITABLE_FIELDS = [
+        "origen", "destino", "tipo", "empresa_id", "empresa_nombre",
+        "importe", "importe_espera", "observaciones", "cobrado", "facturar", 
+        "km", "kilometros", "fecha", "hora"
+    ]
+    
+    # Solo admin/superadmin pueden cambiar turno_id
+    if is_admin_or_super:
+        EDITABLE_FIELDS.append("turno_id")
+    
+    service_input = service.dict()
+    service_dict = {}
+    
+    # Solo copiar campos de la whitelist
+    for field in EDITABLE_FIELDS:
+        if field in service_input and service_input[field] is not None:
+            service_dict[field] = service_input[field]
+    
+    # Validar turno_id si se está cambiando (solo admin/superadmin)
+    if "turno_id" in service_dict and service_dict["turno_id"] != existing_service.get("turno_id"):
+        # Verificar que el nuevo turno existe y pertenece a la misma organización
+        new_turno = await db.turnos.find_one({"_id": ObjectId(service_dict["turno_id"]), **org_filter})
+        if not new_turno:
+            raise HTTPException(status_code=400, detail="El turno especificado no existe o no pertenece a esta organización")
     
     # Calcular importe_total automáticamente
-    service_dict["importe_total"] = service_dict["importe"] + service_dict.get("importe_espera", 0)
+    importe = service_dict.get("importe", existing_service.get("importe", 0))
+    importe_espera = service_dict.get("importe_espera", existing_service.get("importe_espera", 0))
+    service_dict["importe_total"] = importe + importe_espera
     
     result = await db.services.update_one(
-        {"_id": ObjectId(service_id)},
+        {"_id": ObjectId(service_id), **org_filter},  # Doble check con org_filter
         {"$set": service_dict}
     )
     
@@ -2463,15 +2503,22 @@ async def update_service(service_id: str, service: ServiceCreate, current_user: 
 
 @api_router.delete("/services/{service_id}")
 async def delete_service(service_id: str, current_user: dict = Depends(get_current_user)):
-    # Check if service exists and belongs to user (unless admin)
-    existing_service = await db.services.find_one({"_id": ObjectId(service_id)})
+    """Eliminar un servicio - con filtro de organización"""
+    # SEGURIDAD: Filtrar por organización
+    org_filter = await get_org_filter(current_user)
+    
+    # Check if service exists y pertenece a la organización
+    existing_service = await db.services.find_one({"_id": ObjectId(service_id), **org_filter})
     if not existing_service:
         raise HTTPException(status_code=404, detail="Service not found")
     
-    if current_user.get("role") != "admin" and existing_service["taxista_id"] != str(current_user["_id"]):
+    user_role = current_user.get("role")
+    is_admin_or_super = user_role in ["admin", "superadmin"]
+    
+    if not is_admin_or_super and existing_service["taxista_id"] != str(current_user["_id"]):
         raise HTTPException(status_code=403, detail="Not authorized to delete this service")
     
-    result = await db.services.delete_one({"_id": ObjectId(service_id)})
+    result = await db.services.delete_one({"_id": ObjectId(service_id), **org_filter})
     return {"message": "Service deleted successfully"}
 
 # Export endpoints
