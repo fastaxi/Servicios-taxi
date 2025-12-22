@@ -2337,6 +2337,19 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
                 detail="Debes iniciar un turno antes de registrar servicios"
             )
     
+    # INTEGRIDAD: Validar que empresa_id pertenece a la misma organización
+    org_id = get_user_organization_id(current_user)
+    if service.empresa_id:
+        empresa_query = {"_id": ObjectId(service.empresa_id)}
+        if org_id:  # Si no es superadmin sin org
+            empresa_query["organization_id"] = org_id
+        empresa = await db.companies.find_one(empresa_query)
+        if not empresa:
+            raise HTTPException(
+                status_code=400, 
+                detail="La empresa especificada no existe o no pertenece a esta organización"
+            )
+    
     service_dict = service.dict()
     service_dict["taxista_id"] = str(current_user["_id"])
     service_dict["taxista_nombre"] = current_user["nombre"]
@@ -2344,7 +2357,7 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
     service_dict["synced"] = True
     
     # Multi-tenant: Asignar organization_id
-    service_dict["organization_id"] = get_user_organization_id(current_user)
+    service_dict["organization_id"] = org_id
     
     # Asignar turno_id automáticamente si hay turno activo
     if turno_activo:
