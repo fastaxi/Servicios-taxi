@@ -8,7 +8,7 @@ import json
 import os
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://taxifast-admin.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://multitenancy-fix-1.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_invalid_login():
