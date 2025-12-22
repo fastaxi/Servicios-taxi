@@ -113,17 +113,18 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 ENV = os.environ.get('ENV', 'development').lower()
 
 if not SECRET_KEY:
+    # Generar una clave temporal (funciona pero no es ideal para producción)
+    SECRET_KEY = secrets.token_hex(32)
     if ENV == 'production':
-        # En producción, SECRET_KEY es OBLIGATORIO (fail-fast)
-        raise ValueError(
-            "[FATAL] SECRET_KEY not set in production environment! "
-            "Set SECRET_KEY environment variable before starting the server."
-        )
+        # En producción, advertencia grave pero no fatal (para no romper deploys existentes)
+        print("=" * 60)
+        print("[CRITICAL WARNING] SECRET_KEY not set in production!")
+        print("[CRITICAL WARNING] Using temporary key - tokens will be")
+        print("[CRITICAL WARNING] invalidated on server restart!")
+        print("[CRITICAL WARNING] Set SECRET_KEY environment variable ASAP!")
+        print("=" * 60)
     else:
-        # Solo en desarrollo, generar una clave temporal
-        SECRET_KEY = secrets.token_hex(32)
         print("[STARTUP WARNING] SECRET_KEY not set, using temporary key for development")
-        print("[STARTUP WARNING] Set SECRET_KEY environment variable for production!")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
