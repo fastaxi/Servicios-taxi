@@ -2373,9 +2373,12 @@ async def get_reporte_diario(
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
     """Crear servicio - se asigna a la organización del usuario"""
+    org_id = get_user_organization_id(current_user)
+    is_admin_or_super = current_user.get("role") in ["admin", "superadmin"]
+    
     # Si no es admin/superadmin, buscar turno activo y asignar automáticamente
     turno_activo = None
-    if current_user.get("role") not in ["admin", "superadmin"]:
+    if not is_admin_or_super:
         turno_activo = await db.turnos.find_one({
             "taxista_id": str(current_user["_id"]),
             "cerrado": False
@@ -2387,17 +2390,30 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
                 detail="Debes iniciar un turno antes de registrar servicios"
             )
     
-    # INTEGRIDAD: Validar que empresa_id pertenece a la misma organización
-    org_id = get_user_organization_id(current_user)
+    # INTEGRIDAD: Validar empresa_id y obtener empresa_nombre desde BD
+    empresa_validated = None
     if service.empresa_id:
         empresa_query = {"_id": ObjectId(service.empresa_id)}
-        if org_id:  # Si no es superadmin sin org
+        if org_id:
             empresa_query["organization_id"] = org_id
-        empresa = await db.companies.find_one(empresa_query)
-        if not empresa:
+        empresa_validated = await db.companies.find_one(empresa_query)
+        if not empresa_validated:
             raise HTTPException(
                 status_code=400, 
                 detail="La empresa especificada no existe o no pertenece a esta organización"
+            )
+    
+    # INTEGRIDAD: Si admin/superadmin proporciona turno_id, validar que existe y pertenece a la org
+    turno_from_payload = None
+    if is_admin_or_super and service.turno_id:
+        turno_query = {"_id": ObjectId(service.turno_id)}
+        if org_id:
+            turno_query["organization_id"] = org_id
+        turno_from_payload = await db.turnos.find_one(turno_query)
+        if not turno_from_payload:
+            raise HTTPException(
+                status_code=400, 
+                detail="El turno especificado no existe o no pertenece a esta organización"
             )
     
     service_dict = service.dict()
@@ -2406,11 +2422,21 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
     service_dict["created_at"] = datetime.utcnow()
     service_dict["synced"] = True
     
+    # INTEGRIDAD: Usar empresa_nombre desde BD, ignorar lo que venga del cliente
+    if empresa_validated:
+        service_dict["empresa_id"] = str(empresa_validated["_id"])
+        service_dict["empresa_nombre"] = empresa_validated.get("nombre", "")
+    elif "empresa_nombre" in service_dict and not service.empresa_id:
+        # Si no hay empresa_id válido, limpiar nombre para evitar inconsistencias
+        service_dict["empresa_nombre"] = ""
+    
     # Multi-tenant: Asignar organization_id
     service_dict["organization_id"] = org_id
     
-    # Asignar turno_id automáticamente si hay turno activo
-    if turno_activo:
+    # Asignar turno_id: priorizar el validado del payload, luego turno activo
+    if turno_from_payload:
+        service_dict["turno_id"] = str(turno_from_payload["_id"])
+    elif turno_activo:
         service_dict["turno_id"] = str(turno_activo["_id"])
     
     # Calcular importe_total automáticamente
