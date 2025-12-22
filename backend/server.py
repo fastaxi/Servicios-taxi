@@ -2908,12 +2908,35 @@ async def startup_event():
 # Include router
 app.include_router(api_router)
 
+# CORS Configuration - Seguro para producción
+# Orígenes permitidos desde variable de entorno o valores por defecto
+CORS_ORIGINS_STR = os.environ.get('CORS_ORIGINS', '')
+if CORS_ORIGINS_STR:
+    # Si hay orígenes configurados, usarlos
+    CORS_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_STR.split(',') if origin.strip()]
+else:
+    # Valores por defecto para desarrollo y producción conocida
+    CORS_ORIGINS = [
+        "https://servicios-taxi.vercel.app",
+        "https://taxitineo.emergent.host",
+        "http://localhost:3000",
+        "http://localhost:8081",
+        "http://localhost:19006",
+    ]
+
+# En desarrollo, permitir todos los orígenes para facilitar pruebas
+if ENV == 'development':
+    CORS_ORIGINS = ["*"]
+    ALLOW_CREDENTIALS = False  # No se puede usar credentials con "*"
+else:
+    ALLOW_CREDENTIALS = True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=ALLOW_CREDENTIALS,
+    allow_origins=CORS_ORIGINS,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
 )
 
 @app.on_event("shutdown")
