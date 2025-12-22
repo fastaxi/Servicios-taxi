@@ -1776,6 +1776,8 @@ async def get_turnos(
     if current_user.get("role") not in ["admin", "superadmin"]:
         query["taxista_id"] = str(current_user["_id"])
     elif taxista_id:
+        # SEGURIDAD: Validar que taxista_id pertenece al scope antes de filtrar
+        await _get_taxista_or_400(taxista_id, org_filter, db)
         query["taxista_id"] = taxista_id
     
     # Filtro por fechas
@@ -1805,7 +1807,7 @@ async def get_turnos(
     if turnos:
         turno_ids = [str(t["_id"]) for t in turnos]
         all_servicios = await db.services.find(
-            {"turno_id": {"$in": turno_ids}}
+            {"turno_id": {"$in": turno_ids}, **org_filter}  # Con org_filter
         ).to_list(100000)
         
         # Agrupar servicios por turno_id en memoria
