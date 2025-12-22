@@ -2491,6 +2491,19 @@ async def update_service(service_id: str, service: ServiceCreate, current_user: 
         if field in service_input and service_input[field] is not None:
             service_dict[field] = service_input[field]
     
+    # INTEGRIDAD: Validar que empresa_id pertenece a la misma organización
+    if "empresa_id" in service_dict and service_dict["empresa_id"]:
+        org_id = existing_service.get("organization_id")
+        empresa_query = {"_id": ObjectId(service_dict["empresa_id"])}
+        if org_id:
+            empresa_query["organization_id"] = org_id
+        empresa = await db.companies.find_one(empresa_query)
+        if not empresa:
+            raise HTTPException(
+                status_code=400, 
+                detail="La empresa especificada no existe o no pertenece a esta organización"
+            )
+    
     # Validar turno_id si se está cambiando (solo admin/superadmin)
     if "turno_id" in service_dict and service_dict["turno_id"] != existing_service.get("turno_id"):
         # Verificar que el nuevo turno existe y pertenece a la misma organización
