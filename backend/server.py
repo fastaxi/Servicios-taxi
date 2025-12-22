@@ -1311,14 +1311,37 @@ class UserUpdate(BaseModel):
 
 @api_router.put("/users/{user_id}", response_model=UserResponse)
 async def update_user(user_id: str, user: UserUpdate, current_user: dict = Depends(get_current_admin)):
+    # SEGURIDAD: Filtrar por organización
+    org_filter = await get_org_filter(current_user)
+    
+    # Verificar que el usuario existe y pertenece a la organización
+    existing_user = await db.users.find_one({"_id": ObjectId(user_id), **org_filter})
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
     user_dict = user.dict(exclude={'password'}, exclude_none=True)
+    
+    # INTEGRIDAD: Validar que vehiculo_id pertenece a la misma organización
+    if user.vehiculo_id:
+        org_id = existing_user.get("organization_id")
+        vehiculo_query = {"_id": ObjectId(user.vehiculo_id)}
+        if org_id:
+            vehiculo_query["organization_id"] = org_id
+        vehiculo = await db.vehiculos.find_one(vehiculo_query)
+        if not vehiculo:
+            raise HTTPException(
+                status_code=400, 
+                detail="El vehículo especificado no existe o no pertenece a esta organización"
+            )
+        # Actualizar también la matrícula para mantener consistencia
+        user_dict["vehiculo_matricula"] = vehiculo.get("matricula")
     
     # Si se proporciona una nueva contraseña, hashearla
     if user.password:
         user_dict["password"] = get_password_hash(user.password)
     
     result = await db.users.update_one(
-        {"_id": ObjectId(user_id)},
+        {"_id": ObjectId(user_id), **org_filter},  # Doble check
         {"$set": user_dict}
     )
     
