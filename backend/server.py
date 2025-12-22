@@ -1221,7 +1221,27 @@ async def superadmin_delete_vehiculo(vehiculo_id: str, current_user: dict = Depe
 # ==========================================
 @api_router.post("/users", response_model=UserResponse)
 async def create_user(user: UserCreate, current_user: dict = Depends(get_current_admin)):
-    """Crear taxista - se asigna automáticamente a la organización del admin"""
+    """
+    Crear taxista - se asigna automáticamente a la organización del admin.
+    SEGURIDAD:
+    - Admin solo puede crear taxistas (no admin ni superadmin)
+    - Valida vehiculo_id pertenece a la misma organización
+    - vehiculo_matricula se obtiene de BD (ignora cliente)
+    """
+    # SEGURIDAD: Admin no puede crear admins ni superadmins
+    if not is_superadmin(current_user) and user.role in ["admin", "superadmin"]:
+        raise HTTPException(
+            status_code=403, 
+            detail="No tienes permiso para crear usuarios con rol admin o superadmin"
+        )
+    
+    # SEGURIDAD: Nadie puede crear superadmin desde este endpoint
+    if user.role == "superadmin":
+        raise HTTPException(
+            status_code=403, 
+            detail="No se puede crear usuarios con rol superadmin desde este endpoint"
+        )
+    
     # Check if user exists
     existing_user = await db.users.find_one({"username": user.username})
     if existing_user:
@@ -1230,16 +1250,42 @@ async def create_user(user: UserCreate, current_user: dict = Depends(get_current
             detail="Username already exists"
         )
     
+    # Determinar organization_id
+    org_id = None
+    if not is_superadmin(current_user):
+        org_id = get_user_organization_id(current_user)
+    elif user.organization_id:
+        org_id = user.organization_id
+    
+    # INTEGRIDAD: Validar vehiculo_id y obtener matricula desde BD
+    vehiculo_validated = None
+    if user.vehiculo_id:
+        try:
+            vehiculo_query = {"_id": ObjectId(user.vehiculo_id)}
+            if org_id:
+                vehiculo_query["organization_id"] = org_id
+            vehiculo_validated = await db.vehiculos.find_one(vehiculo_query)
+            if not vehiculo_validated:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="El vehículo especificado no existe o no pertenece a esta organización"
+                )
+        except Exception:
+            raise HTTPException(status_code=400, detail="vehiculo_id inválido")
+    
     user_dict = user.dict()
     user_dict["password"] = get_password_hash(user_dict["password"])
     user_dict["created_at"] = datetime.utcnow()
+    user_dict["organization_id"] = org_id
     
-    # Multi-tenant: Asignar organization_id del admin que crea el usuario
-    # Superadmin puede crear usuarios sin organización
-    if not is_superadmin(current_user):
-        user_dict["organization_id"] = get_user_organization_id(current_user)
-    elif not user_dict.get("organization_id"):
-        user_dict["organization_id"] = None
+    # INTEGRIDAD: Usar matrícula desde BD, ignorar lo que venga del cliente
+    if vehiculo_validated:
+        user_dict["vehiculo_id"] = str(vehiculo_validated["_id"])
+        user_dict["vehiculo_matricula"] = vehiculo_validated.get("matricula", "")
+    else:
+        # Si no hay vehiculo válido, limpiar para evitar inconsistencias
+        user_dict["vehiculo_id"] = None
+        user_dict["vehiculo_matricula"] = None
     
     result = await db.users.insert_one(user_dict)
     created_user = await db.users.find_one({"_id": result.inserted_id})
