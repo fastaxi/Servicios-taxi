@@ -2424,15 +2424,21 @@ async def get_reporte_diario(
 ):
     """
     Obtiene un reporte diario de todos los taxistas con sus totales del día.
+    SEGURIDAD P0: Filtrado por organización.
     Entrada: fecha (dd/mm/yyyy)
     Salida: Lista de taxistas con sus totales del día
     """
     
-    # Obtener todos los taxistas
-    taxistas = await db.users.find({"role": "taxista"}).to_list(1000)
+    # SEGURIDAD P0: Filtrar por organización
+    org_filter = await get_org_filter(current_user)
     
-    # OPTIMIZACIÓN: Batch query - traer todos los servicios de la fecha de una vez
-    all_servicios = await db.services.find({"fecha": fecha}).to_list(10000)
+    # Obtener taxistas de la organización
+    taxistas_query = {"role": "taxista", **org_filter}
+    taxistas = await db.users.find(taxistas_query).to_list(1000)
+    
+    # OPTIMIZACIÓN: Batch query - traer servicios de la fecha filtrados por org
+    services_query = {"fecha": fecha, **org_filter}
+    all_servicios = await db.services.find(services_query).to_list(10000)
     
     # Agrupar servicios por taxista_id en memoria
     servicios_by_taxista = {}
