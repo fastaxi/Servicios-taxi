@@ -2035,8 +2035,8 @@ async def delete_turno(turno_id: str, current_user: dict = Depends(get_current_a
     # Eliminar todos los servicios asociados al turno (scoped)
     servicios_result = await db.services.delete_many({"turno_id": turno_id, **org_filter})
     
-    # Eliminar el turno
-    await db.turnos.delete_one({"_id": ObjectId(turno_id)})
+    # Eliminar el turno (scoped)
+    await db.turnos.delete_one({"_id": oid, **org_filter})
     
     return {
         "message": "Turno eliminado correctamente",
