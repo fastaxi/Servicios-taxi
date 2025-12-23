@@ -579,6 +579,7 @@ async def get_org_filter(user: dict) -> dict:
     """
     Retorna el filtro de organización para queries.
     Superadmin ve todo, otros usuarios solo ven datos de su organización.
+    SEGURIDAD: Si no es superadmin y no tiene organización, lanza 403.
     """
     if is_superadmin(user):
         return {}  # Sin filtro, ve todo
@@ -586,7 +587,12 @@ async def get_org_filter(user: dict) -> dict:
     org_id = get_user_organization_id(user)
     if org_id:
         return {"organization_id": org_id}
-    return {"organization_id": None}  # Datos legacy sin organización
+    
+    # SEGURIDAD P0: Usuario sin organización no puede acceder a datos
+    raise HTTPException(
+        status_code=403, 
+        detail="Usuario sin organización asignada. Contacte al administrador."
+    )
 
 # ==========================================
 # AUTH ENDPOINTS
