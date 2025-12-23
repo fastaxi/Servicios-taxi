@@ -2528,12 +2528,20 @@ async def get_reporte_diario(
 @api_router.post("/services", response_model=ServiceResponse)
 async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
     """Crear servicio - se asigna a la organización del usuario"""
-    org_id = get_user_organization_id(current_user)
-    is_admin_or_super = current_user.get("role") in ["admin", "superadmin"]
     
-    # Si no es admin/superadmin, buscar turno activo y asignar automáticamente
+    # SEGURIDAD P1: Superadmin no puede crear servicios (evita datos sin tenant)
+    if is_superadmin(current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Superadmin no puede crear servicios. Use una cuenta de taxista."
+        )
+    
+    org_id = get_user_organization_id(current_user)
+    is_admin_user = current_user.get("role") == "admin"
+    
+    # Si no es admin, buscar turno activo y asignar automáticamente
     turno_activo = None
-    if not is_admin_or_super:
+    if not is_admin_user:
         turno_activo = await db.turnos.find_one({
             "taxista_id": str(current_user["_id"]),
             "cerrado": False
