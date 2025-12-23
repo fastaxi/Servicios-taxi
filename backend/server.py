@@ -1407,7 +1407,7 @@ async def get_users(current_user: dict = Depends(get_current_admin)):
 class UserUpdate(BaseModel):
     username: str
     nombre: str
-    role: str = "taxista"
+    role: Optional[str] = None  # SEGURIDAD: No se permite cambiar rol desde aquí
     licencia: Optional[str] = None
     vehiculo_id: Optional[str] = None
     vehiculo_matricula: Optional[str] = None
@@ -1423,7 +1423,9 @@ async def update_user(user_id: str, user: UserUpdate, current_user: dict = Depen
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    user_dict = user.dict(exclude={'password'}, exclude_none=True)
+    # SEGURIDAD P0: Bloquear cambio de roles para admins
+    # Solo superadmin puede cambiar roles (y lo hace desde otro endpoint)
+    user_dict = user.dict(exclude={'password', 'role'}, exclude_none=True)  # Excluir role siempre
     
     # INTEGRIDAD: Validar que vehiculo_id pertenece a la misma organización
     if user.vehiculo_id:
