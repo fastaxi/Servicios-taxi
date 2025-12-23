@@ -1976,21 +1976,30 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoFinalizarUpdate, cur
 
 @api_router.put("/turnos/{turno_id}", response_model=TurnoResponse)
 async def update_turno(turno_id: str, turno_update: TurnoUpdate, current_user: dict = Depends(get_current_admin)):
-    """Actualizar turno (solo admin). Permite editar cualquier campo del turno."""
-    existing_turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    """Actualizar turno (admin/superadmin). Permite editar cualquier campo del turno."""
+    # SEGURIDAD: Scope por organización
+    org_filter = await get_org_filter(current_user)
+    
+    try:
+        oid = ObjectId(turno_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="turno_id inválido")
+    
+    existing_turno = await db.turnos.find_one({"_id": oid, **org_filter})
     if not existing_turno:
         raise HTTPException(status_code=404, detail="Turno not found")
     
     update_dict = turno_update.dict(exclude_none=True)
-    await db.turnos.update_one(
-        {"_id": ObjectId(turno_id)},
-        {"$set": update_dict}
-    )
+    if update_dict:
+        await db.turnos.update_one(
+            {"_id": oid, **org_filter},
+            {"$set": update_dict}
+        )
     
-    updated_turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    updated_turno = await db.turnos.find_one({"_id": oid, **org_filter})
     
-    # Calcular totales
-    servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+    # Calcular totales (scoped)
+    servicios = await db.services.find({"turno_id": turno_id, **org_filter}).to_list(1000)
     total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
     total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
     total_km = sum(s.get("kilometros", 0) for s in servicios)
@@ -2007,16 +2016,24 @@ async def update_turno(turno_id: str, turno_update: TurnoUpdate, current_user: d
 @api_router.delete("/turnos/{turno_id}")
 async def delete_turno(turno_id: str, current_user: dict = Depends(get_current_admin)):
     """
-    Eliminar un turno (solo admin).
-    También elimina todos los servicios asociados a ese turno.
+    Eliminar un turno (admin/superadmin) y sus servicios asociados.
+    SEGURIDAD: Scoped por organización.
     """
-    # Verificar que el turno existe
-    turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    # SEGURIDAD: Scope por organización
+    org_filter = await get_org_filter(current_user)
+    
+    try:
+        oid = ObjectId(turno_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="turno_id inválido")
+    
+    # Verificar que el turno existe dentro del scope
+    turno = await db.turnos.find_one({"_id": oid, **org_filter})
     if not turno:
         raise HTTPException(status_code=404, detail="Turno no encontrado")
     
-    # Eliminar todos los servicios asociados al turno
-    servicios_result = await db.services.delete_many({"turno_id": turno_id})
+    # Eliminar todos los servicios asociados al turno (scoped)
+    servicios_result = await db.services.delete_many({"turno_id": turno_id, **org_filter})
     
     # Eliminar el turno
     await db.turnos.delete_one({"_id": ObjectId(turno_id)})
