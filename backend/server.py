@@ -1935,17 +1935,25 @@ async def get_turno_activo(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/turnos/{turno_id}/finalizar", response_model=TurnoResponse)
 async def finalizar_turno(turno_id: str, turno_update: TurnoFinalizarUpdate, current_user: dict = Depends(get_current_user)):
-    existing_turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    # SEGURIDAD: Scope por organización
+    org_filter = await get_org_filter(current_user)
+    
+    try:
+        oid = ObjectId(turno_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="turno_id inválido")
+    
+    existing_turno = await db.turnos.find_one({"_id": oid, **org_filter})
     if not existing_turno:
         raise HTTPException(status_code=404, detail="Turno not found")
     
-    # Solo el taxista dueño o admin pueden finalizar
-    if current_user.get("role") != "admin" and existing_turno["taxista_id"] != str(current_user["_id"]):
+    # Solo el taxista dueño o admin/superadmin pueden finalizar
+    if current_user.get("role") not in ("admin", "superadmin") and existing_turno["taxista_id"] != str(current_user["_id"]):
         raise HTTPException(status_code=403, detail="No autorizado")
     
     update_dict = turno_update.dict()
     await db.turnos.update_one(
-        {"_id": ObjectId(turno_id)},
+        {"_id": oid, **org_filter},
         {"$set": update_dict}
     )
     
