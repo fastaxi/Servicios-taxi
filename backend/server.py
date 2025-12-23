@@ -2566,9 +2566,9 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
                 detail="La empresa especificada no existe o no pertenece a esta organización"
             )
     
-    # INTEGRIDAD: Si admin/superadmin proporciona turno_id, validar que existe y pertenece a la org
+    # INTEGRIDAD: Si admin proporciona turno_id, validar que existe y pertenece a la org
     turno_from_payload = None
-    if is_admin_or_super and service.turno_id:
+    if is_admin_user and service.turno_id:
         turno_query = {"_id": ObjectId(service.turno_id)}
         if org_id:
             turno_query["organization_id"] = org_id
