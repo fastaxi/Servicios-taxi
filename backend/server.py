@@ -2664,14 +2664,14 @@ async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(
                 if org_id:
                     turno_query["organization_id"] = org_id
                 # Para taxista, además verificar que es su turno
-                if not is_admin_or_super:
+                if not is_admin_user:
                     turno_query["taxista_id"] = str(current_user["_id"])
                 turno_validated = await db.turnos.find_one(turno_query)
                 if not turno_validated:
                     errors.append(f"Servicio {idx}: turno_id inválido, de otra organización, o no pertenece al taxista")
                     continue
                 service_dict["turno_id"] = str(turno_validated["_id"])
-            elif not is_admin_or_super:
+            elif not is_admin_user:
                 # Para taxista sin turno_id, asignar turno activo
                 if not turno_activo:
                     errors.append(f"Servicio {idx}: no hay turno activo para asignar el servicio")
