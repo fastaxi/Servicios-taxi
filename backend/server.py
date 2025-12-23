@@ -1692,6 +1692,14 @@ async def delete_vehiculo(vehiculo_id: str, current_user: dict = Depends(get_cur
 @api_router.post("/turnos", response_model=TurnoResponse)
 async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_current_user)):
     """Crear turno - se asigna a la organización del usuario"""
+    
+    # SEGURIDAD P1: Superadmin no puede crear turnos (evita datos sin tenant)
+    if is_superadmin(current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Superadmin no puede crear turnos. Use una cuenta de taxista."
+        )
+    
     # Validar que no tenga un turno abierto
     existing_turno = await db.turnos.find_one({
         "taxista_id": str(current_user["_id"]),
