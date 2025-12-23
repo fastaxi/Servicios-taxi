@@ -2619,14 +2619,22 @@ async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(
     Sincronizar servicios offline - se asignan a la organización del usuario.
     INTEGRIDAD: Valida todas las referencias (empresa_id, turno_id) antes de insertar.
     """
+    
+    # SEGURIDAD P1: Superadmin no puede sincronizar servicios (evita datos sin tenant)
+    if is_superadmin(current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Superadmin no puede sincronizar servicios. Use una cuenta de taxista."
+        )
+    
     created_services = []
     errors = []
     org_id = get_user_organization_id(current_user)
-    is_admin_or_super = current_user.get("role") in ["admin", "superadmin"]
+    is_admin_user = current_user.get("role") == "admin"
     
     # Para taxistas, obtener el turno activo una sola vez
     turno_activo = None
-    if not is_admin_or_super:
+    if not is_admin_user:
         turno_activo = await db.turnos.find_one({
             "taxista_id": str(current_user["_id"]),
             "cerrado": False
