@@ -2818,10 +2818,15 @@ async def export_csv(
     fecha_inicio: Optional[str] = Query(None),
     fecha_fin: Optional[str] = Query(None)
 ):
-    query = {}
+    # SEGURIDAD P0: Filtrar por organización
+    org_filter = await get_org_filter(current_user)
+    query = {**org_filter}
+    
     if tipo:
         query["tipo"] = tipo
     if empresa_id:
+        # SEGURIDAD: Validar que empresa pertenece a la org
+        await get_empresa_or_400(empresa_id, current_user)
         query["empresa_id"] = empresa_id
     if fecha_inicio:
         query["fecha"] = {"$gte": fecha_inicio}
