@@ -1957,10 +1957,10 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoFinalizarUpdate, cur
         {"$set": update_dict}
     )
     
-    updated_turno = await db.turnos.find_one({"_id": ObjectId(turno_id)})
+    updated_turno = await db.turnos.find_one({"_id": oid, **org_filter})
     
-    # Calcular totales
-    servicios = await db.services.find({"turno_id": turno_id}).to_list(1000)
+    # Calcular totales (scoped)
+    servicios = await db.services.find({"turno_id": turno_id, **org_filter}).to_list(1000)
     total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
     total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
     total_km = sum(s.get("kilometros", 0) for s in servicios)
