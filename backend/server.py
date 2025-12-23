@@ -595,6 +595,39 @@ async def get_org_filter(user: dict) -> dict:
     )
 
 # ==========================================
+# HEALTH CHECK ENDPOINT (P1)
+# ==========================================
+@api_router.get("/health")
+async def health_check():
+    """
+    Health check endpoint para monitoreo.
+    Verifica conexión a la base de datos.
+    """
+    try:
+        # Verificar conexión a MongoDB
+        await db.command("ping")
+        
+        # Contar documentos básicos para verificar acceso
+        users_count = await db.users.count_documents({})
+        orgs_count = await db.organizations.count_documents({})
+        
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "timestamp": datetime.utcnow().isoformat(),
+            "stats": {
+                "users": users_count,
+                "organizations": orgs_count
+            }
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Service unhealthy: {str(e)}"
+        )
+
+# ==========================================
 # AUTH ENDPOINTS
 # ==========================================
 @api_router.post("/auth/login", response_model=Token)
