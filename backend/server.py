@@ -1683,14 +1683,14 @@ async def update_vehiculo(vehiculo_id: str, vehiculo: VehiculoCreate, current_us
     
     vehiculo_dict = vehiculo.dict()
     result = await db.vehiculos.update_one(
-        {"_id": ObjectId(vehiculo_id)},
+        {"_id": ObjectId(vehiculo_id), **org_filter},
         {"$set": vehiculo_dict}
     )
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Vehículo not found")
     
-    updated_vehiculo = await db.vehiculos.find_one({"_id": ObjectId(vehiculo_id)})
+    updated_vehiculo = await db.vehiculos.find_one({"_id": ObjectId(vehiculo_id), **org_filter})
     return VehiculoResponse(
         id=str(updated_vehiculo["_id"]),
         **{k: v for k, v in updated_vehiculo.items() if k != "_id"}
