@@ -1591,14 +1591,14 @@ async def update_company(company_id: str, company: CompanyCreate, current_user: 
             raise HTTPException(status_code=400, detail="Número de cliente ya existe")
     
     result = await db.companies.update_one(
-        {"_id": ObjectId(company_id)},
+        {"_id": ObjectId(company_id), **org_filter},
         {"$set": company_dict}
     )
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Company not found")
     
-    updated_company = await db.companies.find_one({"_id": ObjectId(company_id)})
+    updated_company = await db.companies.find_one({"_id": ObjectId(company_id), **org_filter})
     return CompanyResponse(
         id=str(updated_company["_id"]),
         **{k: v for k, v in updated_company.items() if k != "_id"}
