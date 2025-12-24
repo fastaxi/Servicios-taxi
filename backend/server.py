@@ -503,6 +503,11 @@ async def _get_company_or_400(empresa_id: str, org_filter: dict, db_instance) ->
         raise HTTPException(status_code=400, detail="La empresa especificada no existe o no pertenece a esta organización")
     return empresa
 
+async def get_empresa_or_400(empresa_id: str, current_user: dict):
+    """Wrapper conveniente para validar empresa_id con current_user."""
+    org_filter = await get_org_filter(current_user)
+    return await _get_company_or_400(empresa_id, org_filter, db)
+
 async def _get_turno_or_400(turno_id: str, org_filter: dict, db_instance, taxista_id: str = None) -> dict:
     """Valida que el turno existe y pertenece al scope. Si taxista_id, además verifica que sea suyo."""
     try:
