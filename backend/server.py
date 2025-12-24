@@ -2175,8 +2175,17 @@ async def export_turnos_excel(
     org_filter = await get_org_filter(current_user)
     query = {**org_filter}
     
+    # SEGURIDAD: Validar que taxista_id pertenece a la organización
     if taxista_id:
+        try:
+            taxista_oid = ObjectId(taxista_id)
+        except Exception:
+            raise HTTPException(status_code=400, detail="taxista_id inválido")
+        taxista = await db.users.find_one({"_id": taxista_oid, "role": "taxista", **org_filter})
+        if not taxista:
+            raise HTTPException(status_code=400, detail="El taxista no existe o no pertenece a esta organización")
         query["taxista_id"] = taxista_id
+    
     if fecha_inicio:
         query["fecha_inicio"] = {"$gte": fecha_inicio}
     if fecha_fin:
