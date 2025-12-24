@@ -1520,10 +1520,18 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_adm
 @api_router.post("/companies", response_model=CompanyResponse)
 async def create_company(company: CompanyCreate, current_user: dict = Depends(get_current_admin)):
     """Crear cliente/empresa - se asigna automáticamente a la organización del admin"""
+    
+    # SEGURIDAD: Superadmin no puede crear empresas (evita datos sin tenant)
+    if is_superadmin(current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Superadmin no puede crear empresas. Use una cuenta de admin de organización."
+        )
+    
     company_dict = company.dict()
     
     # Multi-tenant: Asignar organization_id
-    org_id = get_user_organization_id(current_user) if not is_superadmin(current_user) else None
+    org_id = get_user_organization_id(current_user)
     company_dict["organization_id"] = org_id
     
     # Validar numero_cliente único dentro de la organización
