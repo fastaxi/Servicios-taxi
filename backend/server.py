@@ -1886,7 +1886,14 @@ async def get_turnos(
         turno_ids = [str(t["_id"]) for t in turnos]
         all_servicios = await db.services.find(
             {"turno_id": {"$in": turno_ids}, **org_filter}  # Con org_filter
-        ).to_list(100000)
+        ).to_list(MAX_BATCH_SERVICES)
+        
+        # Guard defensivo: si alcanzamos el límite, devolvemos error controlado
+        if len(all_servicios) >= MAX_BATCH_SERVICES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Demasiados servicios para esta operación batch. Use filtros más específicos o paginación. Límite={MAX_BATCH_SERVICES}"
+            )
         
         # Agrupar servicios por turno_id en memoria
         servicios_by_turno = {}
