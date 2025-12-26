@@ -108,23 +108,21 @@ except Exception as e:
     raise
 
 # Security
-# SECRET_KEY debe estar en .env o variables de entorno
-SECRET_KEY = os.environ.get('SECRET_KEY')
-ENV = os.environ.get('ENV', 'development').lower()
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ENV = os.environ.get("ENV", "development").lower()
+
+# Límite para batch queries de servicios (configurable vía env)
+MAX_BATCH_SERVICES = int(os.environ.get("MAX_BATCH_SERVICES", "10000"))
 
 if not SECRET_KEY:
-    # Generar una clave temporal (funciona pero no es ideal para producción)
+    if ENV == "production":
+        # FAIL-FAST en producción: no arrancar sin SECRET_KEY
+        raise RuntimeError(
+            "SECRET_KEY not set in production. Set SECRET_KEY in environment variables."
+        )
+    # Development / staging: clave temporal aceptable
     SECRET_KEY = secrets.token_hex(32)
-    if ENV == 'production':
-        # En producción, advertencia grave pero no fatal (para no romper deploys existentes)
-        print("=" * 60)
-        print("[CRITICAL WARNING] SECRET_KEY not set in production!")
-        print("[CRITICAL WARNING] Using temporary key - tokens will be")
-        print("[CRITICAL WARNING] invalidated on server restart!")
-        print("[CRITICAL WARNING] Set SECRET_KEY environment variable ASAP!")
-        print("=" * 60)
-    else:
-        print("[STARTUP WARNING] SECRET_KEY not set, using temporary key for development")
+    print("[STARTUP WARNING] SECRET_KEY not set, using temporary key for non-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
