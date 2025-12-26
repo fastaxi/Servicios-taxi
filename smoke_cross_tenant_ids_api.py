@@ -60,8 +60,9 @@ def get_one_id(token: str, endpoint: str) -> str:
         raise SystemExit(f"Expected list from {endpoint}, got: {type(data)}")
     if not data:
         raise SystemExit(f"No items returned from {endpoint}. Create one in Org B to test.")
-    # La API devuelve "id" (no "_id")
-    return data[0]["id"]
+    # Fallback robusto: id o _id
+    item = data[0]
+    return item.get("id") or item.get("_id")
 
 
 def expect_not_allowed(method: str, url: str, token: str, payload=None, expected=(403, 404)):
