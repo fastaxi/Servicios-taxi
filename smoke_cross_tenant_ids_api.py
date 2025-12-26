@@ -36,7 +36,12 @@ def login(user: str, password: str) -> str:
         print(f"❌ Login failed for {user}: {r.status_code} - {r.text}")
         sys.exit(1)
     data = r.json()
-    return data["access_token"]
+    # Fallback robusto para diferentes estructuras de respuesta
+    token = data.get("access_token") or data.get("token")
+    if not token:
+        print(f"❌ No token in response for {user}: {data}")
+        sys.exit(1)
+    return token
 
 
 def auth_headers(token: str) -> dict:
