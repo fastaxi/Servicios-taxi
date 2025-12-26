@@ -37,16 +37,16 @@ get_token() {
     curl -s -X POST "$BASE_URL/api/auth/login" \
         -H "Content-Type: application/json" \
         -d "{\"username\":\"$user\",\"password\":\"$pass\"}" \
-        | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))"
+        | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('access_token') or d.get('token') or '')"
 }
 
-# Función para obtener primer ID de un listado
+# Función para obtener primer ID de un listado (robusto: id o _id)
 get_first_id() {
     local token=$1
     local endpoint=$2
     curl -s "$BASE_URL$endpoint" \
         -H "Authorization: Bearer $token" \
-        | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['id'] if d else '')" 2>/dev/null || echo ""
+        | python3 -c "import sys,json; d=json.load(sys.stdin); print((d[0].get('id') or d[0].get('_id')) if d else '')" 2>/dev/null || echo ""
 }
 
 # Obtener tokens
