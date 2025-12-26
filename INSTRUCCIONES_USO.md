@@ -43,12 +43,12 @@ Contraseña: taxista123
 
 ### Vista Web (Preview)
 ```
-https://multitenancy-fix-1.preview.emergentagent.com
+https://multitenant-guard.preview.emergentagent.com
 ```
 
 ### API Backend
 ```
-https://multitenancy-fix-1.preview.emergentagent.com/api
+https://multitenant-guard.preview.emergentagent.com/api
 ```
 
 ## 📱 Cómo Usar en Dispositivo Móvil Real

@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BASE_URL = "https://multitenancy-fix-1.preview.emergentagent.com/api"
+BASE_URL = "https://multitenant-guard.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {"username": "admin", "password": "admin123"}
 
 class AdditionalTester:

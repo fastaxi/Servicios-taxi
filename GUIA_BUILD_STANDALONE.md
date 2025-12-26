@@ -123,7 +123,7 @@ Cuando hagas cambios:
 ## 💡 Notas Importantes
 
 ### **Backend URL:**
-- La app usa: `https://multitenancy-fix-1.preview.emergentagent.com`
+- La app usa: `https://multitenant-guard.preview.emergentagent.com`
 - Asegúrate de que el backend esté siempre desplegado y funcionando
 
 ### **Conexión a Internet:**
