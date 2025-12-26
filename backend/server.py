@@ -2911,7 +2911,7 @@ async def update_service(service_id: str, service: ServiceCreate, current_user: 
         {"$set": service_dict}
     )
     
-    updated_service = await db.services.find_one({"_id": ObjectId(service_id)})
+    updated_service = await db.services.find_one({"_id": ObjectId(service_id), **org_filter})
     return ServiceResponse(
         id=str(updated_service["_id"]),
         **{k: v for k, v in updated_service.items() if k != "_id"}
