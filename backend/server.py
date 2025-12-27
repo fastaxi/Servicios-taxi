@@ -2257,6 +2257,13 @@ async def export_turnos_excel(
     org_filter = await get_org_filter(current_user)
     query = {**org_filter}
     
+    # ROBUSTEZ: Si no hay filtros de fecha, limitar a últimos 31 días
+    if not fecha_inicio and not fecha_fin and not taxista_id:
+        from datetime import timedelta
+        default_start = (datetime.utcnow() - timedelta(days=31)).strftime("%d/%m/%Y")
+        fecha_inicio = default_start
+        logger.info(f"Export turnos Excel sin filtros: aplicando límite automático desde {default_start}")
+    
     # SEGURIDAD: Validar que taxista_id pertenece a la organización
     if taxista_id:
         try:
@@ -2281,11 +2288,6 @@ async def export_turnos_excel(
         query["liquidado"] = liquidado
     
     turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
-    
-    # Usar helper function con org_filter para evitar contaminación de servicios
-    turnos_con_totales = await get_turnos_with_servicios(turnos, org_filter=org_filter, include_servicios_detail=True)
-    
-    wb = Workbook()
     ws = wb.active
     ws.title = "Turnos Detallados"
     
