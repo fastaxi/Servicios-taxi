@@ -107,6 +107,13 @@ except Exception as e:
     print(f"[STARTUP ERROR] Failed to connect to MongoDB: {e}")
     raise
 
+# Configure logging FIRST (before any log calls)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Security
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ENV = os.environ.get("ENV", "development").lower()
@@ -114,27 +121,32 @@ ENV = os.environ.get("ENV", "development").lower()
 # Límite para batch queries de servicios (configurable vía env)
 MAX_BATCH_SERVICES = int(os.environ.get("MAX_BATCH_SERVICES", "10000"))
 
+# Startup logging
+logger.info("=" * 60)
+logger.info("TAXIFAST API STARTING")
+logger.info(f"  ENV: {ENV}")
+logger.info(f"  MAX_BATCH_SERVICES: {MAX_BATCH_SERVICES}")
+
 if not SECRET_KEY:
     if ENV == "production":
         # FAIL-FAST en producción: no arrancar sin SECRET_KEY
+        logger.critical("SECRET_KEY not set in production. Refusing to start.")
         raise RuntimeError(
             "SECRET_KEY not set in production. Set SECRET_KEY in environment variables."
         )
     # Development / staging: clave temporal aceptable
     SECRET_KEY = secrets.token_hex(32)
-    print("[STARTUP WARNING] SECRET_KEY not set, using temporary key for non-production")
+    logger.warning("SECRET_KEY not set, using temporary key (sessions will be lost on restart)")
+else:
+    logger.info(f"  SECRET_KEY: configured ({len(SECRET_KEY)} chars)")
+
+logger.info("=" * 60)
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
-
-# Configure logging FIRST
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 # Create the main app - TaxiFast Multi-tenant SaaS Platform
 app = FastAPI(title="TaxiFast API", version="2.0.0", description="Multi-tenant taxi management SaaS platform")
