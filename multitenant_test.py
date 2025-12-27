@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://multitenant-guard.preview.emergentagent.com/api"
+BACKEND_URL = "https://secureobserve.preview.emergentagent.com/api"
 
 # Test credentials
 CREDENTIALS = {

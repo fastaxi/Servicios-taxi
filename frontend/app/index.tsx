@@ -106,7 +106,7 @@ export default function LoginScreen() {
 
           {__DEV__ && (
             <Text variant="bodySmall" style={styles.debugText}>
-              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://multitenant-guard.preview.emergentagent.com'}
+              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://secureobserve.preview.emergentagent.com'}
             </Text>
           )}
 
