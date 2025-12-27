@@ -2519,10 +2519,13 @@ async def export_turnos_excel(
     wb.save(output)
     output.seek(0)
     
+    headers = {"Content-Disposition": "attachment; filename=turnos_detallado.xlsx"}
+    if applied_default_limit:
+        headers["X-Export-Default-Date-Range"] = "31d"
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=turnos_detallado.xlsx"}
+        headers=headers
     )
 
 @api_router.get("/turnos/export/pdf")
