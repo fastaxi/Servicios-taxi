@@ -121,7 +121,7 @@ ENV = os.environ.get("ENV", "development").lower()
 # Límite para batch queries de servicios (configurable vía env)
 MAX_BATCH_SERVICES = int(os.environ.get("MAX_BATCH_SERVICES", "10000"))
 
-# Startup logging
+# Startup logging (sin revelar longitud de secretos)
 logger.info("=" * 60)
 logger.info("TAXIFAST API STARTING")
 logger.info(f"  ENV: {ENV}")
@@ -136,9 +136,9 @@ if not SECRET_KEY:
         )
     # Development / staging: clave temporal aceptable
     SECRET_KEY = secrets.token_hex(32)
-    logger.warning("SECRET_KEY not set, using temporary key (sessions will be lost on restart)")
+    logger.warning("SECRET_KEY: temporary (sessions lost on restart)")
 else:
-    logger.info(f"  SECRET_KEY: configured ({len(SECRET_KEY)} chars)")
+    logger.info("  SECRET_KEY: configured")  # Sin revelar longitud
 
 logger.info("=" * 60)
 
@@ -156,8 +156,13 @@ api_router = APIRouter(prefix="/api")
 # MIDDLEWARE: Request Logging & Metrics
 # ==========================================
 import time
+import uuid
 from collections import defaultdict
 from threading import Lock
+
+# Umbrales de latencia por tipo de endpoint (ms)
+SLOW_THRESHOLD_DEFAULT = 1000  # 1 segundo para endpoints normales
+SLOW_THRESHOLD_EXPORT = 5000   # 5 segundos para exports
 
 # Métricas en memoria para monitoreo
 class MetricsCollector:
