@@ -152,6 +152,43 @@ security = HTTPBearer()
 app = FastAPI(title="TaxiFast API", version="2.0.0", description="Multi-tenant taxi management SaaS platform")
 api_router = APIRouter(prefix="/api")
 
+# ==========================================
+# MIDDLEWARE: Request Logging & Metrics
+# ==========================================
+import time
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    """Log estructurado de cada request con tiempo de respuesta"""
+    start_time = time.time()
+    
+    # Procesar request
+    response = await call_next(request)
+    
+    # Calcular tiempo
+    process_time = (time.time() - start_time) * 1000  # ms
+    
+    # Log estructurado (solo para /api, excluir health checks)
+    path = request.url.path
+    if path.startswith("/api") and path not in ["/api/health", "/"]:
+        status = response.status_code
+        method = request.method
+        
+        # Nivel de log según status code
+        if status >= 500:
+            logger.error(f"[{method}] {path} -> {status} ({process_time:.0f}ms)")
+        elif status >= 400:
+            logger.warning(f"[{method}] {path} -> {status} ({process_time:.0f}ms)")
+        elif process_time > 1000:  # Más de 1 segundo = lento
+            logger.warning(f"[{method}] {path} -> {status} ({process_time:.0f}ms) SLOW")
+        else:
+            logger.info(f"[{method}] {path} -> {status} ({process_time:.0f}ms)")
+    
+    # Añadir header con tiempo de proceso
+    response.headers["X-Process-Time"] = f"{process_time:.0f}ms"
+    
+    return response
+
 # Root health check endpoint for deployment systems
 @app.get("/")
 async def root_health_check():
