@@ -287,12 +287,6 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
-# ==========================================
-# METRICS ENDPOINT (para monitoreo y alertas)
-# ==========================================
-# NOTA: Este endpoint se registra más tarde con autenticación
-# Ver la implementación después de get_current_user
-
 # Helper function for ObjectId
 class PyObjectId(ObjectId):
     @classmethod
