@@ -287,6 +287,34 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+# ==========================================
+# METRICS ENDPOINT (para monitoreo y alertas)
+# ==========================================
+@api_router.get("/metrics")
+async def get_api_metrics(current_user: dict = Depends(get_current_user)):
+    """
+    Endpoint de métricas para monitoreo.
+    Solo accesible por usuarios autenticados (admin/superadmin recomendado).
+    
+    Retorna:
+    - Uptime del servidor
+    - Total de requests
+    - Errores 5xx y 4xx
+    - Tasa de errores
+    - Top endpoints con errores
+    - Requests lentos recientes
+    - Alertas activas
+    """
+    # Solo admin o superadmin pueden ver métricas
+    if current_user.get("role") not in ["admin", "superadmin"]:
+        raise HTTPException(status_code=403, detail="Solo administradores pueden ver métricas")
+    
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "env": ENV,
+        **metrics.get_metrics()
+    }
+
 # Helper function for ObjectId
 class PyObjectId(ObjectId):
     @classmethod
