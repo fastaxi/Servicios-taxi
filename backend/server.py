@@ -2407,6 +2407,13 @@ async def export_turnos_pdf(
     org_filter = await get_org_filter(current_user)
     query = {**org_filter}
     
+    # ROBUSTEZ: Si no hay filtros de fecha, limitar a últimos 31 días
+    if not fecha_inicio and not fecha_fin and not taxista_id:
+        from datetime import timedelta
+        default_start = (datetime.utcnow() - timedelta(days=31)).strftime("%d/%m/%Y")
+        fecha_inicio = default_start
+        logger.info(f"Export turnos PDF sin filtros: aplicando límite automático desde {default_start}")
+    
     # SEGURIDAD: Validar que taxista_id pertenece a la organización
     if taxista_id:
         try:
