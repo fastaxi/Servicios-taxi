@@ -2288,6 +2288,11 @@ async def export_turnos_excel(
         query["liquidado"] = liquidado
     
     turnos = await db.turnos.find(query).sort("fecha_inicio", -1).to_list(10000)
+    
+    # Usar helper function con org_filter para evitar contaminación de servicios
+    turnos_con_totales = await get_turnos_with_servicios(turnos, org_filter=org_filter, include_servicios_detail=True)
+    
+    wb = Workbook()
     ws = wb.active
     ws.title = "Turnos Detallados"
     
