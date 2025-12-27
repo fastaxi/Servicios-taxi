@@ -3315,10 +3315,13 @@ async def export_excel(
     wb.save(output)
     output.seek(0)
     
+    headers = {"Content-Disposition": "attachment; filename=servicios.xlsx"}
+    if applied_default_limit:
+        headers["X-Export-Default-Date-Range"] = "31d"
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=servicios.xlsx"}
+        headers=headers
     )
 
 @api_router.get("/services/export/pdf")
@@ -3332,6 +3335,9 @@ async def export_pdf(
     # SEGURIDAD P0: Filtrar por organización
     org_filter = await get_org_filter(current_user)
     query = {**org_filter}
+    
+    # ROBUSTEZ: Si no hay filtros de fecha ni empresa, limitar a últimos 31 días
+    applied_default_limit = False
     
     # ROBUSTEZ: Si no hay filtros de fecha ni empresa, limitar a últimos 31 días
     if not fecha_inicio and not fecha_fin and not empresa_id:
