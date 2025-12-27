@@ -230,14 +230,21 @@ metrics = MetricsCollector()
 
 @app.middleware("http")
 async def log_requests(request, call_next):
-    """Log estructurado de cada request con tiempo de respuesta"""
+    """Log estructurado de cada request con tiempo de respuesta y Request ID"""
     start_time = time.time()
+    
+    # Generar Request ID único para trazabilidad
+    request_id = str(uuid.uuid4())[:8]  # 8 chars suficiente para debugging
     
     # Procesar request
     response = await call_next(request)
     
     # Calcular tiempo
     process_time = (time.time() - start_time) * 1000  # ms
+    
+    # Añadir headers
+    response.headers["X-Request-Id"] = request_id
+    response.headers["X-Process-Time"] = f"{process_time:.0f}ms"
     
     # Log estructurado (solo para /api, excluir health checks)
     path = request.url.path
@@ -248,18 +255,28 @@ async def log_requests(request, call_next):
         # Registrar métricas
         metrics.record_request(method, path, status, process_time)
         
-        # Nivel de log según status code
+        # Determinar umbral de latencia según endpoint
+        is_export = "/export/" in path
+        slow_threshold = SLOW_THRESHOLD_EXPORT if is_export else SLOW_THRESHOLD_DEFAULT
+        
+        # Nivel de log según status code (reducir ruido en 4xx esperables)
+        log_msg = f"[{request_id}] [{method}] {path} -> {status} ({process_time:.0f}ms)"
+        
         if status >= 500:
-            logger.error(f"[{method}] {path} -> {status} ({process_time:.0f}ms)")
+            # Errores de servidor: siempre ERROR
+            logger.error(log_msg)
+        elif status == 429:
+            # Rate limit: WARNING (importante)
+            logger.warning(log_msg)
         elif status >= 400:
-            logger.warning(f"[{method}] {path} -> {status} ({process_time:.0f}ms)")
-        elif process_time > 1000:  # Más de 1 segundo = lento
-            logger.warning(f"[{method}] {path} -> {status} ({process_time:.0f}ms) SLOW")
+            # 4xx esperables (400/401/403/404/422): INFO para reducir ruido
+            logger.info(log_msg)
+        elif process_time > slow_threshold:
+            # Request lento: WARNING con indicador
+            logger.warning(f"{log_msg} SLOW")
         else:
-            logger.info(f"[{method}] {path} -> {status} ({process_time:.0f}ms)")
-    
-    # Añadir header con tiempo de proceso
-    response.headers["X-Process-Time"] = f"{process_time:.0f}ms"
+            # Normal: INFO
+            logger.info(log_msg)
     
     return response
 
