@@ -1658,7 +1658,7 @@ async def update_user(user_id: str, user: UserUpdate, current_user: dict = Depen
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
     
-    updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
+    updated_user = await db.users.find_one({"_id": ObjectId(user_id), **org_filter})
     return UserResponse(
         id=str(updated_user["_id"]),
         username=updated_user["username"],
