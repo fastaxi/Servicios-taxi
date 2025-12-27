@@ -3344,6 +3344,7 @@ async def export_pdf(
         from datetime import timedelta
         default_start = (datetime.utcnow() - timedelta(days=31)).strftime("%d/%m/%Y")
         fecha_inicio = default_start
+        applied_default_limit = True
         logger.info(f"Export services PDF sin filtros: aplicando límite automático desde {default_start}")
     
     if tipo:
