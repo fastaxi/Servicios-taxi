@@ -2359,10 +2359,13 @@ async def export_turnos_csv(
         writer.writerow([])
     
     output.seek(0)
+    headers = {"Content-Disposition": "attachment; filename=turnos_detallado.csv"}
+    if applied_default_limit:
+        headers["X-Export-Default-Date-Range"] = "31d"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=turnos_detallado.csv"}
+        headers=headers
     )
 
 @api_router.get("/turnos/export/excel")
