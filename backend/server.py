@@ -156,6 +156,72 @@ api_router = APIRouter(prefix="/api")
 # MIDDLEWARE: Request Logging & Metrics
 # ==========================================
 import time
+from collections import defaultdict
+from threading import Lock
+
+# Métricas en memoria para monitoreo
+class MetricsCollector:
+    def __init__(self):
+        self._lock = Lock()
+        self._error_counts = defaultdict(int)  # {endpoint: count}
+        self._slow_requests = []  # Lista de requests lentos recientes
+        self._total_requests = 0
+        self._total_errors_5xx = 0
+        self._total_errors_4xx = 0
+        self._start_time = datetime.utcnow()
+    
+    def record_request(self, method: str, path: str, status: int, duration_ms: float):
+        with self._lock:
+            self._total_requests += 1
+            
+            if status >= 500:
+                self._total_errors_5xx += 1
+                self._error_counts[f"{method} {path}"] += 1
+            elif status >= 400:
+                self._total_errors_4xx += 1
+            
+            # Guardar requests lentos (>2s) - máximo 50 recientes
+            if duration_ms > 2000:
+                self._slow_requests.append({
+                    "time": datetime.utcnow().isoformat(),
+                    "method": method,
+                    "path": path,
+                    "duration_ms": round(duration_ms),
+                    "status": status
+                })
+                if len(self._slow_requests) > 50:
+                    self._slow_requests.pop(0)
+    
+    def get_metrics(self):
+        with self._lock:
+            uptime = (datetime.utcnow() - self._start_time).total_seconds()
+            return {
+                "uptime_seconds": round(uptime),
+                "total_requests": self._total_requests,
+                "total_5xx_errors": self._total_errors_5xx,
+                "total_4xx_errors": self._total_errors_4xx,
+                "error_rate_5xx": round(self._total_errors_5xx / max(self._total_requests, 1) * 100, 2),
+                "top_error_endpoints": dict(sorted(self._error_counts.items(), key=lambda x: -x[1])[:10]),
+                "recent_slow_requests": self._slow_requests[-10:],
+                "alerts": self._check_alerts()
+            }
+    
+    def _check_alerts(self):
+        alerts = []
+        # Alerta si error rate > 5%
+        if self._total_requests > 100:
+            error_rate = self._total_errors_5xx / self._total_requests * 100
+            if error_rate > 5:
+                alerts.append(f"HIGH_ERROR_RATE: {error_rate:.1f}% de requests con 5xx")
+        
+        # Alerta si más de 10 errores 5xx en la sesión
+        if self._total_errors_5xx > 10:
+            alerts.append(f"MANY_5XX_ERRORS: {self._total_errors_5xx} errores 5xx desde el arranque")
+        
+        return alerts
+
+# Instancia global de métricas
+metrics = MetricsCollector()
 
 @app.middleware("http")
 async def log_requests(request, call_next):
@@ -170,9 +236,12 @@ async def log_requests(request, call_next):
     
     # Log estructurado (solo para /api, excluir health checks)
     path = request.url.path
-    if path.startswith("/api") and path not in ["/api/health", "/"]:
+    if path.startswith("/api") and path not in ["/api/health", "/", "/api/metrics"]:
         status = response.status_code
         method = request.method
+        
+        # Registrar métricas
+        metrics.record_request(method, path, status, process_time)
         
         # Nivel de log según status code
         if status >= 500:
