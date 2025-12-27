@@ -2689,10 +2689,13 @@ async def export_turnos_pdf(
     doc.build(elements)
     
     output.seek(0)
+    headers = {"Content-Disposition": "attachment; filename=turnos_detallado.pdf"}
+    if applied_default_limit:
+        headers["X-Export-Default-Date-Range"] = "31d"
     return StreamingResponse(
         output,
         media_type="application/pdf",
-        headers={"Content-Disposition": "attachment; filename=turnos_detallado.pdf"}
+        headers=headers
     )
 
 # Estadísticas de turnos
