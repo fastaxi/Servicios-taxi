@@ -3412,10 +3412,13 @@ async def export_pdf(
     doc.build(elements)
     
     output.seek(0)
+    headers = {"Content-Disposition": "attachment; filename=servicios.pdf"}
+    if applied_default_limit:
+        headers["X-Export-Default-Date-Range"] = "31d"
     return StreamingResponse(
         output,
         media_type="application/pdf",
-        headers={"Content-Disposition": "attachment; filename=servicios.pdf"}
+        headers=headers
     )
 
 # Config endpoints
