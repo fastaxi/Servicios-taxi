@@ -3217,10 +3217,13 @@ async def export_csv(
         ])
     
     output.seek(0)
+    headers = {"Content-Disposition": "attachment; filename=servicios.csv"}
+    if applied_default_limit:
+        headers["X-Export-Default-Date-Range"] = "31d"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=servicios.csv"}
+        headers=headers
     )
 
 @api_router.get("/services/export/excel")
@@ -3236,6 +3239,7 @@ async def export_excel(
     query = {**org_filter}
     
     # ROBUSTEZ: Si no hay filtros de fecha ni empresa, limitar a últimos 31 días
+    applied_default_limit = False
     if not fecha_inicio and not fecha_fin and not empresa_id:
         from datetime import timedelta
         default_start = (datetime.utcnow() - timedelta(days=31)).strftime("%d/%m/%Y")
