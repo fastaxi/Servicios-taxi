@@ -557,33 +557,43 @@ class BackendTester:
 
 def main():
     """Main test execution"""
-    print("🚀 INICIANDO PRUEBAS EXHAUSTIVAS DE BACKEND - PR1 NUEVAS FUNCIONALIDADES")
-    print("="*80)
+    print("🚕 PRUEBAS EXHAUSTIVAS DE BACKEND - PR1 (SEGUNDA EJECUCIÓN)")
+    print("=" * 80)
     print(f"🌐 Base URL: {BASE_URL}")
     print(f"🏢 TAXITUR_ORG_ID: {TAXITUR_ORG_ID}")
-    print("="*80)
+    print(f"🏢 OTHER_ORG_ID: {OTHER_ORG_ID}")
+    print("=" * 80)
     
     tester = BackendTester()
     
-    # Setup test data
-    if not tester.setup_test_data():
-        print("❌ Failed to setup test data. Aborting tests.")
-        return
+    # Setup test environment
+    if not tester.setup_test_environment():
+        print("❌ Error configurando entorno de pruebas")
+        return False
     
     # Execute all test cases
     try:
-        tester.test_taxitur_origen_obligatorio()
-        tester.test_vehiculo_cambiado_kilometros()
-        tester.test_combustible_repostaje()
-        tester.test_server_time()
-        tester.test_exports_nuevas_columnas()
-        tester.test_estadisticas_combustible()
-        tester.test_metodo_pago()
+        tester.test_1_taxitur_origen_obligatorio()
+        tester.test_2_vehiculo_cambiado_kilometros()
+        tester.test_3_combustible_repostaje()
+        tester.test_4_server_time()
+        tester.test_5_exports()
+        tester.test_6_metodo_pago()
     except Exception as e:
-        print(f"❌ Error during testing: {e}")
+        print(f"❌ Error durante la ejecución de pruebas: {e}")
+        import traceback
+        traceback.print_exc()
     
     # Print summary
-    tester.print_summary()
+    success = tester.print_summary()
+    
+    if success:
+        print("\n🎉 TODAS LAS PRUEBAS COMPLETADAS EXITOSAMENTE")
+        return True
+    else:
+        print("\n⚠️ ALGUNAS PRUEBAS FALLARON - REVISAR IMPLEMENTACIÓN")
+        return False
 
 if __name__ == "__main__":
-    main()
+    success = main()
+    exit(0 if success else 1)
