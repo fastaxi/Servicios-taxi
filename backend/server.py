@@ -3189,6 +3189,8 @@ async def get_services(
     turno_id: Optional[str] = Query(None),
     fecha_inicio: Optional[str] = Query(None),
     fecha_fin: Optional[str] = Query(None),
+    metodo_pago: Optional[str] = Query(None, description="Filtrar por método de pago: efectivo|tpv"),
+    origen_taxitur: Optional[str] = Query(None, description="Filtrar por origen Taxitur: parada|lagos"),
     limit: int = Query(1000, le=10000, description="Límite de resultados")
 ):
     """Listar servicios - filtrado por organización"""
@@ -3228,6 +3230,17 @@ async def get_services(
             query["fecha"]["$lte"] = fecha_fin
         else:
             query["fecha"] = {"$lte": fecha_fin}
+    
+    # (D) Filtro por método de pago
+    if metodo_pago:
+        if metodo_pago in ("efectivo", "tpv"):
+            query["metodo_pago"] = metodo_pago
+    
+    # (E) Filtro por origen Taxitur (solo tiene sentido para Taxitur)
+    if origen_taxitur:
+        org_id = get_user_organization_id(current_user)
+        if org_id == TAXITUR_ORG_ID and origen_taxitur in ("parada", "lagos"):
+            query["origen_taxitur"] = origen_taxitur
     
     # Validar y ajustar límite
     if limit <= 0:
