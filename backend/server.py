@@ -3701,7 +3701,7 @@ async def export_excel(
     header_fill = PatternFill(start_color="0066CC", end_color="0066CC", fill_type="solid")
     header_font = Font(color="FFFFFF", bold=True)
     
-    headers = ["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Importe Total (€)", "Kilómetros", "Tipo", "Empresa", "Cobrado", "Facturar"]
+    headers = ["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Importe Total (€)", "Kilómetros", "Tipo", "Empresa", "Cobrado", "Facturar", "Método Pago", "Origen Taxitur", "Vehículo ID", "Vehículo Matrícula", "Vehículo Cambiado", "Km Inicio Vehículo", "Km Fin Vehículo"]
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=header)
         cell.fill = header_fill
@@ -3722,11 +3722,19 @@ async def export_excel(
         ws.cell(row=row_idx, column=6, value=round(importe, 2))
         ws.cell(row=row_idx, column=7, value=round(importe_espera, 2))
         ws.cell(row=row_idx, column=8, value=round(importe_total, 2))
-        ws.cell(row=row_idx, column=9, value=service["kilometros"])
+        ws.cell(row=row_idx, column=9, value=service.get("kilometros", ""))
         ws.cell(row=row_idx, column=10, value=service["tipo"])
         ws.cell(row=row_idx, column=11, value=service.get("empresa_nombre", ""))
         ws.cell(row=row_idx, column=12, value="Sí" if service.get("cobrado", False) else "No")
         ws.cell(row=row_idx, column=13, value="Sí" if service.get("facturar", False) else "No")
+        # Nuevos campos PR1
+        ws.cell(row=row_idx, column=14, value=service.get("metodo_pago", "") or "")
+        ws.cell(row=row_idx, column=15, value=service.get("origen_taxitur", "") or "")
+        ws.cell(row=row_idx, column=16, value=service.get("vehiculo_id", "") or "")
+        ws.cell(row=row_idx, column=17, value=service.get("vehiculo_matricula", "") or "")
+        ws.cell(row=row_idx, column=18, value="Sí" if service.get("vehiculo_cambiado", False) else "No")
+        ws.cell(row=row_idx, column=19, value=service.get("km_inicio_vehiculo", "") if service.get("km_inicio_vehiculo") is not None else "")
+        ws.cell(row=row_idx, column=20, value=service.get("km_fin_vehiculo", "") if service.get("km_fin_vehiculo") is not None else "")
     
     # Auto-adjust column widths
     for col in ws.columns:
