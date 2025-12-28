@@ -1267,7 +1267,69 @@ agent_communication:
       El sistema backend está completamente validado y listo para el despliegue
       del APK v1.1.0 en producción. Todas las funcionalidades solicitadas
       están implementadas, probadas y operativas al 100%.
-  - task: "Multi-tenancy - CRUD Organizations"
+
+  - agent: "testing"
+    message: |
+      🚕 PRUEBAS EXHAUSTIVAS DE BACKEND - PR1 (SEGUNDA EJECUCIÓN) - 100% ÉXITO COMPLETO
+      
+      **📊 RESUMEN EJECUTIVO:**
+      ✅ **20/20 tests PASADOS (100% éxito)**
+      ✅ **Todas las funcionalidades PR1 están OPERATIVAS**
+      ✅ **Sistema listo para producción**
+      
+      **🎯 CASOS DE PRUEBA EJECUTADOS:**
+      
+      **1. TAXITUR - Origen obligatorio (4/4 ✅):**
+      - 1.1 POST sin origen_taxitur para Taxitur → 400 ✅
+      - 1.2 POST con origen_taxitur='parada' → 200 ✅
+      - 1.3 POST con origen_taxitur='lagos' → 200 ✅
+      - 1.4 POST con origen_taxitur para Taxi Tineo → 400 ✅
+      
+      **2. VEHÍCULO CAMBIADO - Kilómetros condicionales (4/4 ✅):**
+      - 2.1 POST sin km_inicio/km_fin con vehículo cambiado → 400 ✅
+      - 2.2 POST con km_fin < km_inicio → 400 ✅
+      - 2.3 POST con km válidos (inicio=100, fin=150) → 200 ✅
+      - 2.4 POST con vehículo del turno (sin km extra) → 200 ✅
+      
+      **3. COMBUSTIBLE - Repostaje en turnos (3/3 ✅):**
+      - 3.1 PUT combustible en turno activo (45L, km=100050) → 200 ✅
+      - 3.2 PUT finalizar turno con km_fin > km_inicio → 200 ✅
+      - 3.3 PUT combustible en turno cerrado → 400 ✅
+      
+      **4. SERVER TIME (2/2 ✅):**
+      - 4.1 POST turno con hora_inicio='99:99' → 200 ✅ (hora guardada: 12:46)
+      - 4.2 PUT finalizar con hora_fin='99:99' → 200 ✅ (hora guardada: 12:46)
+      
+      **5. EXPORTS (4/4 ✅):**
+      - 5.1 GET services/export/csv → 200 ✅ (Content-Type: text/csv)
+      - 5.2 GET services/export/excel → 200 ✅ (Content-Type: spreadsheetml.sheet)
+      - 5.3 GET turnos/export/csv → 200 ✅ (incluye columnas combustible)
+      - 5.4 GET turnos/combustible/estadisticas → 200 ✅
+      
+      **6. MÉTODO DE PAGO (3/3 ✅):**
+      - 6.1 POST servicio con metodo_pago='efectivo' → 200 ✅
+      - 6.2 POST servicio con metodo_pago='tpv' → 200 ✅
+      - 6.3 GET services?metodo_pago=efectivo → 200 ✅ (6 servicios encontrados)
+      
+      **🔧 CONFIGURACIÓN DE PRUEBA UTILIZADA:**
+      - API Base URL: https://taxiflow-18.preview.emergentagent.com/api
+      - TAXITUR_ORG_ID: 69484bec187c3bc2b0fdb8f4
+      - OTHER_ORG_ID: 69429aaecdbc9d2db23e0ed5 (Taxi Tineo)
+      - Usuarios: taxista_taxitur/test123, taxista_tineo/test123, admin/admin123
+      
+      **✅ VALIDACIONES CRÍTICAS VERIFICADAS:**
+      - Origen_taxitur obligatorio solo para organización Taxitur ✅
+      - Kilómetros obligatorios solo cuando se cambia vehículo ✅
+      - Combustible solo modificable en turnos activos ✅
+      - Server time usado cuando cliente envía hora inválida ✅
+      - Nuevas columnas en exportaciones (metodo_pago, origen_taxitur) ✅
+      - Filtros por método de pago funcionando ✅
+      
+      **🎉 CONCLUSIÓN FINAL:**
+      **TODAS LAS FUNCIONALIDADES PR1 ESTÁN 100% OPERATIVAS**
+      **SISTEMA COMPLETAMENTE LISTO PARA PRODUCCIÓN**
+
+backend:
     implemented: true
     working: true
     file: "backend/server.py"
