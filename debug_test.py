@@ -116,7 +116,10 @@ def debug_service_creation():
         print(f"🔄 Active turno check: {turno_response.status_code}")
         if turno_response.status_code == 200:
             turno = turno_response.json()
-            print(f"✅ Active turno: {turno['id']}")
+            if turno:
+                print(f"✅ Active turno: {turno['id']}")
+            else:
+                print("❌ No active turno found")
             
             # Try to create service without origen_taxitur
             service_data = {
