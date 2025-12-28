@@ -2302,6 +2302,215 @@ async def delete_turno(turno_id: str, current_user: dict = Depends(get_current_a
         "servicios_eliminados": servicios_result.deleted_count
     }
 
+# (F) COMBUSTIBLE: Endpoint para registrar/editar combustible en turno
+@api_router.put("/turnos/{turno_id}/combustible")
+async def update_turno_combustible(
+    turno_id: str,
+    combustible_update: CombustibleUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Registrar o editar combustible en un turno.
+    - Solo el taxista dueño puede modificar (mientras el turno esté activo)
+    - Admin solo puede leer
+    - Una vez finalizado el turno, el combustible queda bloqueado
+    """
+    org_filter = await get_org_filter(current_user)
+    org_id = get_user_organization_id(current_user)
+    
+    try:
+        oid = ObjectId(turno_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="turno_id inválido")
+    
+    existing_turno = await db.turnos.find_one({"_id": oid, **org_filter})
+    if not existing_turno:
+        raise HTTPException(status_code=404, detail="Turno no encontrado")
+    
+    # Solo el taxista dueño puede modificar combustible
+    is_owner = existing_turno["taxista_id"] == str(current_user["_id"])
+    if not is_owner:
+        raise HTTPException(
+            status_code=403,
+            detail="Solo el taxista dueño del turno puede registrar combustible"
+        )
+    
+    # Bloqueado si el turno está cerrado
+    if existing_turno.get("cerrado", False):
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede modificar combustible en un turno finalizado"
+        )
+    
+    # Validaciones si repostado=True
+    if combustible_update.repostado:
+        if combustible_update.litros is None or combustible_update.litros <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Si repostado=True, litros debe ser > 0"
+            )
+        if not combustible_update.vehiculo_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Si repostado=True, vehiculo_id es obligatorio"
+            )
+        if combustible_update.km_vehiculo is None or combustible_update.km_vehiculo < 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Si repostado=True, km_vehiculo es obligatorio y debe ser >= 0"
+            )
+        
+        # Validar que vehiculo_id pertenece al tenant
+        try:
+            vehiculo_query = {"_id": ObjectId(combustible_update.vehiculo_id)}
+            if org_id:
+                vehiculo_query["organization_id"] = org_id
+            vehiculo = await db.vehiculos.find_one(vehiculo_query)
+            if not vehiculo:
+                raise HTTPException(
+                    status_code=400,
+                    detail="vehiculo_id no existe o no pertenece a esta organización"
+                )
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=400, detail="vehiculo_id inválido")
+        
+        combustible_data = {
+            "repostado": True,
+            "litros": combustible_update.litros,
+            "vehiculo_id": combustible_update.vehiculo_id,
+            "vehiculo_matricula": vehiculo.get("matricula", ""),
+            "km_vehiculo": combustible_update.km_vehiculo,
+            "timestamp": datetime.utcnow(),
+            "registrado_por_user_id": str(current_user["_id"])
+        }
+    else:
+        combustible_data = {
+            "repostado": False,
+            "litros": None,
+            "vehiculo_id": None,
+            "vehiculo_matricula": None,
+            "km_vehiculo": None,
+            "timestamp": datetime.utcnow(),
+            "registrado_por_user_id": str(current_user["_id"])
+        }
+    
+    await db.turnos.update_one(
+        {"_id": oid, **org_filter},
+        {"$set": {"combustible": combustible_data}}
+    )
+    
+    updated_turno = await db.turnos.find_one({"_id": oid, **org_filter})
+    
+    # Calcular totales
+    servicios = await db.services.find({"turno_id": turno_id, **org_filter}).to_list(1000)
+    total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
+    total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
+    total_km = sum(s.get("kilometros", 0) for s in servicios)
+    
+    return TurnoResponse(
+        id=turno_id,
+        **{k: v for k, v in updated_turno.items() if k != "_id"},
+        total_importe_clientes=total_clientes,
+        total_importe_particulares=total_particulares,
+        total_kilometros=total_km,
+        cantidad_servicios=len(servicios)
+    )
+
+# (F) COMBUSTIBLE: Estadísticas de combustible
+@api_router.get("/turnos/combustible/estadisticas")
+async def get_combustible_estadisticas(
+    current_user: dict = Depends(get_current_admin),
+    from_date: Optional[str] = Query(None, alias="from", description="Fecha inicio (YYYY-MM-DD o dd/mm/yyyy)"),
+    to_date: Optional[str] = Query(None, alias="to", description="Fecha fin (YYYY-MM-DD o dd/mm/yyyy)"),
+    group: str = Query("day", description="Agrupación: day|week|month")
+):
+    """
+    Estadísticas de combustible (solo admin).
+    Respuesta: litros_total, repostajes_total, litros_por_vehiculo, serie por período.
+    """
+    org_filter = await get_org_filter(current_user)
+    
+    # Query base: turnos con repostaje
+    query = {**org_filter, "combustible.repostado": True}
+    
+    # Filtro por fechas (formato flexible)
+    if from_date:
+        # Convertir a formato dd/mm/yyyy si viene en YYYY-MM-DD
+        if "-" in from_date:
+            parts = from_date.split("-")
+            from_date = f"{parts[2]}/{parts[1]}/{parts[0]}"
+        query["fecha_inicio"] = {"$gte": from_date}
+    if to_date:
+        if "-" in to_date:
+            parts = to_date.split("-")
+            to_date = f"{parts[2]}/{parts[1]}/{parts[0]}"
+        if "fecha_inicio" in query:
+            query["fecha_inicio"]["$lte"] = to_date
+        else:
+            query["fecha_inicio"] = {"$lte": to_date}
+    
+    turnos = await db.turnos.find(query).to_list(10000)
+    
+    # Calcular estadísticas
+    litros_total = 0
+    repostajes_total = 0
+    litros_por_vehiculo = {}
+    serie_por_periodo = {}
+    
+    for turno in turnos:
+        combustible = turno.get("combustible", {})
+        if combustible.get("repostado"):
+            litros = combustible.get("litros", 0) or 0
+            vehiculo_id = combustible.get("vehiculo_id", "")
+            vehiculo_matricula = combustible.get("vehiculo_matricula", "Desconocido")
+            fecha = turno.get("fecha_inicio", "")
+            
+            litros_total += litros
+            repostajes_total += 1
+            
+            # Por vehículo
+            if vehiculo_id:
+                if vehiculo_id not in litros_por_vehiculo:
+                    litros_por_vehiculo[vehiculo_id] = {
+                        "vehiculo_id": vehiculo_id,
+                        "vehiculo_matricula": vehiculo_matricula,
+                        "litros": 0,
+                        "repostajes": 0
+                    }
+                litros_por_vehiculo[vehiculo_id]["litros"] += litros
+                litros_por_vehiculo[vehiculo_id]["repostajes"] += 1
+            
+            # Por período (simplificado: por día/semana/mes)
+            if fecha:
+                # fecha en formato dd/mm/yyyy
+                try:
+                    parts = fecha.split("/")
+                    if group == "day":
+                        periodo = fecha
+                    elif group == "week":
+                        # Semana del año (simplificado)
+                        from datetime import datetime as dt
+                        d = dt(int(parts[2]), int(parts[1]), int(parts[0]))
+                        periodo = f"{d.isocalendar()[0]}-W{d.isocalendar()[1]:02d}"
+                    else:  # month
+                        periodo = f"{parts[1]}/{parts[2]}"
+                    
+                    if periodo not in serie_por_periodo:
+                        serie_por_periodo[periodo] = {"periodo": periodo, "litros": 0, "repostajes": 0}
+                    serie_por_periodo[periodo]["litros"] += litros
+                    serie_por_periodo[periodo]["repostajes"] += 1
+                except Exception:
+                    pass
+    
+    return {
+        "litros_total": round(litros_total, 2),
+        "repostajes_total": repostajes_total,
+        "litros_por_vehiculo": list(litros_por_vehiculo.values()),
+        "serie": sorted(serie_por_periodo.values(), key=lambda x: x["periodo"])
+    }
+
 # Exportación de Turnos
 @api_router.get("/turnos/export/csv")
 async def export_turnos_csv(
