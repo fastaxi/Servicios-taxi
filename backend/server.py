@@ -2057,6 +2057,8 @@ async def get_turnos(
     fecha_fin: Optional[str] = Query(None),
     cerrado: Optional[bool] = Query(None),
     liquidado: Optional[bool] = Query(None),
+    repostado: Optional[bool] = Query(None, description="Filtrar por turnos con repostaje (combustible)"),
+    vehiculo_id: Optional[str] = Query(None, description="Filtrar por vehículo de repostaje"),
     limit: int = Query(500, le=1000, description="Límite de resultados")
 ):
     """Listar turnos - filtrado por organización"""
@@ -2086,6 +2088,12 @@ async def get_turnos(
         query["cerrado"] = cerrado
     if liquidado is not None:
         query["liquidado"] = liquidado
+    
+    # (F) Filtro por combustible/repostaje
+    if repostado is not None:
+        query["combustible.repostado"] = repostado
+    if vehiculo_id:
+        query["combustible.vehiculo_id"] = vehiculo_id
     
     # Validar y ajustar límite
     if limit <= 0:
