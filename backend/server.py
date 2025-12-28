@@ -1955,6 +1955,10 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     turno_dict["created_at"] = datetime.utcnow()
     turno_dict["cerrado"] = False
     
+    # (C) HORA DEL SERVIDOR: Usar hora del servidor, ignorar hora_inicio del cliente
+    server_now = datetime.utcnow()
+    turno_dict["hora_inicio"] = server_now.strftime("%H:%M")
+    
     # INTEGRIDAD: Usar matrícula desde BD, ignorar lo que venga del cliente
     if vehiculo_validated:
         turno_dict["vehiculo_id"] = str(vehiculo_validated["_id"])
@@ -1962,6 +1966,9 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     elif "vehiculo_matricula" in turno_dict:
         # Si no hay vehiculo_id válido, limpiar matricula para evitar inconsistencias
         turno_dict["vehiculo_matricula"] = ""
+    
+    # Inicializar combustible como vacío
+    turno_dict["combustible"] = None
     
     # Multi-tenant: Asignar organization_id del usuario
     turno_dict["organization_id"] = org_id
