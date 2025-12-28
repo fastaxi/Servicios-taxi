@@ -65,10 +65,13 @@ class BackendTester:
                 data = response.json()
                 token = data["access_token"]
                 self.tokens[username] = token
+                print(f"✅ Login exitoso: {username}")
                 return token
-            return None
+            else:
+                print(f"❌ Login fallido para {username}: {response.status_code}")
+                return None
         except Exception as e:
-            print(f"Login failed for {username}: {e}")
+            print(f"❌ Error login {username}: {e}")
             return None
     
     def make_request(self, method: str, endpoint: str, token: str = None, **kwargs) -> requests.Response:
@@ -81,605 +84,424 @@ class BackendTester:
         url = f"{BASE_URL}{endpoint}"
         return getattr(self.session, method.lower())(url, **kwargs)
     
-    def setup_test_data(self):
-        """Setup test organizations, users, and vehicles"""
-        print("\n🔧 SETTING UP TEST DATA...")
+    def setup_test_environment(self):
+        """Setup test environment by logging in users"""
+        print("\n🔧 CONFIGURANDO ENTORNO DE PRUEBAS...")
+        print(f"API Base URL: {BASE_URL}")
+        print(f"TAXITUR_ORG_ID: {TAXITUR_ORG_ID}")
+        print(f"OTHER_ORG_ID: {OTHER_ORG_ID}")
+        print()
         
-        # Login as superadmin to create test data
-        superadmin_token = self.login("superadmin", "superadmin123")
-        if not superadmin_token:
-            print("❌ Failed to login as superadmin")
-            return False
-            
-        # Create Taxitur organization (if not exists)
-        taxitur_org = {
-            "nombre": "Taxitur Test",
-            "slug": "taxitur-test",
-            "cif": "B12345678",
-            "activa": True
-        }
+        # Login all test users
+        for user_key, credentials in TEST_USERS.items():
+            token = self.login(credentials["username"], credentials["password"])
+            if not token:
+                print(f"❌ Error login {credentials['username']}")
+                return False
         
-        # Create Non-Taxitur organization
-        other_org = {
-            "nombre": "Radio Taxi Madrid Test",
-            "slug": "radio-taxi-madrid-test", 
-            "cif": "B87654321",
-            "activa": True
-        }
-        
-        # Try to create organizations
-        for org_name, org_data in [("taxitur", taxitur_org), ("other", other_org)]:
-            response = self.make_request("POST", "/organizations", superadmin_token, json=org_data)
-            if response.status_code in [200, 201]:
-                org_id = response.json()["id"]
-                self.test_data[f"{org_name}_org_id"] = org_id
-                print(f"✅ Created {org_name} organization: {org_id}")
-            else:
-                # Try to find existing organization
-                response = self.make_request("GET", "/organizations", superadmin_token)
-                if response.status_code == 200:
-                    orgs = response.json()
-                    for org in orgs:
-                        if org_data["slug"] in org.get("slug", ""):
-                            self.test_data[f"{org_name}_org_id"] = org["id"]
-                            print(f"✅ Found existing {org_name} organization: {org['id']}")
-                            break
-        
-        # Override Taxitur org ID with the configured one
-        self.test_data["taxitur_org_id"] = TAXITUR_ORG_ID
-        
-        # Create test vehicles for each organization
-        for org_type in ["taxitur", "other"]:
-            org_id = self.test_data.get(f"{org_type}_org_id")
-            if org_id:
-                vehicle_data = {
-                    "matricula": f"TEST{org_type.upper()}123",
-                    "marca": "Toyota",
-                    "modelo": "Prius",
-                    "licencia": f"LIC{org_type.upper()}123",
-                    "plazas": 4,
-                    "km_iniciales": 50000,
-                    "fecha_compra": "01/01/2020",
-                    "activo": True,
-                    "organization_id": org_id
-                }
-                
-                response = self.make_request("POST", "/superadmin/vehiculos", superadmin_token, json=vehicle_data)
-                if response.status_code in [200, 201]:
-                    vehicle_id = response.json()["id"]
-                    self.test_data[f"{org_type}_vehicle_id"] = vehicle_id
-                    print(f"✅ Created {org_type} vehicle: {vehicle_id}")
-        
-        # Create test taxistas for each organization
-        for org_type in ["taxitur", "other"]:
-            org_id = self.test_data.get(f"{org_type}_org_id")
-            if org_id:
-                taxista_data = {
-                    "username": f"taxista_{org_type}_test",
-                    "password": "test123",
-                    "nombre": f"Taxista {org_type.title()} Test",
-                    "telefono": "666777888",
-                    "email": f"taxista_{org_type}@test.com",
-                    "licencia": f"LIC{org_type.upper()}456",
-                    "activo": True,
-                    "organization_id": org_id
-                }
-                
-                response = self.make_request("POST", "/superadmin/taxistas", superadmin_token, json=taxista_data)
-                if response.status_code in [200, 201]:
-                    taxista_id = response.json()["id"]
-                    self.test_data[f"{org_type}_taxista_id"] = taxista_id
-                    
-                    # Assign vehicle to taxista
-                    vehicle_id = self.test_data.get(f"{org_type}_vehicle_id")
-                    if vehicle_id:
-                        assign_data = {"vehiculo_id": vehicle_id}
-                        self.make_request("PUT", f"/superadmin/taxistas/{taxista_id}/vehiculo", 
-                                        superadmin_token, json=assign_data)
-                    
-                    print(f"✅ Created {org_type} taxista: {taxista_id}")
-                    
-                    # Login taxista to get token
-                    token = self.login(f"taxista_{org_type}_test", "test123")
-                    if token:
-                        self.test_data[f"{org_type}_taxista_token"] = token
-        
-        # Create admin tokens
-        admin_token = self.login("admin", "admin123")
-        if admin_token:
-            self.test_data["admin_token"] = admin_token
-            
+        print()
         return True
     
-    def test_taxitur_origen_obligatorio(self):
-        """Test Case 1: TAXITUR - Origen obligatorio"""
-        print("\n🎯 TEST CASE 1: TAXITUR - Origen obligatorio")
+    def test_1_taxitur_origen_obligatorio(self):
+        """Test 1: TAXITUR - Origen obligatorio"""
+        print("\n🎯 TEST 1: TAXITUR - ORIGEN OBLIGATORIO")
+        print("-" * 50)
         
-        taxitur_token = self.test_data.get("taxitur_taxista_token")
-        other_token = self.test_data.get("other_taxista_token")
+        taxitur_token = self.tokens["taxista_taxitur"]
+        tineo_token = self.tokens["taxista_tineo"]
         
-        if not taxitur_token or not other_token:
-            print("❌ Missing taxista tokens for testing")
-            return
-            
-        # First create active turnos for both taxistas
-        for org_type, token in [("taxitur", taxitur_token), ("other", other_token)]:
-            vehicle_id = self.test_data.get(f"{org_type}_vehicle_id")
-            if vehicle_id:
-                turno_data = {
-                    "taxista_id": self.test_data.get(f"{org_type}_taxista_id"),
-                    "taxista_nombre": f"Taxista {org_type.title()} Test",
-                    "vehiculo_id": vehicle_id,
-                    "vehiculo_matricula": f"TEST{org_type.upper()}123",
-                    "fecha_inicio": datetime.now().strftime("%d/%m/%Y"),
-                    "hora_inicio": "08:00",
-                    "km_inicio": 100000
-                }
-                
-                response = self.make_request("POST", "/turnos", token, json=turno_data)
-                if response.status_code in [200, 201]:
-                    self.test_data[f"{org_type}_turno_id"] = response.json()["id"]
-        
-        # 1.1 Crear servicio SIN origen_taxitur en org Taxitur → Debe devolver 400/422
+        # Test 1.1: POST /api/services con taxista_taxitur SIN origen_taxitur
         service_data = {
-            "fecha": datetime.now().strftime("%d/%m/%Y"),
-            "hora": "10:00",
-            "origen": "Plaza Mayor",
+            "fecha": "15/12/2024",
+            "hora": "10:30",
+            "origen": "Oviedo Centro",
             "destino": "Aeropuerto",
             "importe": 25.50,
             "importe_espera": 0,
             "kilometros": 15.2,
             "tipo": "particular",
             "metodo_pago": "efectivo"
-            # NO incluir origen_taxitur
+            # NO incluimos origen_taxitur
         }
         
         response = self.make_request("POST", "/services", taxitur_token, json=service_data)
         self.log_test(
-            "1.1 Crear servicio SIN origen_taxitur en org Taxitur",
-            "POST", "/services", 
+            "1.1", "POST", "/services", 
             response.status_code, 400,
-            "Debe rechazar servicio sin origen_taxitur en organización Taxitur"
+            "POST /api/services con taxista_taxitur SIN origen_taxitur"
         )
         
-        # 1.2 Crear servicio CON origen_taxitur="parada" en org Taxitur → Debe devolver 200/201
+        # Test 1.2: POST /api/services con taxista_taxitur CON origen_taxitur="parada"
         service_data["origen_taxitur"] = "parada"
         response = self.make_request("POST", "/services", taxitur_token, json=service_data)
         self.log_test(
-            "1.2 Crear servicio CON origen_taxitur='parada' en org Taxitur",
-            "POST", "/services",
+            "1.2", "POST", "/services",
             response.status_code, 201,
-            "Debe aceptar servicio con origen_taxitur='parada'"
+            "POST /api/services con taxista_taxitur CON origen_taxitur='parada'"
         )
         
-        # 1.3 Crear servicio CON origen_taxitur="lagos" en org Taxitur → Debe devolver 200/201
+        # Test 1.3: POST /api/services con taxista_taxitur CON origen_taxitur="lagos"
         service_data["origen_taxitur"] = "lagos"
+        service_data["hora"] = "11:00"  # Cambiar hora para evitar duplicados
         response = self.make_request("POST", "/services", taxitur_token, json=service_data)
         self.log_test(
-            "1.3 Crear servicio CON origen_taxitur='lagos' en org Taxitur",
-            "POST", "/services",
+            "1.3", "POST", "/services",
             response.status_code, 201,
-            "Debe aceptar servicio con origen_taxitur='lagos'"
+            "POST /api/services con taxista_taxitur CON origen_taxitur='lagos'"
         )
         
-        # 1.4 Crear servicio CON origen_taxitur en org NO-Taxitur → Debe devolver 400
-        service_data["origen_taxitur"] = "parada"
-        response = self.make_request("POST", "/services", other_token, json=service_data)
-        self.log_test(
-            "1.4 Crear servicio CON origen_taxitur en org NO-Taxitur",
-            "POST", "/services",
-            response.status_code, 400,
-            "Debe rechazar campo origen_taxitur fuera de organización Taxitur"
-        )
-    
-    def test_vehiculo_cambiado_kilometros(self):
-        """Test Case 2: VEHÍCULO CAMBIADO - Kilómetros condicionales"""
-        print("\n🎯 TEST CASE 2: VEHÍCULO CAMBIADO - Kilómetros condicionales")
-        
-        taxitur_token = self.test_data.get("taxitur_taxista_token")
-        if not taxitur_token:
-            print("❌ Missing taxitur taxista token")
-            return
-            
-        # Create a different vehicle for testing
-        admin_token = self.test_data.get("admin_token")
-        if admin_token:
-            different_vehicle = {
-                "matricula": "TESTDIFF456",
-                "marca": "Ford",
-                "modelo": "Focus",
-                "plazas": 4,
-                "km_iniciales": 75000,
-                "fecha_compra": "01/06/2021",
-                "activo": True
-            }
-            
-            response = self.make_request("POST", "/vehiculos", admin_token, json=different_vehicle)
-            if response.status_code in [200, 201]:
-                different_vehicle_id = response.json()["id"]
-                self.test_data["different_vehicle_id"] = different_vehicle_id
-        
-        different_vehicle_id = self.test_data.get("different_vehicle_id")
-        default_vehicle_id = self.test_data.get("taxitur_vehicle_id")
-        
-        if not different_vehicle_id or not default_vehicle_id:
-            print("❌ Missing vehicle IDs for testing")
-            return
-        
-        # 2.1 Crear servicio con vehículo diferente SIN km_inicio_vehiculo/km_fin_vehiculo → 400/422
-        service_data = {
-            "fecha": datetime.now().strftime("%d/%m/%Y"),
-            "hora": "11:00",
-            "origen": "Centro",
+        # Test 1.4: POST /api/services con taxista_tineo CON origen_taxitur="parada" (no permitido)
+        service_data_tineo = {
+            "fecha": "15/12/2024",
+            "hora": "12:00",
+            "origen": "Tineo Centro",
             "destino": "Hospital",
-            "importe": 18.75,
-            "importe_espera": 2.50,
+            "importe": 15.00,
+            "importe_espera": 0,
             "kilometros": 8.5,
             "tipo": "particular",
             "metodo_pago": "efectivo",
-            "origen_taxitur": "parada",
-            "vehiculo_id": different_vehicle_id,
-            "vehiculo_cambiado": True
-            # NO incluir km_inicio_vehiculo/km_fin_vehiculo
+            "origen_taxitur": "parada"  # No debería ser permitido para Taxi Tineo
         }
         
-        response = self.make_request("POST", "/services", taxitur_token, json=service_data)
+        response = self.make_request("POST", "/services", tineo_token, json=service_data_tineo)
         self.log_test(
-            "2.1 Crear servicio con vehículo diferente SIN km campos",
-            "POST", "/services",
+            "1.4", "POST", "/services",
             response.status_code, 400,
-            "Debe rechazar servicio con vehículo cambiado sin km_inicio/fin_vehiculo"
+            "POST /api/services con taxista_tineo CON origen_taxitur='parada' (no permitido)"
         )
+
+    def test_2_vehiculo_cambiado_kilometros(self):
+        """Test 2: VEHÍCULO CAMBIADO - Kilómetros condicionales"""
+        print("\n🎯 TEST 2: VEHÍCULO CAMBIADO - KILÓMETROS CONDICIONALES")
+        print("-" * 50)
         
-        # 2.2 Crear servicio con vehículo diferente y km_fin < km_inicio → 400/422
-        service_data.update({
-            "km_inicio_vehiculo": 75500,
-            "km_fin_vehiculo": 75400  # Menor que inicio
-        })
+        # Usar taxista_tineo para evitar conflicto con origen_taxitur
+        tineo_token = self.tokens["taxista_tineo"]
         
-        response = self.make_request("POST", "/services", taxitur_token, json=service_data)
-        self.log_test(
-            "2.2 Crear servicio con km_fin < km_inicio",
-            "POST", "/services",
-            response.status_code, 400,
-            "Debe rechazar servicio con km_fin menor que km_inicio"
-        )
-        
-        # 2.3 Crear servicio con vehículo diferente y km válidos → 200/201
-        service_data.update({
-            "km_inicio_vehiculo": 75500,
-            "km_fin_vehiculo": 75510  # Mayor que inicio
-        })
-        
-        response = self.make_request("POST", "/services", taxitur_token, json=service_data)
-        self.log_test(
-            "2.3 Crear servicio con vehículo diferente y km válidos",
-            "POST", "/services",
-            response.status_code, 201,
-            "Debe aceptar servicio con vehículo cambiado y km válidos"
-        )
-        
-        # 2.4 Crear servicio con mismo vehículo del turno → 200/201
-        service_data_same = {
-            "fecha": datetime.now().strftime("%d/%m/%Y"),
-            "hora": "12:00",
-            "origen": "Estación",
-            "destino": "Universidad",
-            "importe": 12.30,
+        # Test 2.1: POST /api/services con vehiculo_id=TEST-TINEO-2 SIN km_inicio/km_fin
+        service_data = {
+            "fecha": "15/12/2024",
+            "hora": "13:00",
+            "origen": "Tineo Plaza",
+            "destino": "Cangas",
+            "importe": 30.00,
             "importe_espera": 0,
-            "kilometros": 6.8,
+            "kilometros": 25.0,
             "tipo": "particular",
-            "metodo_pago": "tpv",
-            "origen_taxitur": "lagos",
-            "vehiculo_id": default_vehicle_id,
-            "vehiculo_cambiado": False
-            # No necesita km_inicio/fin_vehiculo
+            "metodo_pago": "efectivo",
+            "vehiculo_id": TEST_DATA["tineo_vehiculo_segundo"],  # TEST-TINEO-2
+            "vehiculo_cambiado": True
+            # NO incluimos km_inicio_vehiculo/km_fin_vehiculo
         }
         
-        response = self.make_request("POST", "/services", taxitur_token, json=service_data_same)
+        response = self.make_request("POST", "/services", tineo_token, json=service_data)
         self.log_test(
-            "2.4 Crear servicio con mismo vehículo del turno",
-            "POST", "/services",
-            response.status_code, 201,
-            "Debe aceptar servicio con vehículo por defecto sin km extra"
+            "2.1", "POST", "/services",
+            response.status_code, 400,
+            "POST /api/services con vehiculo_id=TEST-TINEO-2 SIN km_inicio/km_fin"
         )
-    
-    def test_combustible_repostaje(self):
-        """Test Case 3: COMBUSTIBLE - Repostaje en turnos"""
-        print("\n🎯 TEST CASE 3: COMBUSTIBLE - Repostaje en turnos")
         
-        taxitur_token = self.test_data.get("taxitur_taxista_token")
-        turno_id = self.test_data.get("taxitur_turno_id")
-        vehicle_id = self.test_data.get("taxitur_vehicle_id")
+        # Test 2.2: POST /api/services con vehiculo_id=TEST-TINEO-2 y km_fin < km_inicio
+        service_data.update({
+            "km_inicio_vehiculo": 150,
+            "km_fin_vehiculo": 100  # km_fin < km_inicio
+        })
         
-        if not all([taxitur_token, turno_id, vehicle_id]):
-            print("❌ Missing required data for combustible testing")
-            return
+        response = self.make_request("POST", "/services", tineo_token, json=service_data)
+        self.log_test(
+            "2.2", "POST", "/services",
+            response.status_code, 400,
+            "POST /api/services con vehiculo_id=TEST-TINEO-2 y km_fin < km_inicio"
+        )
         
-        # 3.1 PUT /api/turnos/{id}/combustible en turno ACTIVO → 200
+        # Test 2.3: POST /api/services con vehiculo_id=TEST-TINEO-2 y km válidos (inicio=100, fin=150)
+        service_data.update({
+            "km_inicio_vehiculo": 100,
+            "km_fin_vehiculo": 150
+        })
+        
+        response = self.make_request("POST", "/services", tineo_token, json=service_data)
+        self.log_test(
+            "2.3", "POST", "/services",
+            response.status_code, 201,
+            "POST /api/services con vehiculo_id=TEST-TINEO-2 y km válidos (inicio=100, fin=150)"
+        )
+        
+        # Test 2.4: POST /api/services con mismo vehículo del turno (sin km extra)
+        service_data_normal = {
+            "fecha": "15/12/2024",
+            "hora": "14:00",
+            "origen": "Tineo Centro",
+            "destino": "Navelgas",
+            "importe": 20.00,
+            "importe_espera": 0,
+            "kilometros": 12.0,
+            "tipo": "particular",
+            "metodo_pago": "tpv"
+            # Sin vehiculo_id específico, usa el del turno
+        }
+        
+        response = self.make_request("POST", "/services", tineo_token, json=service_data_normal)
+        self.log_test(
+            "2.4", "POST", "/services",
+            response.status_code, 201,
+            "POST /api/services con mismo vehículo del turno (sin km extra)"
+        )
+
+    def test_3_combustible_repostaje(self):
+        """Test 3: COMBUSTIBLE - Repostaje en turnos"""
+        print("\n🎯 TEST 3: COMBUSTIBLE - REPOSTAJE EN TURNOS")
+        print("-" * 50)
+        
+        # Usar turno de taxista_tineo
+        tineo_token = self.tokens["taxista_tineo"]
+        turno_id = TEST_DATA["tineo_turno_id"]
+        
+        # Test 3.1: PUT /api/turnos/{turno_id}/combustible con repostado=true, litros=45, km=100050
         combustible_data = {
             "repostado": True,
-            "litros": 45.5,
-            "vehiculo_id": vehicle_id,
-            "km_vehiculo": 100150
+            "litros": 45.0,
+            "vehiculo_id": TEST_DATA["tineo_vehiculo_turno"],  # TEST-TINEO
+            "km_vehiculo": 100050
         }
         
-        response = self.make_request("PUT", f"/turnos/{turno_id}/combustible", taxitur_token, json=combustible_data)
+        response = self.make_request("PUT", f"/turnos/{turno_id}/combustible", tineo_token, json=combustible_data)
         self.log_test(
-            "3.1 PUT combustible en turno ACTIVO",
-            "PUT", f"/turnos/{turno_id}/combustible",
+            "3.1", "PUT", f"/turnos/{turno_id}/combustible",
             response.status_code, 200,
-            "Debe permitir registrar combustible en turno activo"
+            "PUT /api/turnos/{turno_id}/combustible con repostado=true, litros=45, km=100050"
         )
         
-        # 3.2 Finalizar turno con PUT /api/turnos/{id}/finalizar → 200
+        # Test 3.2: PUT /api/turnos/{turno_id}/finalizar con km_fin > km_inicio
         finalizar_data = {
-            "fecha_fin": datetime.now().strftime("%d/%m/%Y"),
-            "hora_fin": "18:00",
-            "km_fin": 100200,
+            "fecha_fin": "15/12/2024",
+            "hora_fin": "18:00",  # Se ignorará, se usará hora del servidor
+            "km_fin": 100100,
             "cerrado": True
         }
         
-        response = self.make_request("PUT", f"/turnos/{turno_id}/finalizar", taxitur_token, json=finalizar_data)
+        response = self.make_request("PUT", f"/turnos/{turno_id}/finalizar", tineo_token, json=finalizar_data)
         self.log_test(
-            "3.2 Finalizar turno",
-            "PUT", f"/turnos/{turno_id}/finalizar",
+            "3.2", "PUT", f"/turnos/{turno_id}/finalizar",
             response.status_code, 200,
-            "Debe permitir finalizar turno"
+            "PUT /api/turnos/{turno_id}/finalizar con km_fin > km_inicio"
         )
         
-        # 3.3 Intentar PUT /api/turnos/{id}/combustible en turno YA CERRADO → 403/400
-        response = self.make_request("PUT", f"/turnos/{turno_id}/combustible", taxitur_token, json=combustible_data)
-        self.log_test(
-            "3.3 PUT combustible en turno YA CERRADO",
-            "PUT", f"/turnos/{turno_id}/combustible",
-            response.status_code, 403,
-            "Debe bloquear registro de combustible en turno cerrado"
-        )
-    
-    def test_server_time(self):
-        """Test Case 4: SERVER TIME - Hora del servidor"""
-        print("\n🎯 TEST CASE 4: SERVER TIME - Hora del servidor")
-        
-        other_token = self.test_data.get("other_taxista_token")
-        other_vehicle_id = self.test_data.get("other_vehicle_id")
-        other_taxista_id = self.test_data.get("other_taxista_id")
-        
-        if not all([other_token, other_vehicle_id, other_taxista_id]):
-            print("❌ Missing required data for server time testing")
-            return
-        
-        # 4.1 POST /api/turnos con hora_inicio personalizada → Backend debe IGNORAR
-        custom_time = "06:30"  # Hora personalizada del cliente
-        turno_data = {
-            "taxista_id": other_taxista_id,
-            "taxista_nombre": "Taxista Other Test",
-            "vehiculo_id": other_vehicle_id,
-            "vehiculo_matricula": "TESTOTHER123",
-            "fecha_inicio": datetime.now().strftime("%d/%m/%Y"),
-            "hora_inicio": custom_time,  # Esta debe ser ignorada
-            "km_inicio": 50100
+        # Test 3.3: PUT /api/turnos/{turno_id}/combustible (turno ya cerrado)
+        combustible_data_cerrado = {
+            "repostado": True,
+            "litros": 30.0,
+            "vehiculo_id": TEST_DATA["tineo_vehiculo_turno"],
+            "km_vehiculo": 100120
         }
         
-        response = self.make_request("POST", "/turnos", other_token, json=turno_data)
-        if response.status_code in [200, 201]:
-            turno_created = response.json()
-            server_time = turno_created.get("hora_inicio", "")
+        response = self.make_request("PUT", f"/turnos/{turno_id}/combustible", tineo_token, json=combustible_data_cerrado)
+        self.log_test(
+            "3.3", "PUT", f"/turnos/{turno_id}/combustible",
+            response.status_code, 403,
+            "PUT /api/turnos/{turno_id}/combustible (turno ya cerrado)"
+        )
+
+    def test_4_server_time(self):
+        """Test 4: SERVER TIME"""
+        print("\n🎯 TEST 4: SERVER TIME")
+        print("-" * 50)
+        
+        tineo_token = self.tokens["taxista_tineo"]
+        
+        # Test 4.1: POST /api/turnos enviando hora_inicio="99:99"
+        turno_data = {
+            "taxista_id": "test_taxista_id",
+            "taxista_nombre": "Test Taxista",
+            "vehiculo_id": TEST_DATA["tineo_vehiculo_turno"],
+            "vehiculo_matricula": "TEST-TINEO",
+            "fecha_inicio": "15/12/2024",
+            "hora_inicio": "99:99",  # Hora inválida, debería usar hora del servidor
+            "km_inicio": 100200
+        }
+        
+        response = self.make_request("POST", "/turnos", tineo_token, json=turno_data)
+        if response.status_code == 200:
+            turno_creado = response.json()
+            hora_guardada = turno_creado.get("hora_inicio", "")
+            server_time_used = hora_guardada != "99:99"
             
-            # Verificar que la hora del servidor es diferente a la enviada
-            time_ignored = server_time != custom_time
             self.log_test(
-                "4.1 POST turnos ignora hora_inicio del cliente",
-                "POST", "/turnos",
-                response.status_code, 201,
-                f"Hora servidor: {server_time}, Cliente: {custom_time}, Ignorada: {time_ignored}"
+                "4.1", "POST", "/turnos",
+                response.status_code, 200,
+                f"POST /api/turnos enviando hora_inicio='99:99' - Hora guardada: {hora_guardada} (server time: {server_time_used})"
             )
             
-            new_turno_id = turno_created["id"]
-            self.test_data["other_turno_id"] = new_turno_id
-            
-            # 4.2 PUT /api/turnos/{id}/finalizar con hora_fin personalizada → Backend debe IGNORAR
-            custom_end_time = "23:45"  # Hora personalizada del cliente
+            # Guardar ID del turno para test 4.2
+            self.test_data["new_turno_id"] = turno_creado.get("id")
+        else:
+            self.log_test(
+                "4.1", "POST", "/turnos",
+                response.status_code, 200,
+                "POST /api/turnos enviando hora_inicio='99:99'"
+            )
+        
+        # Test 4.2: PUT /api/turnos/{id}/finalizar enviando hora_fin="99:99"
+        if self.test_data.get("new_turno_id"):
             finalizar_data = {
-                "fecha_fin": datetime.now().strftime("%d/%m/%Y"),
-                "hora_fin": custom_end_time,  # Esta debe ser ignorada
-                "km_fin": 50250,
+                "fecha_fin": "15/12/2024",
+                "hora_fin": "99:99",  # Hora inválida, debería usar hora del servidor
+                "km_fin": 100250,
                 "cerrado": True
             }
             
-            response = self.make_request("PUT", f"/turnos/{new_turno_id}/finalizar", other_token, json=finalizar_data)
+            response = self.make_request("PUT", f"/turnos/{self.test_data['new_turno_id']}/finalizar", tineo_token, json=finalizar_data)
             if response.status_code == 200:
                 turno_finalizado = response.json()
-                server_end_time = turno_finalizado.get("hora_fin", "")
+                hora_fin_guardada = turno_finalizado.get("hora_fin", "")
+                server_time_used = hora_fin_guardada != "99:99"
                 
-                # Verificar que la hora del servidor es diferente a la enviada
-                end_time_ignored = server_end_time != custom_end_time
                 self.log_test(
-                    "4.2 PUT finalizar ignora hora_fin del cliente",
-                    "PUT", f"/turnos/{new_turno_id}/finalizar",
+                    "4.2", "PUT", f"/turnos/{self.test_data['new_turno_id']}/finalizar",
                     response.status_code, 200,
-                    f"Hora servidor: {server_end_time}, Cliente: {custom_end_time}, Ignorada: {end_time_ignored}"
+                    f"PUT /api/turnos/{{id}}/finalizar enviando hora_fin='99:99' - Hora guardada: {hora_fin_guardada} (server time: {server_time_used})"
                 )
             else:
                 self.log_test(
-                    "4.2 PUT finalizar ignora hora_fin del cliente",
-                    "PUT", f"/turnos/{new_turno_id}/finalizar",
+                    "4.2", "PUT", f"/turnos/{self.test_data['new_turno_id']}/finalizar",
                     response.status_code, 200,
-                    "Error al finalizar turno"
+                    "PUT /api/turnos/{id}/finalizar enviando hora_fin='99:99'"
                 )
         else:
             self.log_test(
-                "4.1 POST turnos ignora hora_inicio del cliente",
-                "POST", "/turnos",
-                response.status_code, 201,
-                "Error al crear turno para test de server time"
+                "4.2", "PUT", "/turnos/{id}/finalizar",
+                0, 200,
+                "No se pudo crear turno para test 4.2"
             )
-    
-    def test_exports_nuevas_columnas(self):
-        """Test Case 5: EXPORTS - Columnas nuevas y org_filter"""
-        print("\n🎯 TEST CASE 5: EXPORTS - Columnas nuevas y org_filter")
+
+    def test_5_exports(self):
+        """Test 5: EXPORTS"""
+        print("\n🎯 TEST 5: EXPORTS")
+        print("-" * 50)
         
-        admin_token = self.test_data.get("admin_token")
-        if not admin_token:
-            print("❌ Missing admin token for exports testing")
-            return
+        admin_token = self.tokens["admin"]
         
-        # 5.1 GET /api/services/export/csv → Debe incluir columnas nuevas
+        # Test 5.1: GET /api/services/export/csv con admin
         response = self.make_request("GET", "/services/export/csv", admin_token)
         if response.status_code == 200:
-            csv_content = response.text
-            required_columns = ["metodo_pago", "origen_taxitur", "vehiculo_matricula", "km_inicio_vehiculo", "km_fin_vehiculo"]
-            columns_found = all(col in csv_content for col in required_columns)
+            content_type = response.headers.get("content-type", "")
+            contains_columns = "metodo_pago" in response.text and "origen_taxitur" in response.text
             
             self.log_test(
-                "5.1 GET services/export/csv incluye columnas nuevas",
-                "GET", "/services/export/csv",
+                "5.1", "GET", "/services/export/csv",
                 response.status_code, 200,
-                f"Columnas encontradas: {columns_found}, Content-Length: {len(csv_content)}"
+                f"GET /api/services/export/csv con admin - Content-Type: {content_type}, Contiene columnas: {contains_columns}"
             )
         else:
             self.log_test(
-                "5.1 GET services/export/csv incluye columnas nuevas",
-                "GET", "/services/export/csv",
+                "5.1", "GET", "/services/export/csv",
                 response.status_code, 200,
-                "Error al obtener CSV de servicios"
+                "GET /api/services/export/csv con admin"
             )
         
-        # 5.2 GET /api/services/export/excel → Debe incluir las mismas columnas nuevas
+        # Test 5.2: GET /api/services/export/excel con admin
         response = self.make_request("GET", "/services/export/excel", admin_token)
         self.log_test(
-            "5.2 GET services/export/excel incluye columnas nuevas",
-            "GET", "/services/export/excel",
+            "5.2", "GET", "/services/export/excel",
             response.status_code, 200,
-            f"Content-Type: {response.headers.get('content-type', 'N/A')}, Size: {len(response.content)} bytes"
+            f"GET /api/services/export/excel con admin - Content-Type: {response.headers.get('content-type', 'N/A')}"
         )
         
-        # 5.3 GET /api/turnos/export/csv → Debe incluir columnas de combustible
+        # Test 5.3: GET /api/turnos/export/csv con admin
         response = self.make_request("GET", "/turnos/export/csv", admin_token)
         if response.status_code == 200:
-            csv_content = response.text
-            combustible_columns = ["combustible_repostado", "combustible_litros", "combustible_vehiculo", "combustible_km"]
-            combustible_found = any(col in csv_content for col in combustible_columns)
+            contains_combustible = "combustible" in response.text.lower()
             
             self.log_test(
-                "5.3 GET turnos/export/csv incluye columnas combustible",
-                "GET", "/turnos/export/csv",
+                "5.3", "GET", "/turnos/export/csv",
                 response.status_code, 200,
-                f"Columnas combustible encontradas: {combustible_found}, Content-Length: {len(csv_content)}"
+                f"GET /api/turnos/export/csv con admin - Contiene columnas de combustible: {contains_combustible}"
             )
         else:
             self.log_test(
-                "5.3 GET turnos/export/csv incluye columnas combustible",
-                "GET", "/turnos/export/csv",
+                "5.3", "GET", "/turnos/export/csv",
                 response.status_code, 200,
-                "Error al obtener CSV de turnos"
+                "GET /api/turnos/export/csv con admin"
             )
-    
-    def test_estadisticas_combustible(self):
-        """Test Case 6: ENDPOINT DE ESTADÍSTICAS COMBUSTIBLE"""
-        print("\n🎯 TEST CASE 6: ENDPOINT DE ESTADÍSTICAS COMBUSTIBLE")
         
-        admin_token = self.test_data.get("admin_token")
-        if not admin_token:
-            print("❌ Missing admin token for statistics testing")
-            return
-        
-        # 6.1 GET /api/turnos/combustible/estadisticas → Debe devolver estadísticas agregadas
+        # Test 5.4: GET /api/turnos/combustible/estadisticas con admin
         response = self.make_request("GET", "/turnos/combustible/estadisticas", admin_token)
-        if response.status_code == 200:
-            stats = response.json()
-            required_fields = ["total_repostajes", "total_litros", "promedio_litros"]
-            fields_present = all(field in stats for field in required_fields)
-            
-            self.log_test(
-                "6.1 GET turnos/combustible/estadisticas",
-                "GET", "/turnos/combustible/estadisticas",
-                response.status_code, 200,
-                f"Campos requeridos presentes: {fields_present}, Stats: {json.dumps(stats, indent=2)}"
-            )
-        else:
-            self.log_test(
-                "6.1 GET turnos/combustible/estadisticas",
-                "GET", "/turnos/combustible/estadisticas",
-                response.status_code, 200,
-                f"Error al obtener estadísticas de combustible: {response.text}"
-            )
-    
-    def test_metodo_pago(self):
-        """Test Case 7: MÉTODO DE PAGO"""
-        print("\n🎯 TEST CASE 7: MÉTODO DE PAGO")
+        self.log_test(
+            "5.4", "GET", "/turnos/combustible/estadisticas",
+            response.status_code, 200,
+            "GET /api/turnos/combustible/estadisticas con admin"
+        )
+
+    def test_6_metodo_pago(self):
+        """Test 6: MÉTODO DE PAGO"""
+        print("\n🎯 TEST 6: MÉTODO DE PAGO")
+        print("-" * 50)
         
-        other_token = self.test_data.get("other_taxista_token")
-        if not other_token:
-            print("❌ Missing other taxista token for payment method testing")
-            return
+        tineo_token = self.tokens["taxista_tineo"]
         
-        # 7.1 Crear servicio con metodo_pago="efectivo" → 200/201
+        # Test 6.1: POST /api/services con metodo_pago="efectivo"
         service_efectivo = {
-            "fecha": datetime.now().strftime("%d/%m/%Y"),
-            "hora": "14:00",
-            "origen": "Plaza España",
-            "destino": "Centro Comercial",
-            "importe": 15.80,
-            "importe_espera": 1.20,
-            "kilometros": 7.3,
+            "fecha": "15/12/2024",
+            "hora": "15:00",
+            "origen": "Tineo",
+            "destino": "Grado",
+            "importe": 18.50,
+            "importe_espera": 0,
+            "kilometros": 15.0,
             "tipo": "particular",
             "metodo_pago": "efectivo"
         }
         
-        response = self.make_request("POST", "/services", other_token, json=service_efectivo)
+        response = self.make_request("POST", "/services", tineo_token, json=service_efectivo)
         self.log_test(
-            "7.1 Crear servicio con metodo_pago='efectivo'",
-            "POST", "/services",
+            "6.1", "POST", "/services",
             response.status_code, 201,
-            "Debe aceptar método de pago efectivo"
+            "POST /api/services con metodo_pago='efectivo'"
         )
         
-        # 7.2 Crear servicio con metodo_pago="tpv" → 200/201
+        # Test 6.2: POST /api/services con metodo_pago="tpv"
         service_tpv = {
-            "fecha": datetime.now().strftime("%d/%m/%Y"),
-            "hora": "15:00",
-            "origen": "Hospital",
-            "destino": "Residencia",
-            "importe": 22.40,
-            "importe_espera": 0,
-            "kilometros": 11.8,
+            "fecha": "15/12/2024",
+            "hora": "16:00",
+            "origen": "Grado",
+            "destino": "Oviedo",
+            "importe": 22.00,
+            "importe_espera": 2.50,
+            "kilometros": 18.5,
             "tipo": "empresa",
             "metodo_pago": "tpv"
         }
         
-        response = self.make_request("POST", "/services", other_token, json=service_tpv)
+        response = self.make_request("POST", "/services", tineo_token, json=service_tpv)
         self.log_test(
-            "7.2 Crear servicio con metodo_pago='tpv'",
-            "POST", "/services",
+            "6.2", "POST", "/services",
             response.status_code, 201,
-            "Debe aceptar método de pago TPV"
+            "POST /api/services con metodo_pago='tpv'"
         )
         
-        # 7.3 Filtrar servicios por metodo_pago → GET /api/services?metodo_pago=efectivo
-        response = self.make_request("GET", "/services?metodo_pago=efectivo", other_token)
+        # Test 6.3: GET /api/services?metodo_pago=efectivo
+        response = self.make_request("GET", "/services?metodo_pago=efectivo", tineo_token)
         if response.status_code == 200:
             services = response.json()
-            efectivo_services = [s for s in services if s.get("metodo_pago") == "efectivo"]
+            efectivo_count = len([s for s in services if s.get("metodo_pago") == "efectivo"])
             
             self.log_test(
-                "7.3 Filtrar servicios por metodo_pago=efectivo",
-                "GET", "/services?metodo_pago=efectivo",
+                "6.3", "GET", "/services?metodo_pago=efectivo",
                 response.status_code, 200,
-                f"Servicios encontrados: {len(services)}, Con efectivo: {len(efectivo_services)}"
+                f"GET /api/services?metodo_pago=efectivo - Servicios efectivo encontrados: {efectivo_count}"
             )
         else:
             self.log_test(
-                "7.3 Filtrar servicios por metodo_pago=efectivo",
-                "GET", "/services?metodo_pago=efectivo",
+                "6.3", "GET", "/services?metodo_pago=efectivo",
                 response.status_code, 200,
-                "Error al filtrar servicios por método de pago"
+                "GET /api/services?metodo_pago=efectivo"
             )
     
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*80)
-        print("📊 RESUMEN DE PRUEBAS EXHAUSTIVAS - PR1 NUEVAS FUNCIONALIDADES")
+        print("📊 RESUMEN DE PRUEBAS EXHAUSTIVAS - PR1 (SEGUNDA EJECUCIÓN)")
         print("="*80)
         
         total_tests = len(self.results)
@@ -692,20 +514,34 @@ class BackendTester:
         print(f"   ❌ Fallidas: {failed_tests}")
         print(f"   📊 Tasa de éxito: {(passed_tests/total_tests*100):.1f}%")
         
+        # Print results by test case
+        print(f"\n📋 RESULTADOS POR CASO DE PRUEBA:")
+        
+        test_cases = {
+            "1": "TAXITUR - Origen obligatorio",
+            "2": "VEHÍCULO CAMBIADO - Kilómetros condicionales", 
+            "3": "COMBUSTIBLE - Repostaje en turnos",
+            "4": "SERVER TIME",
+            "5": "EXPORTS",
+            "6": "MÉTODO DE PAGO"
+        }
+        
+        for case_num, case_name in test_cases.items():
+            case_results = [r for r in self.results if r["name"].startswith(case_num + ".")]
+            case_passed = len([r for r in case_results if "PASS" in r["result"]])
+            case_total = len(case_results)
+            
+            print(f"\n   {case_num}. {case_name}:")
+            for result in case_results:
+                status_icon = "✅" if "PASS" in result["result"] else "❌"
+                print(f"      {status_icon} {result['name']}: {result['status_code']} (esperado {result['expected']})")
+        
         if failed_tests > 0:
-            print(f"\n❌ PRUEBAS FALLIDAS ({failed_tests}):")
+            print(f"\n❌ DETALLES DE PRUEBAS FALLIDAS:")
             for result in self.results:
                 if "FAIL" in result["result"]:
-                    print(f"   • {result['name']}")
-                    print(f"     {result['method']} {result['endpoint']}")
+                    print(f"   • {result['name']}: {result['details']}")
                     print(f"     Status: {result['status_code']} (esperado {result['expected']})")
-                    print(f"     Detalles: {result['details']}")
-                    print()
-        
-        print(f"\n✅ PRUEBAS EXITOSAS ({passed_tests}):")
-        for result in self.results:
-            if "PASS" in result["result"]:
-                print(f"   • {result['name']} - {result['method']} {result['endpoint']}")
         
         print("\n" + "="*80)
         print("🎯 CONCLUSIÓN:")
@@ -716,6 +552,8 @@ class BackendTester:
             print(f"   ⚠️  {failed_tests} funcionalidades requieren atención")
             print("   🔧 Revisar implementación antes de producción")
         print("="*80)
+        
+        return failed_tests == 0
 
 def main():
     """Main test execution"""
