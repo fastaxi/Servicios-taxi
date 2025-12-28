@@ -43,7 +43,7 @@ export default function IniciarTurnoModal({
   const [error, setError] = useState('');
 
   const [fechaInicio, setFechaInicio] = useState(format(new Date(), 'dd/MM/yyyy'));
-  const [horaInicio, setHoraInicio] = useState(format(new Date(), 'HH:mm'));
+  // PR2: Hora se toma del servidor, no editable
   const [kmInicio, setKmInicio] = useState('');
   const [vehiculoId, setVehiculoId] = useState('');
   const [vehiculoMatricula, setVehiculoMatricula] = useState('');
@@ -51,6 +51,8 @@ export default function IniciarTurnoModal({
   useEffect(() => {
     if (visible) {
       loadVehiculos();
+      // Actualizar fecha al abrir el modal
+      setFechaInicio(format(new Date(), 'dd/MM/yyyy'));
     }
   }, [visible]);
 
@@ -81,6 +83,7 @@ export default function IniciarTurnoModal({
     setError('');
 
     try {
+      // PR2: NO enviar hora_inicio - el servidor usa su propia hora
       await axios.post(
         `${API_URL}/turnos`,
         {
@@ -89,7 +92,7 @@ export default function IniciarTurnoModal({
           vehiculo_id: vehiculoId,
           vehiculo_matricula: vehiculoMatricula,
           fecha_inicio: fechaInicio,
-          hora_inicio: horaInicio,
+          hora_inicio: "00:00", // El servidor lo ignora y usa su hora
           km_inicio: kmNum,
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -129,14 +132,12 @@ export default function IniciarTurnoModal({
                 placeholder="dd/mm/yyyy"
               />
 
-              <TextInput
-                label="Hora de inicio"
-                value={horaInicio}
-                onChangeText={setHoraInicio}
-                mode="outlined"
-                style={styles.input}
-                placeholder="HH:mm"
-              />
+              {/* PR2: Hora tomada del servidor - mostrar info */}
+              <View style={styles.serverTimeInfo}>
+                <Text variant="bodySmall" style={styles.serverTimeText}>
+                  ⏰ La hora de inicio se registrará automáticamente del servidor
+                </Text>
+              </View>
 
               <Menu
                 visible={vehiculoMenuVisible}
@@ -218,5 +219,15 @@ const styles = StyleSheet.create({
   error: {
     color: '#D32F2F',
     marginTop: 8,
+  },
+  serverTimeInfo: {
+    backgroundColor: '#E3F2FD',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  serverTimeText: {
+    color: '#0066CC',
+    textAlign: 'center',
   },
 });
