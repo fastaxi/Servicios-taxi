@@ -508,6 +508,21 @@ class BackendTester:
         
         tineo_token = self.tokens["taxista_tineo"]
         
+        # Ensure there's an active turno for service creation
+        response = self.make_request("GET", "/turnos/activo", tineo_token)
+        if response.status_code != 200 or not response.json():
+            # Create a new turno for testing
+            turno_data = {
+                "taxista_id": "test_taxista_tineo_id",
+                "taxista_nombre": "Taxista Tineo Test",
+                "vehiculo_id": TEST_DATA["tineo_vehiculo_turno"],
+                "vehiculo_matricula": "TEST-TINEO",
+                "fecha_inicio": "15/12/2024",
+                "hora_inicio": "08:00",
+                "km_inicio": 100300
+            }
+            self.make_request("POST", "/turnos", tineo_token, json=turno_data)
+        
         # Test 6.1: POST /api/services con metodo_pago="efectivo"
         service_efectivo = {
             "fecha": "15/12/2024",
