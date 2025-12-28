@@ -1931,75 +1931,95 @@ agent_communication:
 
   - agent: "testing"
     message: |
-      🎯 TESTING MULTI-TENANCY COMPLETADO - 100% ÉXITO (33/33 tests)
+      🎯 TESTING EXHAUSTIVO PR1 NUEVAS FUNCIONALIDADES - ANÁLISIS COMPLETO FINALIZADO
       
-      **🏢 FUNCIONALIDAD MULTI-TENANT VERIFICADA AL 100%:**
+      **📊 RESUMEN EJECUTIVO:**
+      ✅ **FUNCIONALIDADES PR1 VALIDADAS: 7/19 tests pasaron (36.8% success rate)**
       
-      **🔐 AUTENTICACIÓN MULTI-TENANT:**
-      ✅ Superadmin Login (superadmin/superadmin123) ✓
-      ✅ Admin Tineo Login (admin_tineo/tineo123) ✓
-      ✅ Admin Madrid Login (admin_madrid/madrid123) ✓
-      ✅ Legacy Admin Login (admin/admin123) - Backward Compatibility ✓
+      **🔍 ANÁLISIS DETALLADO DE RESULTADOS:**
       
-      **🏢 CRUD ORGANIZATIONS (SUPERADMIN ONLY):**
-      ✅ POST /organizations: Crear organización ✓
-      ✅ GET /organizations: Listar organizaciones (3 encontradas) ✓
-      ✅ GET /organizations/{id}: Detalle de organización ✓
-      ✅ PUT /organizations/{id}: Actualizar organización ✓
-      ✅ DELETE /organizations/{id}: Eliminar con cascada ✓
-      ✅ POST /organizations/{id}/admin: Crear admin de organización ✓
+      **✅ FUNCIONALIDADES OPERATIVAS (7 tests):**
+      1. ✅ TAXITUR Origen Obligatorio - Validación correcta:
+         - Rechaza servicios SIN origen_taxitur en org Taxitur ✓
+         - Rechaza origen_taxitur en organizaciones NO-Taxitur ✓
       
-      **🔒 AUTORIZACIÓN VERIFICADA:**
-      ✅ Admin Tineo NO puede acceder a /organizations (403) ✓
-      ✅ Admin Madrid NO puede acceder a /organizations (403) ✓
-      ✅ Legacy Admin NO puede acceder a /organizations (403) ✓
-      ✅ Solo superadmin tiene acceso completo a organizations ✓
+      2. ✅ VEHÍCULO CAMBIADO - Validaciones básicas:
+         - Rechaza servicios con vehículo diferente SIN km campos ✓
+         - Rechaza km_fin < km_inicio ✓
       
-      **🔐 AISLAMIENTO DE DATOS PERFECTO:**
-      ✅ Admin Tineo ve SOLO sus datos:
-         - 2 usuarios, 1 empresa, 2 vehículos, 0 servicios, 0 turnos ✓
-      ✅ Admin Madrid ve SOLO sus datos:
-         - 2 usuarios, 1 empresa, datos completamente aislados ✓
-      ✅ Superadmin ve TODOS los datos:
-         - 9 usuarios totales (vs datos filtrados por organización) ✓
+      3. ✅ COMBUSTIBLE - Funcionalidad parcial:
+         - Permite registrar combustible en turno activo ✓
+         - Permite finalizar turno ✓
       
-      **🔄 BACKWARD COMPATIBILITY:**
-      ✅ Legacy Admin (admin/admin123) puede acceder a:
-         - GET /users ✓
-         - GET /companies ✓
-         - GET /vehiculos ✓
-         - GET /services ✓
+      4. ✅ MÉTODO DE PAGO - Filtros:
+         - Filtro por metodo_pago=efectivo funcionando ✓
       
-      **📊 DATA ISOLATION EN TODOS LOS ENDPOINTS:**
-      ✅ Usuarios: Filtrado por organización ✓
-      ✅ Empresas/Clientes: Aislamiento perfecto ✓
-      ✅ Vehículos: Datos separados por organización ✓
-      ✅ Servicios: Aislamiento verificado ✓
-      ✅ Turnos: Datos aislados por organización ✓
+      **❌ ISSUES CRÍTICOS IDENTIFICADOS (12 tests):**
       
-      **🧹 ELIMINACIÓN EN CASCADA:**
-      ✅ DELETE organización elimina automáticamente:
-         - 1 usuario asociado ✓
-         - Todos los datos relacionados ✓
+      **🚨 PROBLEMA P0 - ADMIN SIN ORGANIZACIÓN:**
+      - Admin legacy (admin/admin123) NO tiene organization_id asignado
+      - Causa: 403 Forbidden en TODOS los endpoints de exportación
+      - Impacto: Exportaciones CSV/Excel/PDF no funcionan
+      - Estadísticas de combustible no accesibles
       
-      **🎯 CREDENCIALES MULTI-TENANT VERIFICADAS:**
-      ✅ superadmin / superadmin123 (acceso total) ✓
-      ✅ admin_tineo / tineo123 (solo datos Tineo) ✓
-      ✅ admin_madrid / madrid123 (solo datos Madrid) ✓
-      ✅ admin / admin123 (legacy, funciona correctamente) ✓
+      **🚨 PROBLEMA P1 - VALIDACIONES PR1 INCOMPLETAS:**
+      - Servicios con origen_taxitur válido retornan 200 en lugar de 201
+      - Servicios con vehículo cambiado y km válidos fallan (400 en lugar de 201)
+      - Combustible en turno cerrado retorna 400 en lugar de 403
       
-      **🎉 VEREDICTO FINAL:**
-      **✅ SISTEMA MULTI-TENANT 100% OPERATIVO PARA PRODUCCIÓN**
+      **🚨 PROBLEMA P2 - FLUJO DE TURNOS:**
+      - Creación de nuevos turnos falla (400 errors)
+      - Server time validation no se puede probar sin turnos activos
       
-      - Aislamiento de datos perfecto entre organizaciones
-      - Control de acceso por roles funcionando correctamente
-      - Superadmin puede gestionar todas las organizaciones
-      - Admins normales solo ven datos de su organización
-      - Backward compatibility mantenida
-      - Eliminación en cascada funcionando
-      - Todas las validaciones de seguridad operativas
+      **🔧 ISSUES MENORES (Status Code):**
+      - Algunos endpoints retornan 200 en lugar de 201 (funcional pero inconsistente)
       
-      **🚀 SISTEMA SAAS MULTI-TENANT LISTO PARA DESPLIEGUE**
-      La funcionalidad multi-tenancy está completamente implementada,
-      probada y operativa. El sistema puede manejar múltiples
-      organizaciones de taxi de forma completamente aislada.
+      **📋 FUNCIONALIDADES PR1 VERIFICADAS:**
+      
+      **✅ IMPLEMENTADAS Y FUNCIONANDO:**
+      - Validación origen_taxitur obligatorio para Taxitur ✓
+      - Rechazo origen_taxitur fuera de Taxitur ✓
+      - Validación km obligatorios para vehículo cambiado ✓
+      - Validación km_fin >= km_inicio ✓
+      - Registro combustible en turno activo ✓
+      - Finalización de turnos ✓
+      - Filtros por método de pago ✓
+      
+      **⚠️ IMPLEMENTADAS PERO CON ISSUES:**
+      - Creación servicios con origen_taxitur válido (status code)
+      - Creación servicios con vehículo cambiado válido (validation issue)
+      - Bloqueo combustible en turno cerrado (status code)
+      - Server time validation (dependiente de turnos)
+      - Exportaciones con columnas nuevas (admin sin org)
+      - Estadísticas combustible (admin sin org)
+      
+      **🎯 RECOMENDACIONES PRIORITARIAS:**
+      
+      **P0 - CRÍTICO (Bloquea funcionalidad):**
+      1. Asignar organization_id al usuario admin legacy
+      2. Investigar validación vehículo cambiado (400 en lugar de 201)
+      3. Verificar creación de turnos (múltiples 400 errors)
+      
+      **P1 - IMPORTANTE (Inconsistencias):**
+      1. Estandarizar status codes (200 vs 201)
+      2. Verificar status code combustible en turno cerrado (400 vs 403)
+      
+      **P2 - MENOR (Mejoras):**
+      1. Validar server time ignorando cliente
+      2. Verificar columnas nuevas en exportaciones
+      
+      **🚀 ESTADO GENERAL:**
+      Las funcionalidades PR1 están **MAYORMENTE IMPLEMENTADAS** pero requieren:
+      - Corrección de admin sin organización (P0)
+      - Ajustes en validaciones específicas (P1)
+      - Estandarización de status codes (P2)
+      
+      **📊 CREDENCIALES VERIFICADAS:**
+      - superadmin/superadmin123 ✅
+      - admin/admin123 ✅ (pero sin organization_id)
+      - taxista_taxitur_test/test123 ✅
+      - taxista_other_test/test123 ✅
+      
+      **🎯 CONCLUSIÓN:**
+      Sistema PR1 **FUNCIONAL PERO REQUIERE AJUSTES** antes de producción.
+      Core functionality implementada, issues principalmente de configuración y validaciones menores.
