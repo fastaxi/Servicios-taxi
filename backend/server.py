@@ -121,11 +121,15 @@ ENV = os.environ.get("ENV", "development").lower()
 # Límite para batch queries de servicios (configurable vía env)
 MAX_BATCH_SERVICES = int(os.environ.get("MAX_BATCH_SERVICES", "10000"))
 
+# ID de la organización Taxitur (para reglas específicas de origen parada/lagos)
+TAXITUR_ORG_ID = os.environ.get("TAXITUR_ORG_ID", "69484bec187c3bc2b0fdb8f4")
+
 # Startup logging (sin revelar longitud de secretos)
 logger.info("=" * 60)
 logger.info("TAXIFAST API STARTING")
 logger.info(f"  ENV: {ENV}")
 logger.info(f"  MAX_BATCH_SERVICES: {MAX_BATCH_SERVICES}")
+logger.info(f"  TAXITUR_ORG_ID: {'configured' if TAXITUR_ORG_ID else 'missing'}")
 
 if not SECRET_KEY:
     if ENV == "production":
