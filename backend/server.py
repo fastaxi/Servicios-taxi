@@ -3811,8 +3811,8 @@ async def export_pdf(
     elements.append(title)
     elements.append(Spacer(1, 0.3*inch))
     
-    # Table data con más columnas
-    data = [["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe", "Espera", "Total", "KM", "Tipo", "Cobrado"]]
+    # Table data con más columnas (incluyendo nuevos campos PR1)
+    data = [["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe", "Total", "KM", "Tipo", "Cobrado", "Pago", "Orig.Tax", "Veh.Cambio"]]
     
     for service in services:
         importe = service.get("importe", 0)
@@ -3822,15 +3822,17 @@ async def export_pdf(
         data.append([
             service["fecha"],
             service["hora"],
-            service["taxista_nombre"][:12],
-            service["origen"][:12],
-            service["destino"][:12],
+            service["taxista_nombre"][:10],
+            service["origen"][:10],
+            service["destino"][:10],
             f"{importe:.2f}€",
-            f"{importe_espera:.2f}€",
             f"{importe_total:.2f}€",
-            service["kilometros"],
+            service.get("kilometros", "") or "",
             service["tipo"][:3].upper(),
-            "Sí" if service.get("cobrado", False) else "No"
+            "Sí" if service.get("cobrado", False) else "No",
+            (service.get("metodo_pago", "") or "")[:3].upper(),
+            (service.get("origen_taxitur", "") or "")[:4],
+            "Sí" if service.get("vehiculo_cambiado", False) else "No"
         ])
     
     table = Table(data)
@@ -3839,11 +3841,11 @@ async def export_pdf(
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('FONTSIZE', (0, 1), (-1, -1), 6),
     ]))
     
     elements.append(table)
