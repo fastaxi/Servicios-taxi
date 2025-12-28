@@ -6,7 +6,7 @@ Simple Multi-tenant Test - Key Functionality Verification
 import requests
 import json
 
-BASE_URL = "https://secureobserve.preview.emergentagent.com/api"
+BASE_URL = "https://taxiflow-18.preview.emergentagent.com/api"
 
 def test_login(username, password):
     """Test login and return token"""

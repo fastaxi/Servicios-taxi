@@ -8,7 +8,7 @@ import json
 import random
 import string
 
-BASE_URL = "https://secureobserve.preview.emergentagent.com/api"
+BASE_URL = "https://taxiflow-18.preview.emergentagent.com/api"
 
 def make_request(method, endpoint, data=None, token=None, timeout=15):
     """Make HTTP request with proper error handling"""
