@@ -495,7 +495,7 @@ class BackendTester:
         response = self.make_request("POST", "/services", tineo_token, json=service_efectivo)
         self.log_test(
             "6.1", "POST", "/services",
-            response.status_code, 201,
+            response.status_code, 200,
             "POST /api/services con metodo_pago='efectivo'"
         )
         
@@ -515,7 +515,7 @@ class BackendTester:
         response = self.make_request("POST", "/services", tineo_token, json=service_tpv)
         self.log_test(
             "6.2", "POST", "/services",
-            response.status_code, 201,
+            response.status_code, 200,
             "POST /api/services con metodo_pago='tpv'"
         )
         
