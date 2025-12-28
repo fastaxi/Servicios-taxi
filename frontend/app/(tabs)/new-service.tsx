@@ -24,14 +24,28 @@ import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 
 import { API_URL } from '../../config/api';
+import { TAXITUR_ORG_ID, isTaxiturOrg } from '../../config/constants';
 
 interface Company {
   id: string;
   nombre: string;
 }
 
+interface Vehiculo {
+  id: string;
+  matricula: string;
+  marca: string;
+  modelo: string;
+}
+
+interface TurnoActivo {
+  id: string;
+  vehiculo_id: string;
+  vehiculo_matricula: string;
+}
+
 export default function NewServiceScreen() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { addPendingService } = useSync();
   const router = useRouter();
 
@@ -42,21 +56,41 @@ export default function NewServiceScreen() {
   const [importe, setImporte] = useState('');
   const [importeEspera, setImporteEspera] = useState('');
   const [importeTotal, setImporteTotal] = useState('0,00');
-  const [kilometros, setKilometros] = useState('');
+  const [kilometros, setKilometros] = useState(''); // PR2: Ahora opcional
   const [tipo, setTipo] = useState('particular');
   const [empresaId, setEmpresaId] = useState('');
   const [empresaNombre, setEmpresaNombre] = useState('');
   const [cobrado, setCobrado] = useState(false);
   const [facturar, setFacturar] = useState(false);
   
+  // PR2: Nuevos campos
+  const [metodoPago, setMetodoPago] = useState('efectivo'); // efectivo | tpv
+  const [origenTaxitur, setOrigenTaxitur] = useState(''); // parada | lagos
+  const [vehiculoId, setVehiculoId] = useState('');
+  const [vehiculoMatricula, setVehiculoMatricula] = useState('');
+  const [kmInicioVehiculo, setKmInicioVehiculo] = useState('');
+  const [kmFinVehiculo, setKmFinVehiculo] = useState('');
+  
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
+  const [turnoActivo, setTurnoActivo] = useState<TurnoActivo | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [vehiculoMenuVisible, setVehiculoMenuVisible] = useState(false);
+  const [origenTaxiturMenuVisible, setOrigenTaxiturMenuVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
+  // PR2: Determinar si es organización Taxitur
+  const isTaxitur = isTaxiturOrg(user?.organization_id);
+
+  // PR2: Determinar vehículo por defecto del turno
+  const vehiculoDefaultId = turnoActivo?.vehiculo_id || '';
+  
+  // PR2: Determinar si cambió de vehículo (solo si hay un default)
+  const vehiculoCambiado = vehiculoDefaultId && vehiculoId && vehiculoId !== vehiculoDefaultId;
+
   // Función para parsear números en formato europeo
   const parseEuroNumber = (value: string): number => {
-    // Convierte formato europeo (1.234,56) a formato JS (1234.56)
     if (!value) return 0;
     return parseFloat(value.replace(/\./g, '').replace(',', '.'));
   };
@@ -74,6 +108,8 @@ export default function NewServiceScreen() {
 
   useEffect(() => {
     loadCompanies();
+    loadVehiculos();
+    loadTurnoActivo();
   }, []);
 
   const loadCompanies = async () => {
@@ -87,9 +123,41 @@ export default function NewServiceScreen() {
     }
   };
 
+  const loadVehiculos = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/vehiculos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setVehiculos(response.data);
+    } catch (error) {
+      console.error('Error loading vehiculos:', error);
+    }
+  };
+
+  const loadTurnoActivo = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/turnos?cerrado=false&limit=1`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.length > 0) {
+        const turno = response.data[0];
+        setTurnoActivo({
+          id: turno.id,
+          vehiculo_id: turno.vehiculo_id,
+          vehiculo_matricula: turno.vehiculo_matricula,
+        });
+        // Preseleccionar vehículo del turno
+        setVehiculoId(turno.vehiculo_id);
+        setVehiculoMatricula(turno.vehiculo_matricula);
+      }
+    } catch (error) {
+      console.error('Error loading turno activo:', error);
+    }
+  };
+
   const validateForm = () => {
-    if (!fecha || !hora || !origen || !destino || !importe || !kilometros) {
-      setSnackbar({ visible: true, message: 'Por favor, completa todos los campos obligatorios' });
+    if (!fecha || !hora || !origen || !destino || !importe) {
+      setSnackbar({ visible: true, message: 'Por favor, completa los campos obligatorios (fecha, hora, origen, destino, importe)' });
       return false;
     }
 
@@ -106,22 +174,49 @@ export default function NewServiceScreen() {
     }
 
     const importeNum = parseEuroNumber(importe);
-    const kmNum = parseEuroNumber(kilometros);
-
     if (isNaN(importeNum) || importeNum <= 0) {
       setSnackbar({ visible: true, message: 'El importe debe ser un número válido mayor que 0' });
       return false;
     }
 
-    if (isNaN(kmNum) || kmNum <= 0) {
-      setSnackbar({ visible: true, message: 'Los kilómetros deben ser un número válido mayor que 0' });
-      return false;
+    // PR2: Kilómetros ahora opcionales, pero si se rellenan deben ser válidos
+    if (kilometros) {
+      const kmNum = parseEuroNumber(kilometros);
+      if (isNaN(kmNum) || kmNum < 0) {
+        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un número válido >= 0' });
+        return false;
+      }
     }
 
     if (importeEspera) {
       const importeEsperaNum = parseEuroNumber(importeEspera);
       if (isNaN(importeEsperaNum) || importeEsperaNum < 0) {
         setSnackbar({ visible: true, message: 'El importe de espera debe ser un número válido' });
+        return false;
+      }
+    }
+
+    // PR2: Validar origen_taxitur obligatorio para Taxitur
+    if (isTaxitur && !origenTaxitur) {
+      setSnackbar({ visible: true, message: 'Debes seleccionar el origen (Parada o Lagos)' });
+      return false;
+    }
+
+    // PR2: Validar km de vehículo si cambió
+    if (vehiculoCambiado) {
+      const kmInicio = parseInt(kmInicioVehiculo);
+      const kmFin = parseInt(kmFinVehiculo);
+      
+      if (!kmInicioVehiculo || isNaN(kmInicio) || kmInicio < 0) {
+        setSnackbar({ visible: true, message: 'Al cambiar de vehículo, debes indicar los km de inicio (>= 0)' });
+        return false;
+      }
+      if (!kmFinVehiculo || isNaN(kmFin)) {
+        setSnackbar({ visible: true, message: 'Al cambiar de vehículo, debes indicar los km de fin' });
+        return false;
+      }
+      if (kmFin < kmInicio) {
+        setSnackbar({ visible: true, message: 'Los km de fin deben ser >= km de inicio' });
         return false;
       }
     }
@@ -134,32 +229,44 @@ export default function NewServiceScreen() {
 
     setLoading(true);
 
-    const serviceData = {
+    const serviceData: any = {
       fecha,
       hora,
       origen,
       destino,
       importe: parseEuroNumber(importe),
       importe_espera: importeEspera ? parseEuroNumber(importeEspera) : 0,
-      kilometros: parseEuroNumber(kilometros),
+      kilometros: kilometros ? parseEuroNumber(kilometros) : null, // PR2: Ahora puede ser null
       tipo,
       empresa_id: tipo === 'empresa' ? empresaId : null,
       empresa_nombre: tipo === 'empresa' ? empresaNombre : null,
       cobrado,
       facturar,
+      // PR2: Nuevos campos
+      metodo_pago: metodoPago,
+      vehiculo_id: vehiculoId || null,
     };
+
+    // PR2: Solo enviar origen_taxitur si es Taxitur
+    if (isTaxitur) {
+      serviceData.origen_taxitur = origenTaxitur;
+    }
+
+    // PR2: Añadir km de vehículo si cambió
+    if (vehiculoCambiado) {
+      serviceData.km_inicio_vehiculo = parseInt(kmInicioVehiculo);
+      serviceData.km_fin_vehiculo = parseInt(kmFinVehiculo);
+    }
 
     try {
       const netInfo = await NetInfo.fetch();
 
       if (netInfo.isConnected) {
-        // Online: save directly to API
         await axios.post(`${API_URL}/services`, serviceData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSnackbar({ visible: true, message: 'Servicio guardado correctamente' });
       } else {
-        // Offline: save to local storage
         await addPendingService(serviceData);
         setSnackbar({
           visible: true,
@@ -167,10 +274,8 @@ export default function NewServiceScreen() {
         });
       }
 
-      // Reset form
       resetForm();
       
-      // Navigate to services screen
       setTimeout(() => {
         router.push('/services');
       }, 500);
@@ -198,6 +303,15 @@ export default function NewServiceScreen() {
     setEmpresaNombre('');
     setCobrado(false);
     setFacturar(false);
+    setMetodoPago('efectivo');
+    setOrigenTaxitur('');
+    setKmInicioVehiculo('');
+    setKmFinVehiculo('');
+    // Restaurar vehículo del turno
+    if (turnoActivo) {
+      setVehiculoId(turnoActivo.vehiculo_id);
+      setVehiculoMatricula(turnoActivo.vehiculo_matricula);
+    }
   };
 
   return (
@@ -259,8 +373,9 @@ export default function NewServiceScreen() {
               keyboardType="default"
               style={styles.halfInput}
             />
+            {/* PR2: Kilómetros ahora opcional (sin asterisco) */}
             <TextInput
-              label="Kilómetros *"
+              label="Kilómetros"
               value={kilometros}
               onChangeText={setKilometros}
               mode="outlined"
@@ -287,6 +402,97 @@ export default function NewServiceScreen() {
             style={[styles.input, styles.totalInput]}
             right={<TextInput.Icon icon="calculator" />}
           />
+
+          {/* PR2: Selector de vehículo */}
+          <Text variant="titleMedium" style={styles.sectionTitle}>
+            Vehículo
+          </Text>
+          <Menu
+            visible={vehiculoMenuVisible}
+            onDismiss={() => setVehiculoMenuVisible(false)}
+            anchor={
+              <Button
+                mode="outlined"
+                onPress={() => setVehiculoMenuVisible(true)}
+                icon="car"
+                style={styles.input}
+              >
+                {vehiculoMatricula || 'Seleccionar vehículo'}
+              </Button>
+            }
+          >
+            {vehiculos.map((vehiculo) => (
+              <Menu.Item
+                key={vehiculo.id}
+                onPress={() => {
+                  setVehiculoId(vehiculo.id);
+                  setVehiculoMatricula(vehiculo.matricula);
+                  setVehiculoMenuVisible(false);
+                }}
+                title={`${vehiculo.matricula} - ${vehiculo.marca} ${vehiculo.modelo}`}
+                leadingIcon={vehiculo.id === vehiculoDefaultId ? 'star' : undefined}
+              />
+            ))}
+          </Menu>
+
+          {/* PR2: Mostrar campos de km si cambió de vehículo */}
+          {vehiculoCambiado && (
+            <View style={styles.kmCambioContainer}>
+              <Text variant="bodySmall" style={styles.kmCambioWarning}>
+                ⚠️ Has cambiado de vehículo. Debes indicar los kilómetros:
+              </Text>
+              <View style={styles.row}>
+                <TextInput
+                  label="KM inicio vehículo *"
+                  value={kmInicioVehiculo}
+                  onChangeText={setKmInicioVehiculo}
+                  mode="outlined"
+                  keyboardType="number-pad"
+                  style={styles.halfInput}
+                />
+                <TextInput
+                  label="KM fin vehículo *"
+                  value={kmFinVehiculo}
+                  onChangeText={setKmFinVehiculo}
+                  mode="outlined"
+                  keyboardType="number-pad"
+                  style={styles.halfInput}
+                />
+              </View>
+            </View>
+          )}
+
+          {/* PR2: Método de pago */}
+          <Text variant="titleMedium" style={styles.sectionTitle}>
+            Método de Pago
+          </Text>
+          <SegmentedButtons
+            value={metodoPago}
+            onValueChange={setMetodoPago}
+            buttons={[
+              { value: 'efectivo', label: '💵 Efectivo', icon: 'cash' },
+              { value: 'tpv', label: '💳 TPV', icon: 'credit-card' },
+            ]}
+            style={styles.segmented}
+          />
+
+          {/* PR2: Origen Taxitur (solo para Taxitur) */}
+          {isTaxitur && (
+            <>
+              <Text variant="titleMedium" style={styles.sectionTitle}>
+                Origen Taxitur *
+              </Text>
+              <SegmentedButtons
+                value={origenTaxitur}
+                onValueChange={setOrigenTaxitur}
+                buttons={[
+                  { value: 'parada', label: '🚏 Parada' },
+                  { value: 'lagos', label: '🏔️ Lagos' },
+                ]}
+                style={styles.segmented}
+              />
+            </>
+          )}
 
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Tipo de Servicio
@@ -437,5 +643,19 @@ const styles = StyleSheet.create({
   submitButton: {
     marginTop: 24,
     paddingVertical: 8,
+  },
+  // PR2: Estilos para cambio de vehículo
+  kmCambioContainer: {
+    backgroundColor: '#FFF3E0',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#FF9800',
+  },
+  kmCambioWarning: {
+    color: '#E65100',
+    marginBottom: 12,
+    fontWeight: '600',
   },
 });
