@@ -561,13 +561,23 @@ class TurnoBase(BaseModel):
     liquidado: bool = False
     # organization_id se asigna automáticamente del usuario actual
 
+# Modelo de Combustible para turnos (F)
+class CombustibleData(BaseModel):
+    repostado: bool = False
+    litros: Optional[float] = None  # Obligatorio si repostado=True, debe ser > 0
+    vehiculo_id: Optional[str] = None  # Obligatorio si repostado=True
+    vehiculo_matricula: Optional[str] = None  # Denormalizado para exports
+    km_vehiculo: Optional[int] = None  # Obligatorio si repostado=True, >= 0
+    timestamp: Optional[datetime] = None  # Server time cuando se registra
+    registrado_por_user_id: Optional[str] = None  # Para trazabilidad
+
 class TurnoCreate(BaseModel):
     taxista_id: str
     taxista_nombre: str
     vehiculo_id: str
     vehiculo_matricula: str
     fecha_inicio: str
-    hora_inicio: str
+    hora_inicio: str  # Se ignorará y se usará hora del servidor (C)
     km_inicio: int
 
 class TurnoUpdate(BaseModel):
@@ -582,9 +592,16 @@ class TurnoUpdate(BaseModel):
 
 class TurnoFinalizarUpdate(BaseModel):
     fecha_fin: str
-    hora_fin: str
+    hora_fin: str  # Se ignorará y se usará hora del servidor (C)
     km_fin: int
     cerrado: bool = True
+
+class CombustibleUpdate(BaseModel):
+    """Modelo para actualizar combustible en un turno (F)"""
+    repostado: bool
+    litros: Optional[float] = None
+    vehiculo_id: Optional[str] = None
+    km_vehiculo: Optional[int] = None
 
 class TurnoResponse(TurnoBase):
     id: str
@@ -595,6 +612,8 @@ class TurnoResponse(TurnoBase):
     total_importe_particulares: Optional[float] = 0
     total_kilometros: Optional[float] = 0
     cantidad_servicios: Optional[int] = 0
+    # Combustible (F)
+    combustible: Optional[CombustibleData] = None
 
     class Config:
         from_attributes = True
