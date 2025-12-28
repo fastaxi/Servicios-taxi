@@ -2917,11 +2917,93 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
                 detail="El turno especificado no existe o no pertenece a esta organización"
             )
     
+    # (D) MÉTODO DE PAGO: Validar valores permitidos
+    if service.metodo_pago and service.metodo_pago not in ("efectivo", "tpv"):
+        raise HTTPException(
+            status_code=400,
+            detail="metodo_pago debe ser 'efectivo' o 'tpv'"
+        )
+    
+    # (E) ORIGEN TAXITUR: Solo para org Taxitur, obligatorio allí
+    if org_id == TAXITUR_ORG_ID:
+        # En Taxitur es obligatorio
+        if not service.origen_taxitur:
+            raise HTTPException(
+                status_code=400,
+                detail="origen_taxitur es obligatorio para Taxitur (debe ser 'parada' o 'lagos')"
+            )
+        if service.origen_taxitur not in ("parada", "lagos"):
+            raise HTTPException(
+                status_code=400,
+                detail="origen_taxitur debe ser 'parada' o 'lagos'"
+            )
+    else:
+        # Fuera de Taxitur, rechazar si se envía origen_taxitur
+        if service.origen_taxitur:
+            raise HTTPException(
+                status_code=400,
+                detail="origen_taxitur solo está permitido para la organización Taxitur"
+            )
+    
+    # (A) VEHÍCULO EN SERVICIO: Validar y determinar si hubo cambio
+    # Determinar vehículo por defecto
+    turno_ref = turno_from_payload or turno_activo
+    vehiculo_default_id = None
+    if turno_ref and turno_ref.get("vehiculo_id"):
+        vehiculo_default_id = turno_ref.get("vehiculo_id")
+    elif current_user.get("vehiculo_id"):
+        vehiculo_default_id = current_user.get("vehiculo_id")
+    
+    # Si se proporciona vehiculo_id, validar que pertenece al tenant
+    vehiculo_validated = None
+    vehiculo_cambiado = False
+    if service.vehiculo_id:
+        try:
+            vehiculo_query = {"_id": ObjectId(service.vehiculo_id)}
+            if org_id:
+                vehiculo_query["organization_id"] = org_id
+            vehiculo_validated = await db.vehiculos.find_one(vehiculo_query)
+            if not vehiculo_validated:
+                raise HTTPException(
+                    status_code=400,
+                    detail="El vehículo especificado no existe o no pertenece a esta organización"
+                )
+            # Determinar si hubo cambio de vehículo
+            vehiculo_cambiado = (service.vehiculo_id != vehiculo_default_id) if vehiculo_default_id else False
+        except Exception as e:
+            if "vehiculo_id" in str(e):
+                raise
+            raise HTTPException(status_code=400, detail="vehiculo_id inválido")
+    
+    # (A) Si cambió de vehículo, km_inicio y km_fin son obligatorios
+    if vehiculo_cambiado:
+        if service.km_inicio_vehiculo is None or service.km_fin_vehiculo is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Al cambiar de vehículo, km_inicio_vehiculo y km_fin_vehiculo son obligatorios"
+            )
+        if service.km_inicio_vehiculo < 0:
+            raise HTTPException(
+                status_code=400,
+                detail="km_inicio_vehiculo debe ser >= 0"
+            )
+        if service.km_fin_vehiculo < service.km_inicio_vehiculo:
+            raise HTTPException(
+                status_code=400,
+                detail="km_fin_vehiculo debe ser >= km_inicio_vehiculo"
+            )
+    
     service_dict = service.dict()
     service_dict["taxista_id"] = str(current_user["_id"])
     service_dict["taxista_nombre"] = current_user["nombre"]
     service_dict["created_at"] = datetime.utcnow()
     service_dict["synced"] = True
+    
+    # Añadir campos de vehículo validados
+    service_dict["vehiculo_cambiado"] = vehiculo_cambiado
+    if vehiculo_validated:
+        service_dict["vehiculo_id"] = str(vehiculo_validated["_id"])
+        service_dict["vehiculo_matricula"] = vehiculo_validated.get("matricula", "")
     
     # INTEGRIDAD: Usar empresa_nombre desde BD, ignorar lo que venga del cliente
     if empresa_validated:
