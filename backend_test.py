@@ -363,6 +363,21 @@ class BackendTester:
         
         tineo_token = self.tokens["taxista_tineo"]
         
+        # First, finalize any existing turno
+        response = self.make_request("GET", "/turnos/activo", tineo_token)
+        if response.status_code == 200 and response.json():
+            existing_turno = response.json()
+            existing_turno_id = existing_turno["id"]
+            
+            # Finalize the existing turno
+            finalizar_data = {
+                "fecha_fin": "15/12/2024",
+                "hora_fin": "17:00",
+                "km_fin": existing_turno["km_inicio"] + 100,
+                "cerrado": True
+            }
+            self.make_request("PUT", f"/turnos/{existing_turno_id}/finalizar", tineo_token, json=finalizar_data)
+        
         # Test 4.1: POST /api/turnos enviando hora_inicio="99:99"
         turno_data = {
             "taxista_id": "test_taxista_id",
