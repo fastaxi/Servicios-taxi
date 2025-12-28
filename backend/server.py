@@ -3616,7 +3616,7 @@ async def export_csv(
     
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Importe Total (€)", "Kilómetros", "Tipo", "Empresa", "Cobrado", "Facturar"])
+    writer.writerow(["Fecha", "Hora", "Taxista", "Origen", "Destino", "Importe (€)", "Importe Espera (€)", "Importe Total (€)", "Kilómetros", "Tipo", "Empresa", "Cobrado", "Facturar", "Método Pago", "Origen Taxitur", "Vehículo ID", "Vehículo Matrícula", "Vehículo Cambiado", "Km Inicio Vehículo", "Km Fin Vehículo"])
     
     for service in services:
         importe = service.get("importe", 0)
@@ -3632,11 +3632,18 @@ async def export_csv(
             f"{importe:.2f}",
             f"{importe_espera:.2f}",
             f"{importe_total:.2f}",
-            service["kilometros"],
+            service.get("kilometros", ""),
             service["tipo"],
             service.get("empresa_nombre", ""),
             "Sí" if service.get("cobrado", False) else "No",
-            "Sí" if service.get("facturar", False) else "No"
+            "Sí" if service.get("facturar", False) else "No",
+            service.get("metodo_pago", "") or "",
+            service.get("origen_taxitur", "") or "",
+            service.get("vehiculo_id", "") or "",
+            service.get("vehiculo_matricula", "") or "",
+            "Sí" if service.get("vehiculo_cambiado", False) else "No",
+            service.get("km_inicio_vehiculo", "") if service.get("km_inicio_vehiculo") is not None else "",
+            service.get("km_fin_vehiculo", "") if service.get("km_fin_vehiculo") is not None else ""
         ])
     
     output.seek(0)
