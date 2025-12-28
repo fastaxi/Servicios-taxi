@@ -3097,6 +3097,66 @@ async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(
                     errors.append(f"Servicio {idx}: no hay turno activo para asignar el servicio")
                     continue
                 service_dict["turno_id"] = str(turno_activo["_id"])
+                turno_validated = turno_activo
+            
+            # (7) VALIDACIONES PR1 - Mismas que en POST /api/services
+            
+            # (D) MÉTODO DE PAGO: Validar valores permitidos
+            if service.metodo_pago and service.metodo_pago not in ("efectivo", "tpv"):
+                errors.append(f"Servicio {idx}: metodo_pago debe ser 'efectivo' o 'tpv'")
+                continue
+            
+            # (E) ORIGEN TAXITUR: Solo para org Taxitur, obligatorio allí
+            if org_id == TAXITUR_ORG_ID:
+                if not service.origen_taxitur:
+                    errors.append(f"Servicio {idx}: origen_taxitur es obligatorio para Taxitur")
+                    continue
+                if service.origen_taxitur not in ("parada", "lagos"):
+                    errors.append(f"Servicio {idx}: origen_taxitur debe ser 'parada' o 'lagos'")
+                    continue
+            else:
+                if service.origen_taxitur:
+                    errors.append(f"Servicio {idx}: origen_taxitur solo está permitido para Taxitur")
+                    continue
+            
+            # (A) VEHÍCULO EN SERVICIO: Validar y determinar si hubo cambio
+            turno_ref = turno_validated or turno_activo
+            vehiculo_default_id = None
+            if turno_ref and turno_ref.get("vehiculo_id"):
+                vehiculo_default_id = turno_ref.get("vehiculo_id")
+            elif current_user.get("vehiculo_id"):
+                vehiculo_default_id = current_user.get("vehiculo_id")
+            
+            vehiculo_cambiado = False
+            if service.vehiculo_id:
+                try:
+                    vehiculo_query = {"_id": ObjectId(service.vehiculo_id)}
+                    if org_id:
+                        vehiculo_query["organization_id"] = org_id
+                    vehiculo_validated = await db.vehiculos.find_one(vehiculo_query)
+                    if not vehiculo_validated:
+                        errors.append(f"Servicio {idx}: vehiculo_id inválido o de otra organización")
+                        continue
+                    vehiculo_cambiado = (service.vehiculo_id != vehiculo_default_id) if vehiculo_default_id else False
+                    service_dict["vehiculo_id"] = str(vehiculo_validated["_id"])
+                    service_dict["vehiculo_matricula"] = vehiculo_validated.get("matricula", "")
+                except Exception:
+                    errors.append(f"Servicio {idx}: vehiculo_id inválido")
+                    continue
+            
+            service_dict["vehiculo_cambiado"] = vehiculo_cambiado
+            
+            # Si cambió de vehículo, km_inicio y km_fin son obligatorios
+            if vehiculo_cambiado:
+                if service.km_inicio_vehiculo is None or service.km_fin_vehiculo is None:
+                    errors.append(f"Servicio {idx}: al cambiar vehículo, km_inicio_vehiculo y km_fin_vehiculo son obligatorios")
+                    continue
+                if service.km_inicio_vehiculo < 0:
+                    errors.append(f"Servicio {idx}: km_inicio_vehiculo debe ser >= 0")
+                    continue
+                if service.km_fin_vehiculo < service.km_inicio_vehiculo:
+                    errors.append(f"Servicio {idx}: km_fin_vehiculo debe ser >= km_inicio_vehiculo")
+                    continue
             
             # Override con datos del usuario actual
             service_dict["taxista_id"] = str(current_user["_id"])
