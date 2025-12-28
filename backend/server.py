@@ -2197,6 +2197,11 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoFinalizarUpdate, cur
         raise HTTPException(status_code=403, detail="No autorizado")
     
     update_dict = turno_update.dict()
+    
+    # (C) HORA DEL SERVIDOR: Usar hora del servidor, ignorar hora_fin del cliente
+    server_now = datetime.utcnow()
+    update_dict["hora_fin"] = server_now.strftime("%H:%M")
+    
     await db.turnos.update_one(
         {"_id": oid, **org_filter},
         {"$set": update_dict}
