@@ -450,13 +450,21 @@ class ServiceBase(BaseModel):
     importe: float  # IVA 10% incluido
     importe_espera: float  # Importe de espera en euros
     importe_total: Optional[float] = None  # Se calcula automáticamente
-    kilometros: float
+    kilometros: Optional[float] = None  # Ahora opcional (B)
     tipo: str  # "empresa" or "particular"
     empresa_id: Optional[str] = None
     empresa_nombre: Optional[str] = None
     turno_id: Optional[str] = None  # ID del turno asociado
     cobrado: bool = False
     facturar: bool = False
+    # Nuevos campos funcionales PR1
+    metodo_pago: Optional[str] = "efectivo"  # "efectivo" | "tpv" | null (D)
+    origen_taxitur: Optional[str] = None  # "parada" | "lagos" - Solo para org Taxitur (E)
+    vehiculo_id: Optional[str] = None  # Vehículo usado en el servicio (A)
+    vehiculo_matricula: Optional[str] = None  # Denormalizado para exports (A)
+    vehiculo_cambiado: Optional[bool] = False  # True si usó vehículo distinto al default (A)
+    km_inicio_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
+    km_fin_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
 
 class ServiceCreate(ServiceBase):
     pass
