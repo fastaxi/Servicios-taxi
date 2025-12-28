@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Suite for PR1 New Functionalities
-Testing exhaustive scenarios for Taxitur-specific features and new endpoints
+Pruebas Exhaustivas de Backend - PR1 (SEGUNDA EJECUCIÓN)
+Testing comprehensive backend functionality for PR1 features with specific test users
 """
 
 import requests
@@ -10,9 +10,27 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
-# Configuration
+# Configuration from review request
 BASE_URL = "https://taxiflow-18.preview.emergentagent.com/api"
 TAXITUR_ORG_ID = "69484bec187c3bc2b0fdb8f4"
+OTHER_ORG_ID = "69429aaecdbc9d2db23e0ed5"  # Taxi Tineo
+
+# Test users from review request (already configured)
+TEST_USERS = {
+    "taxista_taxitur": {"username": "taxista_taxitur", "password": "test123"},
+    "taxista_tineo": {"username": "taxista_tineo", "password": "test123"},
+    "admin": {"username": "admin", "password": "admin123"}
+}
+
+# Test data from review request
+TEST_DATA = {
+    "taxitur_turno_id": "6951247a58935fb953225444",
+    "taxitur_vehiculo_turno": "6951247958935fb953225440",  # TEST-TAXITUR
+    "taxitur_vehiculo_segundo": "6951247a58935fb953225446",  # TEST-TAXITUR-2
+    "tineo_turno_id": "6951247a58935fb953225445",
+    "tineo_vehiculo_turno": "6951247958935fb953225441",  # TEST-TINEO
+    "tineo_vehiculo_segundo": "6951247a58935fb953225447"  # TEST-TINEO-2
+}
 
 class BackendTester:
     def __init__(self):
