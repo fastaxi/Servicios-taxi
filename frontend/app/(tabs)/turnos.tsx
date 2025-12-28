@@ -12,6 +12,8 @@ import {
   List,
   Divider,
   FAB,
+  Switch,
+  Menu,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from 'expo-router';
@@ -20,6 +22,22 @@ import { format } from 'date-fns';
 import IniciarTurnoModal from '../../components/IniciarTurnoModal';
 
 import { API_URL } from '../../config/api';
+
+interface Vehiculo {
+  id: string;
+  matricula: string;
+  marca: string;
+  modelo: string;
+}
+
+interface Combustible {
+  repostado: boolean;
+  litros?: number;
+  vehiculo_id?: string;
+  vehiculo_matricula?: string;
+  km_vehiculo?: number;
+  timestamp?: string;
+}
 
 interface Servicio {
   id: string;
@@ -38,6 +56,7 @@ interface Servicio {
 interface Turno {
   id: string;
   taxista_nombre: string;
+  vehiculo_id: string;
   vehiculo_matricula: string;
   fecha_inicio: string;
   hora_inicio: string;
@@ -50,6 +69,7 @@ interface Turno {
   total_importe_particulares: number;
   total_kilometros: number;
   cantidad_servicios: number;
+  combustible?: Combustible;
 }
 
 export default function TurnosScreen() {
@@ -60,13 +80,23 @@ export default function TurnosScreen() {
   const [finalizarModalVisible, setFinalizarModalVisible] = useState(false);
   const [iniciarTurnoModalVisible, setIniciarTurnoModalVisible] = useState(false);
   const [kmFin, setKmFin] = useState('');
-  const [horaFin, setHoraFin] = useState('');
   const [expandedTurnos, setExpandedTurnos] = useState<{ [key: string]: boolean }>({});
   const [serviciosPorTurno, setServiciosPorTurno] = useState<{ [key: string]: Servicio[] }>({});
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
+  // PR2: Estados para combustible
+  const [combustibleRepostado, setCombustibleRepostado] = useState(false);
+  const [combustibleLitros, setCombustibleLitros] = useState('');
+  const [combustibleVehiculoId, setCombustibleVehiculoId] = useState('');
+  const [combustibleVehiculoMatricula, setCombustibleVehiculoMatricula] = useState('');
+  const [combustibleKm, setCombustibleKm] = useState('');
+  const [combustibleMenuVisible, setCombustibleMenuVisible] = useState(false);
+  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
+  const [combustibleLoading, setCombustibleLoading] = useState(false);
+
   useEffect(() => {
     loadTurnos();
+    loadVehiculos();
   }, []);
 
   useFocusEffect(
@@ -74,6 +104,34 @@ export default function TurnosScreen() {
       loadTurnos();
     }, [])
   );
+
+  // Cargar datos de combustible cuando hay turno activo
+  useEffect(() => {
+    if (turnoActivo?.combustible) {
+      setCombustibleRepostado(turnoActivo.combustible.repostado || false);
+      setCombustibleLitros(turnoActivo.combustible.litros?.toString() || '');
+      setCombustibleVehiculoId(turnoActivo.combustible.vehiculo_id || '');
+      setCombustibleVehiculoMatricula(turnoActivo.combustible.vehiculo_matricula || '');
+      setCombustibleKm(turnoActivo.combustible.km_vehiculo?.toString() || '');
+    } else {
+      setCombustibleRepostado(false);
+      setCombustibleLitros('');
+      setCombustibleVehiculoId('');
+      setCombustibleVehiculoMatricula('');
+      setCombustibleKm('');
+    }
+  }, [turnoActivo]);
+
+  const loadVehiculos = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/vehiculos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setVehiculos(response.data);
+    } catch (error) {
+      console.error('Error loading vehiculos:', error);
+    }
+  };
 
   const loadTurnos = async () => {
     try {
@@ -118,25 +176,59 @@ export default function TurnosScreen() {
     const isExpanding = !expandedTurnos[turnoId];
     setExpandedTurnos(prev => ({ ...prev, [turnoId]: isExpanding }));
     
-    // Cargar servicios solo si se está expandiendo y aún no se han cargado
     if (isExpanding && !serviciosPorTurno[turnoId]) {
       loadServiciosTurno(turnoId);
     }
   };
 
-  const handleFinalizarTurno = async () => {
-    if (!kmFin || !horaFin || !turnoActivo) {
-      setSnackbar({ visible: true, message: 'Por favor, completa todos los campos' });
-      return;
+  // PR2: Guardar combustible
+  const handleGuardarCombustible = async () => {
+    if (!turnoActivo) return;
+
+    if (combustibleRepostado) {
+      const litros = parseFloat(combustibleLitros);
+      const km = parseInt(combustibleKm);
+      
+      if (isNaN(litros) || litros <= 0) {
+        setSnackbar({ visible: true, message: 'Los litros deben ser un número mayor que 0' });
+        return;
+      }
+      if (!combustibleVehiculoId) {
+        setSnackbar({ visible: true, message: 'Selecciona un vehículo para el repostaje' });
+        return;
+      }
+      if (isNaN(km) || km < 0) {
+        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un número válido >= 0' });
+        return;
+      }
     }
 
-    // Validar formato de hora
-    const horaRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!horaRegex.test(horaFin)) {
-      setSnackbar({ 
-        visible: true, 
-        message: 'Formato de hora inválido. Usa HH:mm (ejemplo: 14:30)' 
-      });
+    setCombustibleLoading(true);
+    try {
+      await axios.put(
+        `${API_URL}/turnos/${turnoActivo.id}/combustible`,
+        {
+          repostado: combustibleRepostado,
+          litros: combustibleRepostado ? parseFloat(combustibleLitros) : null,
+          vehiculo_id: combustibleRepostado ? combustibleVehiculoId : null,
+          km_vehiculo: combustibleRepostado ? parseInt(combustibleKm) : null,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSnackbar({ visible: true, message: 'Repostaje guardado correctamente' });
+      loadTurnos();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Error al guardar repostaje';
+      setSnackbar({ visible: true, message: errorMsg });
+    } finally {
+      setCombustibleLoading(false);
+    }
+  };
+
+  // PR2: Finalizar turno - sin enviar hora (el servidor la pone)
+  const handleFinalizarTurno = async () => {
+    if (!kmFin || !turnoActivo) {
+      setSnackbar({ visible: true, message: 'Por favor, ingresa los kilómetros finales' });
       return;
     }
 
@@ -150,11 +242,12 @@ export default function TurnosScreen() {
     }
 
     try {
+      // PR2: NO enviar hora_fin - el servidor usa su propia hora
       await axios.put(
         `${API_URL}/turnos/${turnoActivo.id}/finalizar`,
         {
           fecha_fin: format(new Date(), 'dd/MM/yyyy'),
-          hora_fin: horaFin,
+          hora_fin: "00:00", // El servidor lo ignora y usa su hora
           km_fin: kmNum,
           cerrado: true,
         },
@@ -163,7 +256,6 @@ export default function TurnosScreen() {
 
       setFinalizarModalVisible(false);
       setKmFin('');
-      setHoraFin('');
       setSnackbar({ visible: true, message: 'Turno finalizado correctamente' });
       loadTurnos();
     } catch (error: any) {
@@ -260,6 +352,92 @@ export default function TurnosScreen() {
                 <Text variant="bodyMedium">{turnoActivo.total_kilometros} km</Text>
               </View>
 
+              {/* PR2: Sección Combustible */}
+              <View style={styles.combustibleSection}>
+                <Text variant="titleMedium" style={styles.combustibleTitle}>
+                  ⛽ Combustible
+                </Text>
+                
+                <View style={styles.switchRow}>
+                  <Text variant="bodyMedium">He repostado</Text>
+                  <Switch
+                    value={combustibleRepostado}
+                    onValueChange={setCombustibleRepostado}
+                    color="#0066CC"
+                  />
+                </View>
+
+                {combustibleRepostado && (
+                  <View style={styles.combustibleForm}>
+                    <TextInput
+                      label="Litros *"
+                      value={combustibleLitros}
+                      onChangeText={setCombustibleLitros}
+                      mode="outlined"
+                      keyboardType="decimal-pad"
+                      style={styles.combustibleInput}
+                      placeholder="0.00"
+                    />
+                    
+                    <Menu
+                      visible={combustibleMenuVisible}
+                      onDismiss={() => setCombustibleMenuVisible(false)}
+                      anchor={
+                        <Button
+                          mode="outlined"
+                          onPress={() => setCombustibleMenuVisible(true)}
+                          icon="car"
+                          style={styles.combustibleInput}
+                        >
+                          {combustibleVehiculoMatricula || 'Seleccionar vehículo *'}
+                        </Button>
+                      }
+                    >
+                      {vehiculos.map((vehiculo) => (
+                        <Menu.Item
+                          key={vehiculo.id}
+                          onPress={() => {
+                            setCombustibleVehiculoId(vehiculo.id);
+                            setCombustibleVehiculoMatricula(vehiculo.matricula);
+                            setCombustibleMenuVisible(false);
+                          }}
+                          title={`${vehiculo.matricula} - ${vehiculo.marca} ${vehiculo.modelo}`}
+                        />
+                      ))}
+                    </Menu>
+
+                    <TextInput
+                      label="KM del vehículo *"
+                      value={combustibleKm}
+                      onChangeText={setCombustibleKm}
+                      mode="outlined"
+                      keyboardType="number-pad"
+                      style={styles.combustibleInput}
+                      placeholder="0"
+                    />
+                  </View>
+                )}
+
+                <Button
+                  mode="contained-tonal"
+                  onPress={handleGuardarCombustible}
+                  loading={combustibleLoading}
+                  disabled={combustibleLoading}
+                  style={styles.combustibleButton}
+                  icon="gas-station"
+                >
+                  Guardar Repostaje
+                </Button>
+
+                {turnoActivo.combustible?.repostado && (
+                  <View style={styles.combustibleGuardado}>
+                    <Text variant="bodySmall" style={styles.combustibleGuardadoText}>
+                      ✅ Último repostaje: {turnoActivo.combustible.litros} L en {turnoActivo.combustible.vehiculo_matricula}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
               <Button
                 mode="contained"
                 onPress={() => setFinalizarModalVisible(true)}
@@ -315,6 +493,16 @@ export default function TurnosScreen() {
                       {turno.km_inicio} → {turno.km_fin} ({turno.km_fin! - turno.km_inicio} km)
                     </Text>
                   </View>
+
+                  {/* Mostrar combustible si hubo repostaje */}
+                  {turno.combustible?.repostado && (
+                    <View style={styles.infoRow}>
+                      <Text variant="bodySmall" style={styles.label}>⛽ Repostaje:</Text>
+                      <Text variant="bodySmall">
+                        {turno.combustible.litros} L ({turno.combustible.vehiculo_matricula})
+                      </Text>
+                    </View>
+                  )}
 
                   <View style={styles.divider} />
 
@@ -386,7 +574,7 @@ export default function TurnosScreen() {
                                 📍 {servicio.origen} → {servicio.destino}
                               </Text>
                               <Text variant="bodySmall" style={styles.servicioDetalle}>
-                                🚗 {servicio.kilometros} km
+                                🚗 {servicio.kilometros || 'N/A'} km
                               </Text>
                               {servicio.empresa_nombre && (
                                 <Text variant="bodySmall" style={styles.servicioDetalle}>
@@ -426,22 +614,22 @@ export default function TurnosScreen() {
         )}
       </ScrollView>
 
+      {/* PR2: Modal finalizar turno - sin campo de hora */}
       <Portal>
         <Dialog visible={finalizarModalVisible} onDismiss={() => setFinalizarModalVisible(false)}>
           <Dialog.Title>Finalizar Turno</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium" style={styles.dialogText}>
-              Ingresa la hora de finalización y los kilómetros finales del vehículo
+              Ingresa los kilómetros finales del vehículo
             </Text>
-            <TextInput
-              label="Hora de finalización (HH:mm) *"
-              value={horaFin}
-              onChangeText={setHoraFin}
-              mode="outlined"
-              keyboardType="default"
-              placeholder="Ejemplo: 14:30"
-              style={styles.input}
-            />
+            
+            {/* PR2: Info sobre hora automática */}
+            <View style={styles.serverTimeInfo}>
+              <Text variant="bodySmall" style={styles.serverTimeText}>
+                ⏰ La hora de finalización se registrará automáticamente del servidor
+              </Text>
+            </View>
+
             <TextInput
               label="Kilómetros finales *"
               value={kmFin}
@@ -461,7 +649,7 @@ export default function TurnosScreen() {
       {/* Modal de iniciar turno */}
       <IniciarTurnoModal
         visible={iniciarTurnoModalVisible}
-        userId={user?._id || ''}
+        userId={user?.id || ''}
         userName={user?.nombre || ''}
         token={token || ''}
         onTurnoIniciado={handleTurnoIniciado}
@@ -648,5 +836,55 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#666',
     padding: 16,
+  },
+  // PR2: Estilos para combustible
+  combustibleSection: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#FFF8E1',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFB300',
+  },
+  combustibleTitle: {
+    color: '#FF8F00',
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  combustibleForm: {
+    marginBottom: 8,
+  },
+  combustibleInput: {
+    marginBottom: 8,
+    backgroundColor: 'white',
+  },
+  combustibleButton: {
+    marginTop: 8,
+  },
+  combustibleGuardado: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 4,
+  },
+  combustibleGuardadoText: {
+    color: '#2E7D32',
+    textAlign: 'center',
+  },
+  serverTimeInfo: {
+    backgroundColor: '#E3F2FD',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  serverTimeText: {
+    color: '#0066CC',
+    textAlign: 'center',
   },
 });
