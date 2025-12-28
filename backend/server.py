@@ -2565,12 +2565,13 @@ async def export_turnos_csv(
     output = io.StringIO()
     writer = csv.writer(output)
     
-    # Header principal de turnos
+    # Header principal de turnos (incluyendo campos de combustible PR1)
     writer.writerow([
         "Tipo", "Taxista", "Vehículo", "Fecha Inicio", "Hora Inicio", "KM Inicio",
         "Fecha Fin", "Hora Fin", "KM Fin", "Total KM",
         "N° Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
         "Cerrado", "Liquidado",
+        "Comb.Repostado", "Comb.Litros", "Comb.Vehículo", "Comb.KM", "Comb.Fecha",
         "# SERVICIO: Fecha", "Hora", "Origen", "Destino", "Tipo", "Empresa", 
         "Importe", "Importe Espera", "Total", "KM"
     ])
@@ -2578,6 +2579,14 @@ async def export_turnos_csv(
     for turno in turnos_con_totales:
         total_km_turno = turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0
         total_importe = turno["total_clientes"] + turno["total_particulares"]
+        
+        # Campos de combustible
+        combustible = turno.get("combustible", {}) or {}
+        comb_repostado = "Sí" if combustible.get("repostado") else "No"
+        comb_litros = combustible.get("litros", "") if combustible.get("repostado") else ""
+        comb_vehiculo = combustible.get("vehiculo_matricula", "") if combustible.get("repostado") else ""
+        comb_km = combustible.get("km_vehiculo", "") if combustible.get("repostado") else ""
+        comb_fecha = combustible.get("timestamp", "").strftime("%d/%m/%Y %H:%M") if combustible.get("timestamp") else ""
         
         # Fila resumen del turno
         writer.writerow([
@@ -2597,6 +2606,7 @@ async def export_turnos_csv(
             f"{total_importe:.2f}",
             "Sí" if turno.get("cerrado") else "No",
             "Sí" if turno.get("liquidado") else "No",
+            comb_repostado, comb_litros, comb_vehiculo, comb_km, comb_fecha,
             "", "", "", "", "", "", "", "", "", ""
         ])
         
@@ -2611,6 +2621,7 @@ async def export_turnos_csv(
             writer.writerow([
                 "SERVICIO",
                 "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+                "", "", "", "", "",
                 f"#{idx}: {servicio.get('fecha', '')}",
                 servicio.get("hora", ""),
                 servicio.get("origen", ""),
@@ -2620,7 +2631,7 @@ async def export_turnos_csv(
                 f"{importe:.2f}",
                 f"{importe_espera:.2f}",
                 f"{importe_total:.2f}",
-                servicio.get("kilometros", 0)
+                servicio.get("kilometros", "") if servicio.get("kilometros") is not None else ""
             ])
         
         # Fila vacía para separar turnos
