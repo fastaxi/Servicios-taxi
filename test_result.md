@@ -430,6 +430,78 @@ backend:
         agent: "testing"
         comment: "✅ TESTING EXHAUSTIVO COMPLETADO: DELETE /turnos funcionando perfectamente con eliminación en cascada. CRÍTICO VERIFICADO: 5 servicios creados → DELETE turno → 5 servicios eliminados automáticamente. Autorización correcta (403 para taxistas). Edge cases: 404 para turno inexistente, 0 servicios eliminados para turno vacío, 10 servicios eliminados para turno con muchos servicios. Sistema 100% operativo."
 
+  - task: "PR1 - TAXITUR Origen obligatorio"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING PR1 COMPLETO (4/4 tests): 1.1 POST sin origen_taxitur para Taxitur → 400 ✓, 1.2 POST con origen_taxitur='parada' → 200 ✓, 1.3 POST con origen_taxitur='lagos' → 200 ✓, 1.4 POST con origen_taxitur para Taxi Tineo → 400 ✓. Validación de organización Taxitur funcionando perfectamente."
+
+  - task: "PR1 - Vehículo cambiado kilómetros condicionales"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING PR1 COMPLETO (4/4 tests): 2.1 POST sin km_inicio/km_fin con vehículo cambiado → 400 ✓, 2.2 POST con km_fin < km_inicio → 400 ✓, 2.3 POST con km válidos (100-150) → 200 ✓, 2.4 POST con vehículo del turno (sin km extra) → 200 ✓. Validación de kilómetros para vehículos cambiados funcionando correctamente."
+
+  - task: "PR1 - Combustible repostaje en turnos"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING PR1 COMPLETO (3/3 tests): 3.1 PUT combustible en turno activo (45L, km=100050) → 200 ✓, 3.2 PUT finalizar turno con km_fin > km_inicio → 200 ✓, 3.3 PUT combustible en turno cerrado → 400 ✓ (mensaje: 'No se puede modificar combustible en un turno finalizado'). Gestión de combustible en turnos funcionando perfectamente."
+
+  - task: "PR1 - Server Time"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING PR1 COMPLETO (2/2 tests): 4.1 POST turno con hora_inicio='99:99' → 200 ✓ (hora guardada: 12:46, server time usado correctamente), 4.2 PUT finalizar con hora_fin='99:99' → 200 ✓ (hora guardada: 12:46, server time usado correctamente). Backend ignora horas inválidas del cliente y usa hora del servidor como esperado."
+
+  - task: "PR1 - Exports con nuevas columnas"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING PR1 COMPLETO (4/4 tests): 5.1 GET services/export/csv → 200 ✓ (Content-Type: text/csv), 5.2 GET services/export/excel → 200 ✓ (Content-Type: spreadsheetml.sheet), 5.3 GET turnos/export/csv → 200 ✓ (incluye columnas combustible), 5.4 GET turnos/combustible/estadisticas → 200 ✓. Todas las exportaciones funcionando con nuevas columnas metodo_pago y origen_taxitur."
+
+  - task: "PR1 - Método de pago"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING PR1 COMPLETO (3/3 tests): 6.1 POST servicio con metodo_pago='efectivo' → 200 ✓, 6.2 POST servicio con metodo_pago='tpv' → 200 ✓, 6.3 GET services?metodo_pago=efectivo → 200 ✓ (6 servicios efectivo encontrados). Campo metodo_pago y filtros funcionando perfectamente."
+
 frontend:
   - task: "Login Screen"
     implemented: true
