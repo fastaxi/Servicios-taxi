@@ -99,8 +99,47 @@ class BackendTester:
                 print(f"❌ Error login {credentials['username']}")
                 return False
         
+        # Check if taxistas have active turnos, create if needed
+        self._ensure_active_turnos()
+        
         print()
         return True
+    
+    def _ensure_active_turnos(self):
+        """Ensure taxistas have active turnos for testing"""
+        print("🔄 Verificando turnos activos...")
+        
+        # Check taxista_taxitur
+        taxitur_token = self.tokens["taxista_taxitur"]
+        response = self.make_request("GET", "/turnos/activo", taxitur_token)
+        if response.status_code != 200 or not response.json():
+            print("📝 Creando turno activo para taxista_taxitur...")
+            turno_data = {
+                "taxista_id": "test_taxista_taxitur_id",
+                "taxista_nombre": "Taxista Taxitur Test",
+                "vehiculo_id": TEST_DATA["taxitur_vehiculo_turno"],
+                "vehiculo_matricula": "TEST-TAXITUR",
+                "fecha_inicio": "15/12/2024",
+                "hora_inicio": "08:00",
+                "km_inicio": 100000
+            }
+            self.make_request("POST", "/turnos", taxitur_token, json=turno_data)
+        
+        # Check taxista_tineo
+        tineo_token = self.tokens["taxista_tineo"]
+        response = self.make_request("GET", "/turnos/activo", tineo_token)
+        if response.status_code != 200 or not response.json():
+            print("📝 Creando turno activo para taxista_tineo...")
+            turno_data = {
+                "taxista_id": "test_taxista_tineo_id",
+                "taxista_nombre": "Taxista Tineo Test",
+                "vehiculo_id": TEST_DATA["tineo_vehiculo_turno"],
+                "vehiculo_matricula": "TEST-TINEO",
+                "fecha_inicio": "15/12/2024",
+                "hora_inicio": "08:00",
+                "km_inicio": 100000
+            }
+            self.make_request("POST", "/turnos", tineo_token, json=turno_data)
     
     def test_1_taxitur_origen_obligatorio(self):
         """Test 1: TAXITUR - Origen obligatorio"""
