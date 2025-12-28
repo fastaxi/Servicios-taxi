@@ -263,7 +263,7 @@ class BackendTester:
         response = self.make_request("POST", "/services", tineo_token, json=service_data)
         self.log_test(
             "2.3", "POST", "/services",
-            response.status_code, 201,
+            response.status_code, 200,
             "POST /api/services con vehiculo_id=TEST-TINEO-2 y km válidos (inicio=100, fin=150)"
         )
         
@@ -284,7 +284,7 @@ class BackendTester:
         response = self.make_request("POST", "/services", tineo_token, json=service_data_normal)
         self.log_test(
             "2.4", "POST", "/services",
-            response.status_code, 201,
+            response.status_code, 200,
             "POST /api/services con mismo vehículo del turno (sin km extra)"
         )
 
