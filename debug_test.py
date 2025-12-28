@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Debug test to understand specific error messages
+Debug specific failing tests
 """
 
 import requests
@@ -19,38 +19,53 @@ def login(username, password):
         print(f"Login failed for {username}: {response.status_code} - {response.text}")
         return None
 
-def test_service_creation():
-    # Login taxista_tineo
+def debug_combustible():
+    print("=== DEBUGGING COMBUSTIBLE ===")
+    token = login("taxista_tineo", "test123")
+    if not token:
+        return
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    turno_id = "6951247a58935fb953225445"
+    
+    # Check if turno exists and is active
+    response = requests.get(f"{BASE_URL}/turnos/activo", headers=headers)
+    print(f"Active turno check: {response.status_code} - {response.text}")
+    
+    # Try combustible update
+    combustible_data = {
+        "repostado": True,
+        "litros": 45.0,
+        "vehiculo_id": "6951247958935fb953225441",  # TEST-TINEO
+        "km_vehiculo": 100050
+    }
+    
+    response = requests.put(f"{BASE_URL}/turnos/{turno_id}/combustible", json=combustible_data, headers=headers)
+    print(f"Combustible update: {response.status_code} - {response.text}")
+
+def debug_turno_creation():
+    print("\n=== DEBUGGING TURNO CREATION ===")
     token = login("taxista_tineo", "test123")
     if not token:
         return
     
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Test creating a service
-    service_data = {
-        "fecha": "15/12/2024",
-        "hora": "15:00",
-        "origen": "Tineo",
-        "destino": "Grado",
-        "importe": 18.50,
-        "importe_espera": 0,
-        "kilometros": 15.0,
-        "tipo": "particular",
-        "metodo_pago": "efectivo"
+    turno_data = {
+        "taxista_id": "test_taxista_id",
+        "taxista_nombre": "Test Taxista",
+        "vehiculo_id": "6951247958935fb953225441",
+        "vehiculo_matricula": "TEST-TINEO",
+        "fecha_inicio": "15/12/2024",
+        "hora_inicio": "99:99",  # Hora inválida, debería usar hora del servidor
+        "km_inicio": 100200
     }
     
-    print("Testing service creation...")
-    print(f"Data: {json.dumps(service_data, indent=2)}")
+    print(f"Turno data: {json.dumps(turno_data, indent=2)}")
     
-    response = requests.post(f"{BASE_URL}/services", json=service_data, headers=headers)
-    print(f"Status: {response.status_code}")
-    print(f"Response: {response.text}")
-    
-    if response.status_code != 200 and response.status_code != 201:
-        print("Service creation failed!")
-    else:
-        print("Service creation successful!")
+    response = requests.post(f"{BASE_URL}/turnos", json=turno_data, headers=headers)
+    print(f"Turno creation: {response.status_code} - {response.text}")
 
 if __name__ == "__main__":
-    test_service_creation()
+    debug_combustible()
+    debug_turno_creation()
