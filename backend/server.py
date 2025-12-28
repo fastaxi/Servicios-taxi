@@ -480,7 +480,7 @@ class ServiceResponse(BaseModel):
     importe: float
     importe_espera: Optional[float] = 0  # Opcional para compatibilidad con datos antiguos
     importe_total: Optional[float] = 0  # Opcional para compatibilidad con datos antiguos
-    kilometros: float
+    kilometros: Optional[float] = None  # Ahora opcional (B)
     tipo: str
     empresa_id: Optional[str] = None
     empresa_nombre: Optional[str] = None
@@ -490,6 +490,14 @@ class ServiceResponse(BaseModel):
     created_at: datetime
     synced: bool = True
     organization_id: Optional[str] = None  # Multi-tenant support
+    # Nuevos campos funcionales PR1
+    metodo_pago: Optional[str] = None  # "efectivo" | "tpv" (D)
+    origen_taxitur: Optional[str] = None  # "parada" | "lagos" - Solo para org Taxitur (E)
+    vehiculo_id: Optional[str] = None  # Vehículo usado en el servicio (A)
+    vehiculo_matricula: Optional[str] = None  # Denormalizado para exports (A)
+    vehiculo_cambiado: Optional[bool] = False  # True si usó vehículo distinto al default (A)
+    km_inicio_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
+    km_fin_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
 
     class Config:
         from_attributes = True
