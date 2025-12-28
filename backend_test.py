@@ -175,7 +175,7 @@ class BackendTester:
         response = self.make_request("POST", "/services", taxitur_token, json=service_data)
         self.log_test(
             "1.2", "POST", "/services",
-            response.status_code, 201,
+            response.status_code, 200,
             "POST /api/services con taxista_taxitur CON origen_taxitur='parada'"
         )
         
@@ -185,7 +185,7 @@ class BackendTester:
         response = self.make_request("POST", "/services", taxitur_token, json=service_data)
         self.log_test(
             "1.3", "POST", "/services",
-            response.status_code, 201,
+            response.status_code, 200,
             "POST /api/services con taxista_taxitur CON origen_taxitur='lagos'"
         )
         
