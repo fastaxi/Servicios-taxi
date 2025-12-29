@@ -2157,3 +2157,49 @@ agent_communication:
       **🎯 CONCLUSIÓN:**
       Sistema PR1 **FUNCIONAL PERO REQUIERE AJUSTES** antes de producción.
       Core functionality implementada, issues principalmente de configuración y validaciones menores.
+  
+  - agent: "testing"
+    message: |
+      🚨 FRONTEND LOGIN ISSUE DETECTED - TESTING PR2 PARCIALMENTE BLOQUEADO
+      
+      **📊 ESTADO DEL TESTING PR2:**
+      
+      **✅ BACKEND VERIFICATION (API) - 100% OPERATIVO:**
+      - Admin login: admin/admin123 ✅ (Token generado correctamente)
+      - Taxista Taxitur: taxista_taxitur/test123 ✅ (organization_id: 69484bec187c3bc2b0fdb8f4)
+      - Taxista Tineo: taxista_tineo/test123 ✅ (organization_id: 69429aaecdbc9d2db23e0ed5)
+      - Todos los usuarios existen y autentican correctamente via API
+      
+      **❌ FRONTEND LOGIN ISSUE:**
+      - App carga correctamente ✅
+      - Login screen se muestra correctamente ✅
+      - Campos de usuario/contraseña visibles ✅
+      - PROBLEMA: Login form no procesa credenciales correctamente ❌
+      - Usuarios permanecen en pantalla de login después de submit ❌
+      - No se muestran mensajes de error claros ❌
+      
+      **🔍 DIAGNÓSTICO TÉCNICO:**
+      - React Native Paper inputs pueden requerir interacción diferente
+      - Posible problema de validación frontend
+      - Posible issue de comunicación frontend-backend
+      - Credenciales verificadas funcionando en API pero no en UI
+      
+      **📋 TESTING COMPLETADO:**
+      - PUNTO 0: ✅ App loads correctly and login screen verified
+      - PUNTO 1-6: ❌ BLOQUEADO por issue de login frontend
+      
+      **🎯 EVIDENCIAS CAPTURADAS:**
+      - Login screen screenshots ✅
+      - Failed login attempts screenshots ✅
+      - API verification via curl ✅
+      
+      **⚠️ ACCIÓN REQUERIDA:**
+      El main agent debe investigar y corregir el issue de login en el frontend
+      antes de poder completar las pruebas de aceptación PR2.
+      
+      **🔧 SUGERENCIAS DE DEBUGGING:**
+      1. Verificar console logs del frontend
+      2. Verificar network requests en DevTools
+      3. Verificar validación de formularios React Native Paper
+      4. Verificar configuración de API endpoints
+      5. Verificar CORS/headers de autenticación
