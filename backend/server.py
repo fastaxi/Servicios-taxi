@@ -2030,7 +2030,7 @@ async def get_turnos_with_servicios(turnos: list, org_filter: dict = None, inclu
         
         total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
         total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
-        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        total_km = sum(s.get("kilometros") or 0 for s in servicios)
         
         turno_data = {
             **turno,
@@ -2221,7 +2221,7 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoFinalizarUpdate, cur
     servicios = await db.services.find({"turno_id": turno_id, **org_filter}).to_list(1000)
     total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
     total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
-    total_km = sum(s.get("kilometros", 0) for s in servicios)
+    total_km = sum(s.get("kilometros") or 0 for s in servicios)
     
     return TurnoResponse(
         id=turno_id,
@@ -2260,7 +2260,7 @@ async def update_turno(turno_id: str, turno_update: TurnoUpdate, current_user: d
     servicios = await db.services.find({"turno_id": turno_id, **org_filter}).to_list(1000)
     total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
     total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
-    total_km = sum(s.get("kilometros", 0) for s in servicios)
+    total_km = sum(s.get("kilometros") or 0 for s in servicios)
     
     return TurnoResponse(
         id=turno_id,
@@ -2407,7 +2407,7 @@ async def update_turno_combustible(
     servicios = await db.services.find({"turno_id": turno_id, **org_filter}).to_list(1000)
     total_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
     total_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
-    total_km = sum(s.get("kilometros", 0) for s in servicios)
+    total_km = sum(s.get("kilometros") or 0 for s in servicios)
     
     return TurnoResponse(
         id=turno_id,
@@ -3068,7 +3068,7 @@ async def get_reporte_diario(
         
         # Calcular totales
         total_servicios = len(servicios)
-        total_km = sum(s.get("kilometros", 0) for s in servicios)
+        total_km = sum(s.get("kilometros") or 0 for s in servicios)
         rec_clientes = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "empresa")
         rec_particulares = sum(s.get("importe_total", s.get("importe", 0)) for s in servicios if s.get("tipo") == "particular")
         
