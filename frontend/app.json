@@ -55,7 +55,7 @@
     },
     "extra": {
       "router": {},
-      "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host"
+      "EXPO_PUBLIC_BACKEND_URL": "https://taxiflow-18.preview.emergentagent.com"
     }
   }
 }
