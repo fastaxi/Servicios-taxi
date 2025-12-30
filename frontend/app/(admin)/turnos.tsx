@@ -588,6 +588,32 @@ export default function AdminTurnosScreen() {
           </Text>
         </View>
 
+        {/* Información de combustible/repostaje */}
+        {turno.combustible?.repostado && (
+          <>
+            <Divider style={styles.divider} />
+            <View style={styles.combustibleSection}>
+              <Text variant="bodySmall" style={styles.combustibleTitle}>⛽ Repostaje</Text>
+              <View style={styles.infoRow}>
+                <Text variant="bodySmall" style={styles.label}>Litros:</Text>
+                <Text variant="bodySmall" style={styles.combustibleValue}>{turno.combustible.litros} L</Text>
+              </View>
+              {turno.combustible.vehiculo_matricula && (
+                <View style={styles.infoRow}>
+                  <Text variant="bodySmall" style={styles.label}>Vehículo:</Text>
+                  <Text variant="bodySmall">{turno.combustible.vehiculo_matricula}</Text>
+                </View>
+              )}
+              {turno.combustible.km_vehiculo && (
+                <View style={styles.infoRow}>
+                  <Text variant="bodySmall" style={styles.label}>KM:</Text>
+                  <Text variant="bodySmall">{turno.combustible.km_vehiculo}</Text>
+                </View>
+              )}
+            </View>
+          </>
+        )}
+
         {/* Botones de acción */}
         <View style={styles.actionButtons}>
           <Button
