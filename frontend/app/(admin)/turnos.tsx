@@ -768,14 +768,14 @@ export default function AdminTurnosScreen() {
     <ScrollView horizontal>
       <DataTable>
         <DataTable.Header>
-          <DataTable.Title style={{ width: 110 }}>Taxista</DataTable.Title>
-          <DataTable.Title style={{ width: 110 }}>Vehículo</DataTable.Title>
-          <DataTable.Title style={{ width: 95 }}>Fecha</DataTable.Title>
-          <DataTable.Title style={{ width: 55 }}>KM</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 55 }}>Servs.</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 95 }}>Total €</DataTable.Title>
-          <DataTable.Title style={{ width: 70 }}>⛽ Litros</DataTable.Title>
-          <DataTable.Title style={{ width: 80 }}>Estado</DataTable.Title>
+          <DataTable.Title style={{ width: 100 }}>Taxista</DataTable.Title>
+          <DataTable.Title style={{ width: 100 }}>Vehículo</DataTable.Title>
+          <DataTable.Title style={{ width: 90 }}>Fecha</DataTable.Title>
+          <DataTable.Title style={{ width: 50 }}>KM</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 50 }}>Servs.</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 90, paddingRight: 15 }}>Total €</DataTable.Title>
+          <DataTable.Title style={{ width: 80, paddingLeft: 10 }}>⛽ Litros</DataTable.Title>
+          <DataTable.Title style={{ width: 75, paddingLeft: 10 }}>Estado</DataTable.Title>
         </DataTable.Header>
 
         {turnos.map((turno) => (
@@ -803,17 +803,17 @@ export default function AdminTurnosScreen() {
             <DataTable.Cell numeric style={styles.tableCellServicios}>
               {turno.cantidad_servicios}
             </DataTable.Cell>
-            <DataTable.Cell numeric style={styles.tableCellTotal}>
+            <DataTable.Cell numeric style={[styles.tableCellTotal, { paddingRight: 15 }]}>
               <Text numberOfLines={1} style={styles.totalText}>
                 {formatEuro(turno.total_importe_clientes + turno.total_importe_particulares)}
               </Text>
             </DataTable.Cell>
-            <DataTable.Cell style={styles.tableCellCombustible}>
+            <DataTable.Cell style={[styles.tableCellCombustible, { paddingLeft: 10 }]}>
               <Text style={turno.combustible?.repostado ? styles.combustibleSi : styles.combustibleNo}>
                 {turno.combustible?.repostado ? `${turno.combustible.litros}L` : '-'}
               </Text>
             </DataTable.Cell>
-            <DataTable.Cell style={styles.tableCellEstado}>
+            <DataTable.Cell style={[styles.tableCellEstado, { paddingLeft: 10 }]}>
               <Text style={styles.estadoText}>
                 {turno.liquidado ? 'Liquid.' : turno.cerrado ? 'Cerrado' : 'Activo'}
               </Text>
