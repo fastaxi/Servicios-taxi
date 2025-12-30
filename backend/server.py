@@ -2759,7 +2759,7 @@ async def export_turnos_excel(
         ws.cell(row=current_row, column=20, value=comb_km)
         
         # Aplicar fondo amarillo a la fila del turno
-        for col in range(1, 27):
+        for col in range(1, 32):
             ws.cell(row=current_row, column=col).fill = turno_fill
         
         current_row += 1
@@ -2773,20 +2773,20 @@ async def export_turnos_excel(
             empresa_nombre = servicio.get("empresa_nombre", "")
             
             ws.cell(row=current_row, column=1, value="SERVICIO")
-            ws.cell(row=current_row, column=17, value=idx)
-            ws.cell(row=current_row, column=18, value=servicio.get("fecha", ""))
-            ws.cell(row=current_row, column=19, value=servicio.get("hora", ""))
-            ws.cell(row=current_row, column=20, value=servicio.get("origen", ""))
-            ws.cell(row=current_row, column=21, value=servicio.get("destino", ""))
-            ws.cell(row=current_row, column=22, value=servicio.get("tipo", ""))
-            ws.cell(row=current_row, column=23, value=empresa_nombre if servicio.get("tipo") == "empresa" else "")
-            ws.cell(row=current_row, column=24, value=round(importe, 2))
-            ws.cell(row=current_row, column=25, value=round(importe_espera, 2))
-            ws.cell(row=current_row, column=26, value=round(importe_total, 2))
-            ws.cell(row=current_row, column=27, value=servicio.get("kilometros", 0))
+            ws.cell(row=current_row, column=21, value=idx)
+            ws.cell(row=current_row, column=22, value=servicio.get("fecha", ""))
+            ws.cell(row=current_row, column=23, value=servicio.get("hora", ""))
+            ws.cell(row=current_row, column=24, value=servicio.get("origen", ""))
+            ws.cell(row=current_row, column=25, value=servicio.get("destino", ""))
+            ws.cell(row=current_row, column=26, value=servicio.get("tipo", ""))
+            ws.cell(row=current_row, column=27, value=empresa_nombre if servicio.get("tipo") == "empresa" else "")
+            ws.cell(row=current_row, column=28, value=round(importe, 2))
+            ws.cell(row=current_row, column=29, value=round(importe_espera, 2))
+            ws.cell(row=current_row, column=30, value=round(importe_total, 2))
+            ws.cell(row=current_row, column=31, value=servicio.get("kilometros", 0) if servicio.get("kilometros") is not None else 0)
             
             # Aplicar fondo gris claro a la fila del servicio
-            for col in range(1, 28):
+            for col in range(1, 32):
                 ws.cell(row=current_row, column=col).fill = servicio_fill
             
             current_row += 1
