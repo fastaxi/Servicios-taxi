@@ -742,8 +742,9 @@ export default function AdminTurnosScreen() {
           <DataTable.Title style={{ width: 95 }}>Fecha</DataTable.Title>
           <DataTable.Title style={{ width: 60 }}>KM</DataTable.Title>
           <DataTable.Title numeric style={{ width: 70 }}>Servs.</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 100 }}>Total €</DataTable.Title>
-          <DataTable.Title style={{ width: 70 }}>Estado</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 110 }}>Total €</DataTable.Title>
+          <DataTable.Title style={{ width: 65 }}>⛽</DataTable.Title>
+          <DataTable.Title style={{ width: 85 }}>Estado</DataTable.Title>
         </DataTable.Header>
 
         {turnos.map((turno) => (
@@ -776,9 +777,14 @@ export default function AdminTurnosScreen() {
                 {formatEuro(turno.total_importe_clientes + turno.total_importe_particulares)}
               </Text>
             </DataTable.Cell>
+            <DataTable.Cell style={styles.tableCellCombustible}>
+              <Text style={turno.combustible?.repostado ? styles.combustibleSi : styles.combustibleNo}>
+                {turno.combustible?.repostado ? `${turno.combustible.litros}L` : '-'}
+              </Text>
+            </DataTable.Cell>
             <DataTable.Cell style={styles.tableCellEstado}>
               <Text style={styles.estadoText}>
-                {turno.liquidado ? 'Liq.' : turno.cerrado ? 'Cerr.' : 'Activo'}
+                {turno.liquidado ? 'Liquid.' : turno.cerrado ? 'Cerrado' : 'Activo'}
               </Text>
             </DataTable.Cell>
           </DataTable.Row>
