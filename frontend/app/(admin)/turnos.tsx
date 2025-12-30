@@ -144,13 +144,17 @@ export default function AdminTurnosScreen() {
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (token) {
+      loadData();
+    }
+  }, [token]);
 
   useFocusEffect(
     React.useCallback(() => {
-      loadData();
-    }, [])
+      if (token) {
+        loadData();
+      }
+    }, [token])
   );
 
   const loadData = async () => {
