@@ -769,13 +769,13 @@ export default function AdminTurnosScreen() {
       <DataTable>
         <DataTable.Header>
           <DataTable.Title style={{ width: 110 }}>Taxista</DataTable.Title>
-          <DataTable.Title style={{ width: 130 }}>Vehículo</DataTable.Title>
+          <DataTable.Title style={{ width: 110 }}>Vehículo</DataTable.Title>
           <DataTable.Title style={{ width: 95 }}>Fecha</DataTable.Title>
-          <DataTable.Title style={{ width: 60 }}>KM</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 70 }}>Servs.</DataTable.Title>
-          <DataTable.Title numeric style={{ width: 110 }}>Total €</DataTable.Title>
-          <DataTable.Title style={{ width: 65 }}>⛽</DataTable.Title>
-          <DataTable.Title style={{ width: 85 }}>Estado</DataTable.Title>
+          <DataTable.Title style={{ width: 55 }}>KM</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 55 }}>Servs.</DataTable.Title>
+          <DataTable.Title numeric style={{ width: 95 }}>Total €</DataTable.Title>
+          <DataTable.Title style={{ width: 70 }}>⛽ Litros</DataTable.Title>
+          <DataTable.Title style={{ width: 80 }}>Estado</DataTable.Title>
         </DataTable.Header>
 
         {turnos.map((turno) => (
