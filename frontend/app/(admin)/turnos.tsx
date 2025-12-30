@@ -1505,9 +1505,42 @@ const styles = StyleSheet.create({
     width: 100,
   },
   tableCellEstado: {
-    width: 70,
+    width: 85,
   },
   estadoText: {
     fontSize: 12,
+  },
+  // Estilos para combustible
+  tableCellCombustible: {
+    width: 65,
+  },
+  combustibleSi: {
+    fontSize: 12,
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+  combustibleNo: {
+    fontSize: 12,
+    color: '#999',
+  },
+  combustibleSection: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  combustibleTitle: {
+    fontWeight: 'bold',
+    color: '#FF9800',
+    marginBottom: 8,
+  },
+  combustibleValue: {
+    color: '#FF9800',
+    fontWeight: 'bold',
+  },
+  servicioVehiculo: {
+    marginTop: 4,
+    color: '#0066CC',
+    fontWeight: '600',
   },
 });
