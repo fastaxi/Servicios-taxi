@@ -1473,39 +1473,49 @@ const styles = StyleSheet.create({
   },
   // Estilos para tabla
   tableCellTaxista: {
-    width: 110,
+    width: 100,
     paddingRight: 4,
   },
   taxistaTouchable: {
-    maxWidth: 102,
+    maxWidth: 95,
   },
   tableCellVehiculo: {
-    width: 130,
+    width: 100,
     paddingRight: 4,
   },
   vehiculoText: {
-    maxWidth: 122,
+    maxWidth: 95,
   },
   tableCellFecha: {
-    width: 95,
+    width: 90,
   },
   fechaText: {
     fontSize: 12,
   },
   tableCellKm: {
-    width: 60,
+    width: 50,
   },
   kmText: {
     fontSize: 12,
   },
   tableCellServicios: {
-    width: 70,
+    width: 50,
   },
   tableCellTotal: {
-    width: 100,
+    width: 90,
+    paddingRight: 15,
+  },
+  totalText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  tableCellCombustible: {
+    width: 80,
+    paddingLeft: 10,
   },
   tableCellEstado: {
-    width: 85,
+    width: 75,
+    paddingLeft: 10,
   },
   estadoText: {
     fontSize: 12,
