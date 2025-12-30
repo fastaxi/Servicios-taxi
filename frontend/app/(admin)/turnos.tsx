@@ -689,6 +689,11 @@ export default function AdminTurnosScreen() {
                     <Text variant="bodySmall" style={styles.servicioDetalle}>
                       📅 {servicio.fecha} {servicio.hora}
                     </Text>
+                    {servicio.vehiculo_matricula && (
+                      <Text variant="bodySmall" style={styles.servicioVehiculo}>
+                        🚗 {servicio.vehiculo_matricula}
+                      </Text>
+                    )}
                     <Text variant="bodySmall" style={styles.servicioDetalle}>
                       📍 {servicio.origen} → {servicio.destino}
                     </Text>
