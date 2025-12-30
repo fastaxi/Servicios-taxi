@@ -60,6 +60,16 @@ interface Turno {
   total_importe_particulares: number;
   total_kilometros: number;
   cantidad_servicios: number;
+  // Combustible/Repostaje
+  combustible?: {
+    repostado: boolean;
+    litros?: number;
+    vehiculo_id?: string;
+    vehiculo_matricula?: string;
+    km_vehiculo?: number;
+    fecha?: string;
+    hora?: string;
+  };
 }
 
 interface Taxista {
