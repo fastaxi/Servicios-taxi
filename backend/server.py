@@ -2712,6 +2712,7 @@ async def export_turnos_excel(
         "Fecha Fin", "Hora Fin", "KM Fin", "Total KM",
         "N° Servicios", "Total Clientes (€)", "Total Particulares (€)", "Total (€)",
         "Cerrado", "Liquidado",
+        "⛽ Repostó", "⛽ Litros", "⛽ Vehículo", "⛽ KM",
         "Servicio #", "Fecha Serv.", "Hora Serv.", "Origen", "Destino", "Tipo Serv.", 
         "Empresa", "Importe", "Imp. Espera", "Total Serv.", "KM Serv."
     ]
@@ -2726,6 +2727,13 @@ async def export_turnos_excel(
     for turno in turnos_con_totales:
         total_km_turno = turno.get("km_fin", 0) - turno["km_inicio"] if turno.get("km_fin") else 0
         total_importe = turno["total_clientes"] + turno["total_particulares"]
+        
+        # Campos de combustible
+        combustible = turno.get("combustible", {}) or {}
+        comb_repostado = "Sí" if combustible.get("repostado") else "No"
+        comb_litros = combustible.get("litros", "") if combustible.get("repostado") else ""
+        comb_vehiculo = combustible.get("vehiculo_matricula", "") if combustible.get("repostado") else ""
+        comb_km = combustible.get("km_vehiculo", "") if combustible.get("repostado") else ""
         
         # Fila resumen del turno (con fondo amarillo)
         ws.cell(row=current_row, column=1, value="TURNO")
@@ -2744,6 +2752,11 @@ async def export_turnos_excel(
         ws.cell(row=current_row, column=14, value=round(total_importe, 2))
         ws.cell(row=current_row, column=15, value="Sí" if turno.get("cerrado") else "No")
         ws.cell(row=current_row, column=16, value="Sí" if turno.get("liquidado") else "No")
+        # Columnas de combustible
+        ws.cell(row=current_row, column=17, value=comb_repostado)
+        ws.cell(row=current_row, column=18, value=comb_litros)
+        ws.cell(row=current_row, column=19, value=comb_vehiculo)
+        ws.cell(row=current_row, column=20, value=comb_km)
         
         # Aplicar fondo amarillo a la fila del turno
         for col in range(1, 27):
