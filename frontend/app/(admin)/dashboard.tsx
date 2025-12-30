@@ -76,14 +76,18 @@ export default function DashboardScreen() {
   const isDesktop = Platform.OS === 'web' && width >= 1024;
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (token) {
+      loadData();
+    }
+  }, [token]);
 
   // Recargar datos cada vez que se enfoca la pantalla
   useFocusEffect(
     React.useCallback(() => {
-      loadData();
-    }, [])
+      if (token) {
+        loadData();
+      }
+    }, [token])
   );
 
   useEffect(() => {
