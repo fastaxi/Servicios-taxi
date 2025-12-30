@@ -4078,41 +4078,43 @@ async def startup_event():
         print(f"[STARTUP WARNING] Error creating indexes: {e}")
         # No fallar si los índices ya existen
     
-    # Seed de usuarios por defecto SOLO en desarrollo
+    # Seed de usuarios por defecto SOLO en no-producción y bajo flag explícita
     # En producción, los usuarios deben crearse manualmente por seguridad
     ALLOW_SEED_USERS = os.environ.get("ALLOW_SEED_USERS", "false").lower() == "true"
     
-    if ENV != "production" or ALLOW_SEED_USERS:
-        # Create default SUPERADMIN if not exists
-        superadmin = await db.users.find_one({"role": "superadmin"})
-        if not superadmin:
-            superadmin_data = {
-                "username": "superadmin",
-                "password": get_password_hash("superadmin123"),
-                "nombre": "Super Administrador TaxiFast",
-                "role": "superadmin",
-                "organization_id": None,  # Superadmin no pertenece a ninguna organización
-                "created_at": datetime.utcnow()
-            }
-            await db.users.insert_one(superadmin_data)
-            logger.warning("Default superadmin created (change password immediately!)")
-            print("[STARTUP] ⚡ SUPERADMIN created - CHANGE PASSWORD IMMEDIATELY")
-        
-        # Create default admin if not exists (legacy support)
-        admin = await db.users.find_one({"username": "admin"})
-        if not admin:
-            admin_data = {
-                "username": "admin",
-                "password": get_password_hash("admin123"),
-                "nombre": "Administrador",
-                "role": "admin",
-                "organization_id": None,  # Legacy admin sin organización
-                "created_at": datetime.utcnow()
-            }
-            await db.users.insert_one(admin_data)
-            logger.warning("Default admin created (change password immediately!)")
+    if ENV == "production":
+        logger.info("User seeding disabled in production")
     else:
-        logger.info("User seeding disabled in production (set ALLOW_SEED_USERS=true to enable)")
+        if not ALLOW_SEED_USERS:
+            logger.info("User seeding disabled (set ALLOW_SEED_USERS=true to enable in non-production)")
+        else:
+            # Create default SUPERADMIN if not exists
+            superadmin = await db.users.find_one({"role": "superadmin"})
+            if not superadmin:
+                superadmin_data = {
+                    "username": "superadmin",
+                    "password": get_password_hash("superadmin123"),
+                    "nombre": "Super Administrador TaxiFast",
+                    "role": "superadmin",
+                    "organization_id": None,
+                    "created_at": datetime.utcnow()
+                }
+                await db.users.insert_one(superadmin_data)
+                logger.warning("Default superadmin created in NON-PROD (change password immediately!)")
+
+            # Create default admin if not exists (legacy support)
+            admin = await db.users.find_one({"username": "admin"})
+            if not admin:
+                admin_data = {
+                    "username": "admin",
+                    "password": get_password_hash("admin123"),
+                    "nombre": "Administrador",
+                    "role": "admin",
+                    "organization_id": None,
+                    "created_at": datetime.utcnow()
+                }
+                await db.users.insert_one(admin_data)
+                logger.warning("Default admin created in NON-PROD (change password immediately!)")
     
     # Migrate existing admin to have organization_id field (backward compatibility)
     admin = await db.users.find_one({"username": "admin"})
