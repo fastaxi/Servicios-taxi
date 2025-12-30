@@ -2914,6 +2914,17 @@ async def export_turnos_pdf(
              "Estado:", " / ".join(estado)]
         ]
         
+        # Añadir fila de combustible si repostó
+        combustible = turno.get("combustible", {}) or {}
+        if combustible.get("repostado"):
+            comb_litros = combustible.get("litros", "N/A")
+            comb_vehiculo = combustible.get("vehiculo_matricula", "N/A")
+            comb_km = combustible.get("km_vehiculo", "N/A")
+            info_turno.append([
+                "⛽ Repostaje:", f"{comb_litros} L",
+                "Vehículo/KM:", f"{comb_vehiculo} / {comb_km} km"
+            ])
+        
         info_table = Table(info_turno, colWidths=[2*inch, 2*inch, 2*inch, 2*inch])
         info_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E7E6E6')),
