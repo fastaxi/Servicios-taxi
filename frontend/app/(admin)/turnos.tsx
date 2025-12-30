@@ -39,6 +39,8 @@ interface Servicio {
   empresa_nombre?: string;
   cobrado?: boolean;
   facturar?: boolean;
+  vehiculo_matricula?: string;
+  metodo_pago?: string;
 }
 
 interface Turno {
