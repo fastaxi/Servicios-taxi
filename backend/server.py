@@ -1963,8 +1963,8 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     turno_dict["created_at"] = datetime.utcnow()
     turno_dict["cerrado"] = False
     
-    # (C) HORA DEL SERVIDOR: Usar hora del servidor, ignorar hora_inicio del cliente
-    server_now = datetime.utcnow()
+    # (C) HORA DEL SERVIDOR: Usar hora del servidor EN ESPAÑA, ignorar hora_inicio del cliente
+    server_now = get_spain_now()
     turno_dict["hora_inicio"] = server_now.strftime("%H:%M")
     
     # INTEGRIDAD: Usar matrícula desde BD, ignorar lo que venga del cliente
