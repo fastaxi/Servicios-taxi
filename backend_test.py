@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 # Configuration from review request
-BASE_URL = "https://taxiflow-18.preview.emergentagent.com/api"
+BASE_URL = "https://taxi-services-1.preview.emergentagent.com/api"
 TAXITUR_ORG_ID = "69484bec187c3bc2b0fdb8f4"
 OTHER_ORG_ID = "69429aaecdbc9d2db23e0ed5"  # Taxi Tineo
 
