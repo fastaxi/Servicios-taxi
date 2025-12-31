@@ -17,6 +17,7 @@ from typing import List, Optional
 from bson import ObjectId
 import csv
 import io
+import pytz
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from reportlab.lib import colors
@@ -24,6 +25,13 @@ from reportlab.lib.pagesizes import letter, A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
+
+# Zona horaria de España
+SPAIN_TZ = pytz.timezone('Europe/Madrid')
+
+def get_spain_now():
+    """Obtener la hora actual en España"""
+    return datetime.now(SPAIN_TZ)
 
 # Simple in-memory cache
 class SimpleCache:
