@@ -2390,7 +2390,7 @@ async def update_turno_combustible(
             "vehiculo_id": combustible_update.vehiculo_id,
             "vehiculo_matricula": vehiculo.get("matricula", ""),
             "km_vehiculo": combustible_update.km_vehiculo,
-            "timestamp": datetime.utcnow(),
+            "timestamp": get_spain_now(),
             "registrado_por_user_id": str(current_user["_id"])
         }
     else:
@@ -2400,7 +2400,7 @@ async def update_turno_combustible(
             "vehiculo_id": None,
             "vehiculo_matricula": None,
             "km_vehiculo": None,
-            "timestamp": datetime.utcnow(),
+            "timestamp": get_spain_now(),
             "registrado_por_user_id": str(current_user["_id"])
         }
     
