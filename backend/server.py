@@ -2214,8 +2214,8 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoFinalizarUpdate, cur
     
     update_dict = turno_update.dict()
     
-    # (C) HORA DEL SERVIDOR: Usar hora del servidor, ignorar hora_fin del cliente
-    server_now = datetime.utcnow()
+    # (C) HORA DEL SERVIDOR: Usar hora del servidor EN ESPAÑA, ignorar hora_fin del cliente
+    server_now = get_spain_now()
     update_dict["hora_fin"] = server_now.strftime("%H:%M")
     
     await db.turnos.update_one(
