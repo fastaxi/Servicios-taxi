@@ -43,6 +43,7 @@ interface Service {
   kilometros: number;
   tipo: string;
   empresa_nombre?: string;
+  origen_taxitur?: string;
 }
 
 interface Company {
