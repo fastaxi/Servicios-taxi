@@ -81,13 +81,13 @@
 | **Total Importe** | Suma de ingresos (€) |
 | **Total KM** | Kilómetros totales |
 
-#### Filtros Disponibles
+### Filtros Disponibles
 
 | Filtro | Opciones |
 |--------|----------|
 | **Tipo** | Todos, Cliente, Particular |
 | **Taxista** | Seleccionar taxista específico |
-| **Método Pago** | Todos, Efectivo, TPV |
+| **Origen** | Todos, Parada, Lagos (solo org Taxitur) |
 | **Fecha Inicio** | Desde qué fecha |
 | **Fecha Fin** | Hasta qué fecha |
 
