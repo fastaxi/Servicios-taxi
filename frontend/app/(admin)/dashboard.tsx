@@ -177,6 +177,7 @@ export default function DashboardScreen() {
     setFilterType('todos');
     setSelectedCompany(null);
     setSelectedTaxista(null);
+    setSelectedOrigenTaxitur(null);
     setFechaInicio('');
     setFechaFin('');
   };
