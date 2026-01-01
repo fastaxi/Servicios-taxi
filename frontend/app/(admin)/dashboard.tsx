@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 import { encode as base64Encode } from 'base-64';
 
 import { API_URL } from '../../config/api';
+import { isTaxiturOrg } from '../../config/constants';
 
 interface Service {
   id: string;
