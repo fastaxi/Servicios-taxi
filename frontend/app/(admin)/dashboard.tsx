@@ -149,6 +149,11 @@ export default function DashboardScreen() {
       filtered = filtered.filter((s) => s.taxista_nombre === selectedTaxista);
     }
 
+    // Filtro por origen Taxitur (solo para org Taxitur)
+    if (selectedOrigenTaxitur && isTaxitur) {
+      filtered = filtered.filter((s) => s.origen_taxitur === selectedOrigenTaxitur);
+    }
+
     // Filtro por fechas (convertir a formato comparable)
     if (fechaInicio) {
       const inicioComparable = convertToComparableDate(fechaInicio);
