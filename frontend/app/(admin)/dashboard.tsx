@@ -99,7 +99,7 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     applyFilters();
-  }, [services, filterType, selectedCompany, selectedTaxista, fechaInicio, fechaFin]);
+  }, [services, filterType, selectedCompany, selectedTaxista, selectedOrigenTaxitur, fechaInicio, fechaFin]);
 
   const loadData = async () => {
     try {
