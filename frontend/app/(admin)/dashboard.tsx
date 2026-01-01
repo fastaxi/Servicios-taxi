@@ -217,6 +217,11 @@ export default function DashboardScreen() {
         }
       }
 
+      // Filtro por origen Taxitur (solo para org Taxitur)
+      if (selectedOrigenTaxitur && isTaxitur) {
+        queryParams.append('origen_taxitur', selectedOrigenTaxitur);
+      }
+
       if (fechaInicio) {
         queryParams.append('fecha_inicio', fechaInicio);
       }
