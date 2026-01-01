@@ -510,6 +510,48 @@ export default function DashboardScreen() {
           ))}
         </Menu>
 
+        {/* Filtro por Origen Taxitur - Solo visible para org Taxitur */}
+        {isTaxitur && (
+          <Menu
+            visible={origenTaxiturMenuVisible}
+            onDismiss={() => setOrigenTaxiturMenuVisible(false)}
+            anchor={
+              <Button 
+                mode="outlined" 
+                onPress={() => setOrigenTaxiturMenuVisible(true)} 
+                icon="map-marker"
+                style={styles.filterButton}
+              >
+                {selectedOrigenTaxitur 
+                  ? selectedOrigenTaxitur.charAt(0).toUpperCase() + selectedOrigenTaxitur.slice(1) 
+                  : 'Origen: Todos'}
+              </Button>
+            }
+          >
+            <Menu.Item
+              onPress={() => {
+                setSelectedOrigenTaxitur(null);
+                setOrigenTaxiturMenuVisible(false);
+              }}
+              title="Todos los orígenes"
+            />
+            <Menu.Item
+              onPress={() => {
+                setSelectedOrigenTaxitur('parada');
+                setOrigenTaxiturMenuVisible(false);
+              }}
+              title="Parada"
+            />
+            <Menu.Item
+              onPress={() => {
+                setSelectedOrigenTaxitur('lagos');
+                setOrigenTaxiturMenuVisible(false);
+              }}
+              title="Lagos"
+            />
+          </Menu>
+        )}
+
         <View style={styles.dateRow}>
           <TextInput
             label="Fecha Inicio"
