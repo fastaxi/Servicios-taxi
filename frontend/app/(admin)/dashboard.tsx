@@ -66,16 +66,21 @@ export default function DashboardScreen() {
   const [filterType, setFilterType] = useState('todos');
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedTaxista, setSelectedTaxista] = useState<string | null>(null);
+  const [selectedOrigenTaxitur, setSelectedOrigenTaxitur] = useState<string | null>(null);
+  const [origenTaxiturMenuVisible, setOrigenTaxiturMenuVisible] = useState(false);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const [taxistaMenuVisible, setTaxistaMenuVisible] = useState(false);
   const [exportMenuVisible, setExportMenuVisible] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === 'web' && width >= 1024;
+  
+  // Verificar si el admin pertenece a Taxitur
+  const isTaxitur = isTaxiturOrg(user?.organization_id);
 
   useEffect(() => {
     if (token) {
