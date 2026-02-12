@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const menuItems = [
   { path: '/(superadmin)/dashboard', label: 'Dashboard', icon: 'view-dashboard' },
   { path: '/(superadmin)/organizations', label: 'Organizaciones', icon: 'domain' },
-  { path: '/(superadmin)/gestion', label: 'Gestión Global', icon: 'cog' },
+  { path: '/(superadmin)/gestion', label: 'Gestion Global', icon: 'cog' },
   { path: '/(superadmin)/users', label: 'Usuarios Sin Asignar', icon: 'account-alert' },
 ];
 
