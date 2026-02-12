@@ -231,7 +231,7 @@ export default function GestionScreen() {
 
   const deleteTaxista = async (taxista: Taxista) => {
     if (Platform.OS === 'web') {
-      if (!window.confirm(`¿Eliminar taxista "${taxista.nombre}"? Se eliminaran también sus turnos y servicios.`)) return;
+      if (!window.confirm(`¿Eliminar taxista "${taxista.nombre}"? Se eliminaran tambien sus turnos y servicios.`)) return;
     }
 
     try {

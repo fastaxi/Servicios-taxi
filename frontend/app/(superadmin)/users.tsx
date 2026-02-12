@@ -140,7 +140,7 @@ export default function UsersScreen() {
                 <MaterialCommunityIcons name="check-circle" size={64} color="#4CAF50" />
                 <Text variant="headlineSmall" style={styles.emptyTitle}>¡Todo en orden!</Text>
                 <Text variant="bodyMedium" style={styles.emptyText}>
-                  Todos los usuarios están asignados a una organizacion
+                  Todos los usuarios estan asignados a una organizacion
                 </Text>
               </Card.Content>
             </Card>
@@ -152,7 +152,7 @@ export default function UsersScreen() {
                     <MaterialCommunityIcons name="information" size={24} color="#FF9800" />
                     <Text variant="bodyMedium" style={styles.infoText}>
                       Estos usuarios fueron creados antes del sistema multi-tenant. 
-                      Asígnalos a una organizacion para que puedan ver el branding correcto.
+                      Asignalos a una organizacion para que puedan ver el branding correcto.
                     </Text>
                   </View>
                 </Card.Content>

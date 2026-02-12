@@ -1113,7 +1113,7 @@ export default function AdminTurnosScreen() {
               ¿Estas seguro de que deseas eliminar este turno? 
             </Text>
             <Text variant="bodyMedium" style={{ marginTop: 8, color: '#D32F2F' }}>
-              Esta accion también eliminará todos los servicios asociados y no se puede deshacer.
+              Esta accion tambien eliminará todos los servicios asociados y no se puede deshacer.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
