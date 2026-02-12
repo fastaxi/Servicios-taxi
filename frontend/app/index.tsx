@@ -73,7 +73,7 @@ export default function LoginScreen() {
             TaxiFast
           </Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
-            Gestión de Servicios
+            Gestion de Servicios
           </Text>
 
           <TextInput
@@ -115,7 +115,7 @@ export default function LoginScreen() {
             loading={loading}
             disabled={loading}
           >
-            Iniciar Sesión
+            Iniciar Sesion
           </Button>
 
           {__DEV__ && (

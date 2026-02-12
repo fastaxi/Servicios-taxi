@@ -103,15 +103,15 @@ export default function ConfigScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Recargar la configuración en toda la app
+      // Recargar la configuracion en toda la app
       await reloadConfig();
       
-      setSnackbar({ visible: true, message: 'Configuración guardada correctamente. Los cambios se aplicarán en toda la app.' });
+      setSnackbar({ visible: true, message: 'Configuracion guardada correctamente. Los cambios se aplicarán en toda la app.' });
     } catch (error: any) {
       console.error('Error saving config:', error);
       setSnackbar({
         visible: true,
-        message: error.response?.data?.detail || 'Error al guardar configuración',
+        message: error.response?.data?.detail || 'Error al guardar configuracion',
       });
     } finally {
       setLoading(false);
@@ -131,7 +131,7 @@ export default function ConfigScreen() {
         <Card style={styles.card}>
           <Card.Content>
             <Text variant="titleLarge" style={styles.title}>
-              Configuración del Radio Taxi
+              Configuracion del Radio Taxi
             </Text>
 
             <Text variant="titleMedium" style={styles.sectionTitle}>
@@ -157,7 +157,7 @@ export default function ConfigScreen() {
             </Text>
 
             <Text variant="titleMedium" style={styles.sectionTitle}>
-              Información General
+              Informacion General
             </Text>
 
             <TextInput
@@ -198,7 +198,7 @@ export default function ConfigScreen() {
             />
 
             <TextInput
-              label="Dirección"
+              label="Direccion"
               value={formData.direccion}
               onChangeText={(text) => setFormData({ ...formData, direccion: text })}
               mode="outlined"
@@ -214,7 +214,7 @@ export default function ConfigScreen() {
               loading={loading}
               disabled={loading}
             >
-              Guardar Configuración
+              Guardar Configuracion
             </Button>
           </Card.Content>
         </Card>

@@ -98,7 +98,7 @@ export default function SuperAdminDashboard() {
     >
       <View style={styles.header}>
         <Text variant="headlineMedium" style={styles.title}>🏢 Panel Super Admin</Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>Gestión de organizaciones TaxiFast</Text>
+        <Text variant="bodyMedium" style={styles.subtitle}>Gestion de organizaciones TaxiFast</Text>
       </View>
 
       {/* Stats Cards */}
@@ -171,13 +171,13 @@ export default function SuperAdminDashboard() {
           </Card.Content>
         </Card>
 
-        {/* Quick Action: Gestión de Taxistas y Vehículos */}
+        {/* Quick Action: Gestion de Taxistas y Vehículos */}
         <Card style={[styles.actionCard, { marginBottom: 16, backgroundColor: '#E3F2FD' }]}>
           <Card.Content style={styles.actionContent}>
             <View style={styles.actionInfo}>
               <MaterialCommunityIcons name="cog" size={32} color="#1976D2" />
               <View style={{ marginLeft: 16, flex: 1 }}>
-                <Text variant="titleMedium">Gestión Global</Text>
+                <Text variant="titleMedium">Gestion Global</Text>
                 <Text variant="bodySmall" style={{ color: '#666' }}>
                   Administrar taxistas y vehículos de todas las organizaciones
                 </Text>
@@ -228,7 +228,7 @@ export default function SuperAdminDashboard() {
               <MaterialCommunityIcons name="domain-plus" size={48} color="#ccc" />
               <Text variant="bodyLarge" style={styles.emptyText}>No hay organizaciones</Text>
               <Button mode="contained" onPress={() => router.push('/(superadmin)/organizations' as any)} style={{ marginTop: 16 }}>
-                Crear Primera Organización
+                Crear Primera Organizacion
               </Button>
             </Card.Content>
           </Card>

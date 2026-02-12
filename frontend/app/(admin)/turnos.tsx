@@ -592,7 +592,7 @@ export default function AdminTurnosScreen() {
           </Text>
         </View>
 
-        {/* Información de combustible/repostaje */}
+        {/* Informacion de combustible/repostaje */}
         {turno.combustible?.repostado && (
           <>
             <Divider style={styles.divider} />
@@ -618,7 +618,7 @@ export default function AdminTurnosScreen() {
           </>
         )}
 
-        {/* Botones de acción */}
+        {/* Botones de accion */}
         <View style={styles.actionButtons}>
           <Button
             mode="outlined"
@@ -1113,7 +1113,7 @@ export default function AdminTurnosScreen() {
               ¿Estás seguro de que deseas eliminar este turno? 
             </Text>
             <Text variant="bodyMedium" style={{ marginTop: 8, color: '#D32F2F' }}>
-              Esta acción también eliminará todos los servicios asociados y no se puede deshacer.
+              Esta accion también eliminará todos los servicios asociados y no se puede deshacer.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>

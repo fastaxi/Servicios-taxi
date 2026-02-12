@@ -193,7 +193,7 @@ export default function GestionScreen() {
 
   const saveTaxista = async () => {
     if (!taxistaForm.nombre || !taxistaForm.organization_id) {
-      alert('Nombre y organización son obligatorios');
+      alert('Nombre y organizacion son obligatorios');
       return;
     }
     if (!editingTaxista && (!taxistaForm.username || !taxistaForm.password)) {
@@ -260,7 +260,7 @@ export default function GestionScreen() {
 
   // ADMIN DELETE
   const deleteAdmin = async (admin: Admin) => {
-    if (!confirm(`¿Eliminar al administrador "${admin.nombre}" (@${admin.username})?\n\nEsta acción no se puede deshacer.`)) {
+    if (!confirm(`¿Eliminar al administrador "${admin.nombre}" (@${admin.username})?\n\nEsta accion no se puede deshacer.`)) {
       return;
     }
     try {
@@ -309,7 +309,7 @@ export default function GestionScreen() {
 
   const saveVehiculo = async () => {
     if (!vehiculoForm.matricula || !vehiculoForm.organization_id) {
-      alert('Matrícula y organización son obligatorios');
+      alert('Matricula y organizacion son obligatorios');
       return;
     }
 
@@ -437,7 +437,7 @@ export default function GestionScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.header}>
-          <Text variant="headlineMedium" style={styles.title}>⚙️ Gestión Global</Text>
+          <Text variant="headlineMedium" style={styles.title}>⚙️ Gestion Global</Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
             Administra taxistas y vehículos de todas las organizaciones
           </Text>
@@ -484,7 +484,7 @@ export default function GestionScreen() {
         {/* Filter by Organization */}
         {organizations.length > 0 && (
           <View style={styles.filterContainer}>
-            <Text variant="labelLarge" style={styles.filterLabel}>Filtrar por organización:</Text>
+            <Text variant="labelLarge" style={styles.filterLabel}>Filtrar por organizacion:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <Chip
                 selected={selectedOrg === 'all'}
@@ -515,9 +515,9 @@ export default function GestionScreen() {
                 <Card style={styles.warningCard}>
                   <Card.Content style={styles.warningContent}>
                     <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
-                    <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organización</Text>
+                    <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organizacion</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Antes de crear taxistas, debes crear al menos una organización en la sección "Organizaciones"
+                      Antes de crear taxistas, debes crear al menos una organizacion en la sección "Organizaciones"
                     </Text>
                   </Card.Content>
                 </Card>
@@ -632,9 +632,9 @@ export default function GestionScreen() {
                 <Card style={styles.warningCard}>
                   <Card.Content style={styles.warningContent}>
                     <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
-                    <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organización</Text>
+                    <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organizacion</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Antes de crear vehículos, debes crear al menos una organización en la sección "Organizaciones"
+                      Antes de crear vehículos, debes crear al menos una organizacion en la sección "Organizaciones"
                     </Text>
                   </Card.Content>
                 </Card>
@@ -777,7 +777,7 @@ export default function GestionScreen() {
             />
             
             <Divider style={{ marginVertical: 16 }} />
-            <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organización *</Text>
+            <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organizacion *</Text>
             <View style={styles.orgSelector}>
               {organizations.map(org => (
                 <Chip
@@ -818,7 +818,7 @@ export default function GestionScreen() {
             </Text>
             
             <TextInput
-              label="Matrícula *"
+              label="Matricula *"
               value={vehiculoForm.matricula}
               onChangeText={(v) => setVehiculoForm({...vehiculoForm, matricula: v.toUpperCase()})}
               mode="outlined"
@@ -879,7 +879,7 @@ export default function GestionScreen() {
             </View>
             
             <Divider style={{ marginVertical: 16 }} />
-            <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organización *</Text>
+            <Text variant="labelLarge" style={{ marginBottom: 8 }}>Organizacion *</Text>
             <View style={styles.orgSelector}>
               {organizations.map(org => (
                 <Chip
@@ -955,7 +955,7 @@ export default function GestionScreen() {
                   <List.Item title="Usuario" description={(selectedDetail as Taxista).username} left={props => <List.Icon {...props} icon="at" />} />
                   <List.Item title="Teléfono" description={(selectedDetail as Taxista).telefono || 'No especificado'} left={props => <List.Icon {...props} icon="phone" />} />
                   <List.Item title="Email" description={(selectedDetail as Taxista).email || 'No especificado'} left={props => <List.Icon {...props} icon="email" />} />
-                  <List.Item title="Organización" description={(selectedDetail as Taxista).organization_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="domain" />} />
+                  <List.Item title="Organizacion" description={(selectedDetail as Taxista).organization_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="domain" />} />
                   <List.Item title="Vehículo" description={(selectedDetail as Taxista).vehiculo_asignado_matricula || 'Sin vehículo'} left={props => <List.Icon {...props} icon="car" />} />
                   <List.Item title="Estado" description={(selectedDetail as Taxista).activo !== false ? 'Activo' : 'Inactivo'} left={props => <List.Icon {...props} icon={(selectedDetail as Taxista).activo !== false ? "check-circle" : "close-circle"} color={(selectedDetail as Taxista).activo !== false ? '#4CAF50' : '#f44336'} />} />
                 </>
@@ -963,11 +963,11 @@ export default function GestionScreen() {
               
               {detailType === 'vehiculo' && (
                 <>
-                  <List.Item title="Matrícula" description={(selectedDetail as Vehiculo).matricula} left={props => <List.Icon {...props} icon="card-text" />} />
+                  <List.Item title="Matricula" description={(selectedDetail as Vehiculo).matricula} left={props => <List.Icon {...props} icon="card-text" />} />
                   <List.Item title="Marca" description={(selectedDetail as Vehiculo).marca || 'No especificada'} left={props => <List.Icon {...props} icon="car" />} />
                   <List.Item title="Modelo" description={(selectedDetail as Vehiculo).modelo || 'No especificado'} left={props => <List.Icon {...props} icon="car-side" />} />
                   <List.Item title="Licencia" description={(selectedDetail as Vehiculo).licencia || 'No especificada'} left={props => <List.Icon {...props} icon="license" />} />
-                  <List.Item title="Organización" description={(selectedDetail as Vehiculo).organization_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="domain" />} />
+                  <List.Item title="Organizacion" description={(selectedDetail as Vehiculo).organization_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="domain" />} />
                   <List.Item title="Taxista Asignado" description={(selectedDetail as Vehiculo).taxista_asignado_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="account" />} />
                 </>
               )}

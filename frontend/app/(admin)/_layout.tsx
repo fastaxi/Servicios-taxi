@@ -82,7 +82,7 @@ export default function AdminLayout() {
         name="config"
         options={{
           href: null,
-          title: 'Configuración',
+          title: 'Configuracion',
         }}
       />
       <Tabs.Screen
