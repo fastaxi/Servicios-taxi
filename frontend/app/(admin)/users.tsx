@@ -150,7 +150,7 @@ export default function UsersScreen() {
     console.log('formData:', formData);
     
     if (editingUser) {
-      // Modo edición: no requerimos contrasena (es opcional)
+      // Modo edicion: no requerimos contrasena (es opcional)
       if (!formData.nombre || !formData.licencia) {
         setSnackbar({ visible: true, message: 'Por favor, completa todos los campos obligatorios' });
         return;

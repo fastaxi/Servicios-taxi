@@ -271,7 +271,7 @@ export default function DashboardScreen() {
         return;
       }
 
-      // En móvil, usar FileSystem y Sharing
+      // En movil, usar FileSystem y Sharing
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'arraybuffer',
@@ -533,7 +533,7 @@ export default function DashboardScreen() {
                 setSelectedOrigenTaxitur(null);
                 setOrigenTaxiturMenuVisible(false);
               }}
-              title="Todos los orígenes"
+              title="Todos los origenes"
             />
             <Menu.Item
               onPress={() => {

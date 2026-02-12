@@ -626,7 +626,7 @@ export default function TurnosScreen() {
             {/* PR2: Info sobre hora automatica */}
             <View style={styles.serverTimeInfo}>
               <Text variant="bodySmall" style={styles.serverTimeText}>
-                ⏰ La hora de finalizacion se registrará automaticamente del servidor
+                ⏰ La hora de finalizacion se registrara automaticamente del servidor
               </Text>
             </View>
 
