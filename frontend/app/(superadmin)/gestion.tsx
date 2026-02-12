@@ -113,14 +113,16 @@ export default function GestionScreen() {
       const token = await AsyncStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [orgsRes, taxistasRes, vehiculosRes] = await Promise.all([
+      const [orgsRes, taxistasRes, adminsRes, vehiculosRes] = await Promise.all([
         axios.get(`${API_URL}/organizations`, { headers }),
         axios.get(`${API_URL}/superadmin/taxistas`, { headers }),
+        axios.get(`${API_URL}/superadmin/admins`, { headers }),
         axios.get(`${API_URL}/superadmin/vehiculos`, { headers })
       ]);
       
       setOrganizations(orgsRes.data);
       setTaxistas(taxistasRes.data);
+      setAdmins(adminsRes.data);
       setVehiculos(vehiculosRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
