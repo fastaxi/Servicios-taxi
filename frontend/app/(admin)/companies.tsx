@@ -231,7 +231,7 @@ export default function CompaniesScreen() {
               {company.contacto && <Text>Contacto: {company.contacto}</Text>}
               {company.telefono && <Text>Teléfono: {company.telefono}</Text>}
               {company.email && <Text>Email: {company.email}</Text>}
-              {company.direccion && <Text>Dirección: {company.direccion}</Text>}
+              {company.direccion && <Text>Direccion: {company.direccion}</Text>}
             </Card.Content>
           </Card>
         ))}
@@ -313,7 +313,7 @@ export default function CompaniesScreen() {
                 style={styles.input}
               />
               <TextInput
-                label="Dirección"
+                label="Direccion"
                 value={direccion}
                 onChangeText={setDireccion}
                 mode="outlined"

@@ -166,7 +166,7 @@ export default function VehiculosScreen() {
 
   const renderTableHeader = () => (
     <View style={styles.tableHeader}>
-      <Text style={[styles.tableHeaderText, styles.colMatricula]}>Matrícula</Text>
+      <Text style={[styles.tableHeaderText, styles.colMatricula]}>Matricula</Text>
       <Text style={[styles.tableHeaderText, styles.colMarca]}>Marca</Text>
       <Text style={[styles.tableHeaderText, styles.colModelo]}>Modelo</Text>
       <Text style={[styles.tableHeaderText, styles.colPlazas]}>Plazas</Text>
@@ -317,7 +317,7 @@ export default function VehiculosScreen() {
               keyboardShouldPersistTaps="handled"
             >
               <TextInput
-                label="Matrícula *"
+                label="Matricula *"
                 value={matricula}
                 onChangeText={setMatricula}
                 mode="outlined"

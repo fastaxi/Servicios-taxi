@@ -148,10 +148,10 @@ export default function OrganizationsScreen() {
       setModalVisible(false);
       setFormData(emptyFormData);
       loadOrganizations();
-      alert('Organización creada correctamente');
+      alert('Organizacion creada correctamente');
     } catch (error: any) {
       console.error('Error creating organization:', error);
-      alert(error.response?.data?.detail || 'Error al crear organización');
+      alert(error.response?.data?.detail || 'Error al crear organizacion');
     } finally {
       setSaving(false);
     }
@@ -174,10 +174,10 @@ export default function OrganizationsScreen() {
       setEditModalVisible(false);
       setSelectedOrg(null);
       loadOrganizations();
-      alert('Organización actualizada correctamente');
+      alert('Organizacion actualizada correctamente');
     } catch (error: any) {
       console.error('Error updating organization:', error);
-      alert(error.response?.data?.detail || 'Error al actualizar organización');
+      alert(error.response?.data?.detail || 'Error al actualizar organizacion');
     } finally {
       setSaving(false);
     }
@@ -238,7 +238,7 @@ export default function OrganizationsScreen() {
       loadOrganizations();
     } catch (error: any) {
       console.error('Error toggling organization:', error);
-      alert(error.response?.data?.detail || 'Error al actualizar organización');
+      alert(error.response?.data?.detail || 'Error al actualizar organizacion');
     }
   };
 
@@ -257,10 +257,10 @@ export default function OrganizationsScreen() {
         headers: { Authorization: `Bearer ${token}` }
       });
       loadOrganizations();
-      alert('Organización eliminada correctamente');
+      alert('Organizacion eliminada correctamente');
     } catch (error: any) {
       console.error('Error deleting organization:', error);
-      alert(error.response?.data?.detail || 'Error al eliminar organización');
+      alert(error.response?.data?.detail || 'Error al eliminar organizacion');
     }
   };
 
@@ -337,7 +337,7 @@ export default function OrganizationsScreen() {
         style={styles.input}
       />
       <TextInput
-        label="Dirección"
+        label="Direccion"
         value={data.direccion}
         onChangeText={(text) => setData({...data, direccion: text})}
         mode="outlined"
@@ -396,7 +396,7 @@ export default function OrganizationsScreen() {
       />
       
       <Divider style={{ marginVertical: 16 }} />
-      <Text variant="titleSmall" style={styles.sectionTitle}>Personalización de marca</Text>
+      <Text variant="titleSmall" style={styles.sectionTitle}>Personalizacion de marca</Text>
       <Text variant="bodySmall" style={styles.brandingHint}>
         Estos colores se mostrarán en la app de los taxistas
       </Text>
@@ -580,10 +580,10 @@ export default function OrganizationsScreen() {
                 <MaterialCommunityIcons name="domain-plus" size={64} color="#ccc" />
                 <Text variant="headlineSmall" style={styles.emptyTitle}>No hay organizaciones</Text>
                 <Text variant="bodyMedium" style={styles.emptyText}>
-                  Crea tu primera organización para empezar a gestionar empresas de taxi
+                  Crea tu primera organizacion para empezar a gestionar empresas de taxi
                 </Text>
                 <Button mode="contained" onPress={() => setModalVisible(true)} style={{ marginTop: 24 }}>
-                  Crear Primera Organización
+                  Crear Primera Organizacion
                 </Button>
               </Card.Content>
             </Card>
@@ -596,14 +596,14 @@ export default function OrganizationsScreen() {
         icon="plus"
         style={styles.fab}
         onPress={() => setModalVisible(true)}
-        label="Nueva Organización"
+        label="Nueva Organizacion"
       />
 
       {/* Modal: Create Organization */}
       <Portal>
         <Modal visible={modalVisible} onDismiss={() => setModalVisible(false)} contentContainerStyle={styles.modal}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text variant="headlineSmall" style={styles.modalTitle}>Nueva Organización</Text>
+            <Text variant="headlineSmall" style={styles.modalTitle}>Nueva Organizacion</Text>
             
             {renderFormFields(formData, setFormData, false)}
             
@@ -612,7 +612,7 @@ export default function OrganizationsScreen() {
                 Cancelar
               </Button>
               <Button mode="contained" onPress={handleCreateOrganization} loading={saving} disabled={saving}>
-                Crear Organización
+                Crear Organizacion
               </Button>
             </View>
           </ScrollView>
@@ -623,7 +623,7 @@ export default function OrganizationsScreen() {
       <Portal>
         <Modal visible={editModalVisible} onDismiss={() => setEditModalVisible(false)} contentContainerStyle={styles.modal}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text variant="headlineSmall" style={styles.modalTitle}>Editar Organización</Text>
+            <Text variant="headlineSmall" style={styles.modalTitle}>Editar Organizacion</Text>
             {selectedOrg && (
               <Text variant="bodyMedium" style={styles.modalSubtitle}>
                 ID: {selectedOrg.id} | Slug: /{selectedOrg.slug}

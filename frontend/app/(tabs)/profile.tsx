@@ -68,7 +68,7 @@ export default function ProfileScreen() {
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Mi Organización
+            Mi Organizacion
           </Text>
           <Text variant="bodyLarge" style={[styles.orgTitle, { color: organization.color_primario }]}>
             {organization.nombre}
@@ -102,7 +102,7 @@ export default function ProfileScreen() {
         style={styles.logoutButton}
         buttonColor="#D32F2F"
       >
-        Cerrar Sesión
+        Cerrar Sesion
       </Button>
     </ScrollView>
   );

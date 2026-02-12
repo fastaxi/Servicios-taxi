@@ -62,7 +62,7 @@ export default function UsersScreen() {
 
   const handleAssign = async () => {
     if (!selectedUser || !selectedOrgId) {
-      alert('Selecciona una organización');
+      alert('Selecciona una organizacion');
       return;
     }
 
@@ -129,7 +129,7 @@ export default function UsersScreen() {
         <View style={styles.header}>
           <Text variant="headlineMedium" style={styles.title}>👥 Usuarios Sin Asignar</Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
-            {users.length} usuarios pendientes de asignar a una organización
+            {users.length} usuarios pendientes de asignar a una organizacion
           </Text>
         </View>
 
@@ -140,7 +140,7 @@ export default function UsersScreen() {
                 <MaterialCommunityIcons name="check-circle" size={64} color="#4CAF50" />
                 <Text variant="headlineSmall" style={styles.emptyTitle}>¡Todo en orden!</Text>
                 <Text variant="bodyMedium" style={styles.emptyText}>
-                  Todos los usuarios están asignados a una organización
+                  Todos los usuarios están asignados a una organizacion
                 </Text>
               </Card.Content>
             </Card>
@@ -152,7 +152,7 @@ export default function UsersScreen() {
                     <MaterialCommunityIcons name="information" size={24} color="#FF9800" />
                     <Text variant="bodyMedium" style={styles.infoText}>
                       Estos usuarios fueron creados antes del sistema multi-tenant. 
-                      Asígnalos a una organización para que puedan ver el branding correcto.
+                      Asígnalos a una organizacion para que puedan ver el branding correcto.
                     </Text>
                   </View>
                 </Card.Content>
@@ -187,7 +187,7 @@ export default function UsersScreen() {
                       onPress={() => openAssignModal(user)}
                       icon="domain"
                     >
-                      Asignar a Organización
+                      Asignar a Organizacion
                     </Button>
                   </Card.Actions>
                 </Card>
@@ -201,7 +201,7 @@ export default function UsersScreen() {
       <Portal>
         <Modal visible={assignModalVisible} onDismiss={() => setAssignModalVisible(false)} contentContainerStyle={styles.modal}>
           <Text variant="headlineSmall" style={styles.modalTitle}>
-            Asignar a Organización
+            Asignar a Organizacion
           </Text>
           {selectedUser && (
             <Text variant="bodyMedium" style={styles.modalSubtitle}>
@@ -211,7 +211,7 @@ export default function UsersScreen() {
           
           <Divider style={{ marginVertical: 16 }} />
           
-          <Text variant="titleSmall" style={styles.sectionTitle}>Selecciona organización:</Text>
+          <Text variant="titleSmall" style={styles.sectionTitle}>Selecciona organizacion:</Text>
           
           <RadioButton.Group onValueChange={value => setSelectedOrgId(value)} value={selectedOrgId}>
             {organizations.map((org) => (

@@ -49,7 +49,7 @@ export default function AdminProfileScreen() {
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Información del Sistema
+            Informacion del Sistema
           </Text>
           <Text variant="bodyMedium" style={styles.infoText}>
             Como administrador, puedes:
@@ -104,7 +104,7 @@ export default function AdminProfileScreen() {
         textColor="#000"
         icon="cog"
       >
-        Configuración
+        Configuracion
       </Button>
 
       <Button
@@ -113,7 +113,7 @@ export default function AdminProfileScreen() {
         style={styles.logoutButton}
         buttonColor="#D32F2F"
       >
-        Cerrar Sesión
+        Cerrar Sesion
       </Button>
     </ScrollView>
   );

@@ -80,7 +80,7 @@ export default function NewServiceScreen() {
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
-  // PR2: Determinar si es organización Taxitur
+  // PR2: Determinar si es organizacion Taxitur
   const isTaxitur = isTaxiturOrg(user?.organization_id);
 
   // PR2: Determinar vehículo por defecto del turno
