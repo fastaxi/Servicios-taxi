@@ -146,6 +146,10 @@ export default function GestionScreen() {
     ? vehiculos
     : vehiculos.filter(v => v.organization_id === selectedOrg);
 
+  const filteredAdmins = selectedOrg === 'all'
+    ? admins
+    : admins.filter(a => a.organization_id === selectedOrg);
+
   // Get available vehicles for a taxista (same organization, not assigned)
   const getAvailableVehiculos = (taxista: Taxista) => {
     return vehiculos.filter(v => 
