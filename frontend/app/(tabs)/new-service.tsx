@@ -179,11 +179,11 @@ export default function NewServiceScreen() {
       return false;
     }
 
-    // PR2: Kilómetros ahora opcionales, pero si se rellenan deben ser válidos
+    // PR2: Kilometros ahora opcionales, pero si se rellenan deben ser válidos
     if (kilometros) {
       const kmNum = parseEuroNumber(kilometros);
       if (isNaN(kmNum) || kmNum < 0) {
-        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un numero válido >= 0' });
+        setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero válido >= 0' });
         return false;
       }
     }
@@ -252,7 +252,7 @@ export default function NewServiceScreen() {
       serviceData.origen_taxitur = origenTaxitur;
     }
 
-    // PR2: Añadir km de vehiculo si cambió
+    // PR2: Anadir km de vehiculo si cambió
     if (vehiculoCambiado) {
       serviceData.km_inicio_vehiculo = parseInt(kmInicioVehiculo);
       serviceData.km_fin_vehiculo = parseInt(kmFinVehiculo);
@@ -373,9 +373,9 @@ export default function NewServiceScreen() {
               keyboardType="default"
               style={styles.halfInput}
             />
-            {/* PR2: Kilómetros ahora opcional (sin asterisco) */}
+            {/* PR2: Kilometros ahora opcional (sin asterisco) */}
             <TextInput
-              label="Kilómetros"
+              label="Kilometros"
               value={kilometros}
               onChangeText={setKilometros}
               mode="outlined"
@@ -439,7 +439,7 @@ export default function NewServiceScreen() {
           {vehiculoCambiado && (
             <View style={styles.kmCambioContainer}>
               <Text variant="bodySmall" style={styles.kmCambioWarning}>
-                ⚠️ Has cambiado de vehiculo. Debes indicar los kilómetros:
+                ⚠️ Has cambiado de vehiculo. Debes indicar los kilometros:
               </Text>
               <View style={styles.row}>
                 <TextInput

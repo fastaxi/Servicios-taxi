@@ -197,7 +197,7 @@ export default function GestionScreen() {
       return;
     }
     if (!editingTaxista && (!taxistaForm.username || !taxistaForm.password)) {
-      alert('Usuario y contraseña son obligatorios para nuevo taxista');
+      alert('Usuario y contrasena son obligatorios para nuevo taxista');
       return;
     }
 
@@ -231,7 +231,7 @@ export default function GestionScreen() {
 
   const deleteTaxista = async (taxista: Taxista) => {
     if (Platform.OS === 'web') {
-      if (!window.confirm(`¿Eliminar taxista "${taxista.nombre}"? Se eliminarán también sus turnos y servicios.`)) return;
+      if (!window.confirm(`¿Eliminar taxista "${taxista.nombre}"? Se eliminaran también sus turnos y servicios.`)) return;
     }
 
     try {
@@ -396,12 +396,12 @@ export default function GestionScreen() {
     if (!selectedUserForPassword) return;
     
     if (newPassword.length < 6) {
-      setSnackbar({ visible: true, message: 'La contraseña debe tener al menos 6 caracteres', type: 'error' });
+      setSnackbar({ visible: true, message: 'La contrasena debe tener al menos 6 caracteres', type: 'error' });
       return;
     }
     
     if (newPassword !== confirmPassword) {
-      setSnackbar({ visible: true, message: 'Las contraseñas no coinciden', type: 'error' });
+      setSnackbar({ visible: true, message: 'Las contrasenas no coinciden', type: 'error' });
       return;
     }
 
@@ -413,9 +413,9 @@ export default function GestionScreen() {
       }, { headers: { Authorization: `Bearer ${token}` }});
       
       setPasswordModalVisible(false);
-      setSnackbar({ visible: true, message: `Contraseña de "${selectedUserForPassword.nombre}" actualizada correctamente`, type: 'success' });
+      setSnackbar({ visible: true, message: `Contrasena de "${selectedUserForPassword.nombre}" actualizada correctamente`, type: 'success' });
     } catch (error: any) {
-      setSnackbar({ visible: true, message: error.response?.data?.detail || 'Error al cambiar contraseña', type: 'error' });
+      setSnackbar({ visible: true, message: error.response?.data?.detail || 'Error al cambiar contrasena', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -517,7 +517,7 @@ export default function GestionScreen() {
                     <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
                     <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organizacion</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Antes de crear taxistas, debes crear al menos una organizacion en la sección "Organizaciones"
+                      Antes de crear taxistas, debes crear al menos una organizacion en la seccion "Organizaciones"
                     </Text>
                   </Card.Content>
                 </Card>
@@ -591,7 +591,7 @@ export default function GestionScreen() {
                     <MaterialCommunityIcons name="shield-account-outline" size={64} color="#ccc" />
                     <Text variant="titleMedium" style={styles.emptyText}>No hay administradores</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Los administradores se crean desde la sección "Organizaciones"
+                      Los administradores se crean desde la seccion "Organizaciones"
                     </Text>
                   </Card.Content>
                 </Card>
@@ -634,7 +634,7 @@ export default function GestionScreen() {
                     <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
                     <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organizacion</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Antes de crear vehiculos, debes crear al menos una organizacion en la sección "Organizaciones"
+                      Antes de crear vehiculos, debes crear al menos una organizacion en la seccion "Organizaciones"
                     </Text>
                   </Card.Content>
                 </Card>
@@ -727,7 +727,7 @@ export default function GestionScreen() {
                   autoCapitalize="none"
                 />
                 <TextInput
-                  label="Contraseña *"
+                  label="Contrasena *"
                   value={taxistaForm.password}
                   onChangeText={(v) => setTaxistaForm({...taxistaForm, password: v})}
                   mode="outlined"
@@ -740,7 +740,7 @@ export default function GestionScreen() {
             
             {editingTaxista && (
               <TextInput
-                label="Nueva contraseña (dejar vacío para mantener)"
+                label="Nueva contrasena (dejar vacio para mantener)"
                 value={taxistaForm.password}
                 onChangeText={(v) => setTaxistaForm({...taxistaForm, password: v})}
                 mode="outlined"
@@ -855,7 +855,7 @@ export default function GestionScreen() {
               keyboardType="numeric"
             />
             <TextInput
-              label="Kilómetros Iniciales"
+              label="Kilometros Iniciales"
               value={String(vehiculoForm.km_iniciales)}
               onChangeText={(v) => setVehiculoForm({...vehiculoForm, km_iniciales: parseInt(v) || 0})}
               mode="outlined"
@@ -982,7 +982,7 @@ export default function GestionScreen() {
         {/* MODAL CAMBIAR CONTRASEÑA */}
         <Modal visible={passwordModalVisible} onDismiss={() => setPasswordModalVisible(false)} contentContainerStyle={styles.modal}>
           <Text variant="titleLarge" style={styles.modalTitle}>
-            🔐 Cambiar Contraseña
+            🔐 Cambiar Contrasena
           </Text>
           {selectedUserForPassword && (
             <>
@@ -990,7 +990,7 @@ export default function GestionScreen() {
                 Usuario: <Text style={{ fontWeight: 'bold' }}>{selectedUserForPassword.nombre}</Text> ({selectedUserForPassword.username})
               </Text>
               <TextInput
-                label="Nueva Contraseña"
+                label="Nueva Contrasena"
                 value={newPassword}
                 onChangeText={setNewPassword}
                 secureTextEntry={!showNewPassword}
@@ -999,7 +999,7 @@ export default function GestionScreen() {
                 right={<TextInput.Icon icon={showNewPassword ? "eye-off" : "eye"} onPress={() => setShowNewPassword(!showNewPassword)} />}
               />
               <TextInput
-                label="Confirmar Contraseña"
+                label="Confirmar Contrasena"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
@@ -1008,7 +1008,7 @@ export default function GestionScreen() {
                 right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} />}
               />
               <Text variant="bodySmall" style={{ color: '#999', marginBottom: 16 }}>
-                * Mínimo 6 caracteres
+                * Minimo 6 caracteres
               </Text>
               <View style={styles.modalActions}>
                 <Button onPress={() => setPasswordModalVisible(false)}>Cancelar</Button>

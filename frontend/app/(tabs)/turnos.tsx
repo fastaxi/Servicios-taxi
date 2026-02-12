@@ -198,7 +198,7 @@ export default function TurnosScreen() {
         return;
       }
       if (isNaN(km) || km < 0) {
-        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un numero válido >= 0' });
+        setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero válido >= 0' });
         return;
       }
     }
@@ -228,7 +228,7 @@ export default function TurnosScreen() {
   // PR2: Finalizar turno - sin enviar hora (el servidor la pone)
   const handleFinalizarTurno = async () => {
     if (!kmFin || !turnoActivo) {
-      setSnackbar({ visible: true, message: 'Por favor, ingresa los kilómetros finales' });
+      setSnackbar({ visible: true, message: 'Por favor, ingresa los kilometros finales' });
       return;
     }
 
@@ -236,7 +236,7 @@ export default function TurnosScreen() {
     if (isNaN(kmNum) || kmNum < turnoActivo.km_inicio) {
       setSnackbar({ 
         visible: true, 
-        message: 'Los kilómetros finales deben ser mayores a los iniciales' 
+        message: 'Los kilometros finales deben ser mayores a los iniciales' 
       });
       return;
     }
@@ -352,7 +352,7 @@ export default function TurnosScreen() {
                 <Text variant="bodyMedium">{turnoActivo.total_kilometros} km</Text>
               </View>
 
-              {/* PR2: Sección Combustible */}
+              {/* PR2: Seccion Combustible */}
               <View style={styles.combustibleSection}>
                 <Text variant="titleMedium" style={styles.combustibleTitle}>
                   ⛽ Combustible
@@ -620,7 +620,7 @@ export default function TurnosScreen() {
           <Dialog.Title>Finalizar Turno</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium" style={styles.dialogText}>
-              Ingresa los kilómetros finales del vehiculo
+              Ingresa los kilometros finales del vehiculo
             </Text>
             
             {/* PR2: Info sobre hora automática */}
@@ -631,7 +631,7 @@ export default function TurnosScreen() {
             </View>
 
             <TextInput
-              label="Kilómetros finales *"
+              label="Kilometros finales *"
               value={kmFin}
               onChangeText={setKmFin}
               mode="outlined"

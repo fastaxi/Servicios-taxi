@@ -331,7 +331,7 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.detailRow}>
-          <Text variant="bodySmall" style={styles.label}>Kilómetros:</Text>
+          <Text variant="bodySmall" style={styles.label}>Kilometros:</Text>
           <Text variant="bodySmall">{item.kilometros} km</Text>
         </View>
 

@@ -166,7 +166,7 @@ export default function ServicesScreen() {
         </View>
 
         <View style={styles.detailRow}>
-          <Text variant="bodyMedium" style={styles.label}>Kilómetros:</Text>
+          <Text variant="bodyMedium" style={styles.label}>Kilometros:</Text>
           <Text variant="bodyMedium">{item.kilometros} km</Text>
         </View>
 

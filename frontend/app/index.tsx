@@ -88,7 +88,7 @@ export default function LoginScreen() {
 
           <View style={styles.passwordContainer}>
             <TextInput
-              label="Contraseña"
+              label="Contrasena"
               value={password}
               onChangeText={setPassword}
               mode="outlined"
