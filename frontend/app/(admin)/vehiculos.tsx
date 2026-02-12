@@ -123,14 +123,14 @@ export default function VehiculosScreen() {
   };
 
   const handleDelete = async (vehiculo: Vehiculo) => {
-    // Confirmación compatible con web y móvil
+    // Confirmacion compatible con web y movil
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(
         `¿Estas seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`
       );
       if (!confirmed) return;
     } else {
-      // En móvil usar Alert.alert
+      // En movil usar Alert.alert
       Alert.alert(
         'Eliminar Vehiculo',
         `¿Estas seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`,

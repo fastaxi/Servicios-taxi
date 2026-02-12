@@ -23,7 +23,7 @@ export default function AdminLayout() {
     );
   }
 
-  // Si es móvil o tablet, mostrar tabs como antes
+  // Si es movil o tablet, mostrar tabs como antes
   return (
     <Tabs
       screenOptions={{

@@ -181,7 +181,7 @@ export default function AdminTurnosScreen() {
         params.cerrado = true;
         params.liquidado = true;
       }
-      // Si filtroEstado === 'todos', no agregar ningún filtro de estado
+      // Si filtroEstado === 'todos', no agregar ningun filtro de estado
       
       const response = await axios.get(`${API_URL}/turnos`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -472,7 +472,7 @@ export default function AdminTurnosScreen() {
         return;
       }
 
-      // En móvil, usar FileSystem y Sharing
+      // En movil, usar FileSystem y Sharing
       const response = await axios.get(`${API_URL}/turnos/export/${format}`, {
         headers: { Authorization: `Bearer ${token}` },
         params,
@@ -863,7 +863,7 @@ export default function AdminTurnosScreen() {
           </View>
           
           <View style={styles.estadRow}>
-            <Text variant="bodyMedium">Pendiente liquidación:</Text>
+            <Text variant="bodyMedium">Pendiente liquidacion:</Text>
             <Text variant="bodyMedium" style={styles.estadValuePendiente}>
               {estadisticas?.turnos_pendiente_liquidacion || 0}
             </Text>
@@ -986,7 +986,7 @@ export default function AdminTurnosScreen() {
         buttons={[
           { value: 'lista', label: 'Lista', icon: 'view-list' },
           { value: 'tabla', label: 'Tabla', icon: 'table' },
-          { value: 'estadisticas', label: 'Estadísticas', icon: 'chart-bar' },
+          { value: 'estadisticas', label: 'Estadisticas', icon: 'chart-bar' },
         ]}
         style={styles.vistaButtons}
       />
@@ -1011,14 +1011,14 @@ export default function AdminTurnosScreen() {
         )}
       </ScrollView>
 
-      {/* FAB de exportación */}
+      {/* FAB de exportacion */}
       <FAB
         icon="download"
         style={styles.fab}
         onPress={() => setExportMenuVisible(true)}
       />
 
-      {/* Modal de edición */}
+      {/* Modal de edicion */}
       <Portal>
         <Dialog visible={editModalVisible} onDismiss={() => setEditModalVisible(false)}>
           <Dialog.Title>Editar Turno</Dialog.Title>
@@ -1104,16 +1104,16 @@ export default function AdminTurnosScreen() {
         </Dialog>
       </Portal>
 
-      {/* Modal de confirmacion de eliminación */}
+      {/* Modal de confirmacion de eliminacion */}
       <Portal>
         <Dialog visible={deleteConfirmVisible} onDismiss={() => setDeleteConfirmVisible(false)}>
-          <Dialog.Title>Confirmar Eliminación</Dialog.Title>
+          <Dialog.Title>Confirmar Eliminacion</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
               ¿Estas seguro de que deseas eliminar este turno? 
             </Text>
             <Text variant="bodyMedium" style={{ marginTop: 8, color: '#D32F2F' }}>
-              Esta accion tambien eliminará todos los servicios asociados y no se puede deshacer.
+              Esta accion tambien eliminara todos los servicios asociados y no se puede deshacer.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -1163,7 +1163,7 @@ export default function AdminTurnosScreen() {
         </Dialog>
       </Portal>
 
-      {/* Menu de exportación */}
+      {/* Menu de exportacion */}
       <Portal>
         <Dialog visible={exportMenuVisible} onDismiss={() => setExportMenuVisible(false)}>
           <Dialog.Title>Exportar Turnos</Dialog.Title>

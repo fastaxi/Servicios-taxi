@@ -125,14 +125,14 @@ export default function CompaniesScreen() {
   };
 
   const handleDelete = async (company: Company) => {
-    // Confirmación compatible con web y móvil
+    // Confirmacion compatible con web y movil
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(
         `¿Estas seguro de que deseas eliminar la empresa ${company.nombre}?`
       );
       if (!confirmed) return;
     } else {
-      // En móvil usar Alert.alert
+      // En movil usar Alert.alert
       Alert.alert(
         'Eliminar Empresa',
         `¿Estas seguro de que deseas eliminar la empresa ${company.nombre}?`,
