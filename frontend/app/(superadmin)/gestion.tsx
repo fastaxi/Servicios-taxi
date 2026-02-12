@@ -894,6 +894,57 @@ export default function GestionScreen() {
             </ScrollView>
           )}
         </Modal>
+
+        {/* MODAL CAMBIAR CONTRASEÑA */}
+        <Modal visible={passwordModalVisible} onDismiss={() => setPasswordModalVisible(false)} contentContainerStyle={styles.modal}>
+          <Text variant="titleLarge" style={styles.modalTitle}>
+            🔐 Cambiar Contraseña
+          </Text>
+          {selectedUserForPassword && (
+            <>
+              <Text variant="bodyMedium" style={{ marginBottom: 16, color: '#666' }}>
+                Usuario: <Text style={{ fontWeight: 'bold' }}>{selectedUserForPassword.nombre}</Text> ({selectedUserForPassword.username})
+              </Text>
+              <TextInput
+                label="Nueva Contraseña"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry
+                mode="outlined"
+                style={styles.input}
+              />
+              <TextInput
+                label="Confirmar Contraseña"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                mode="outlined"
+                style={styles.input}
+              />
+              <Text variant="bodySmall" style={{ color: '#999', marginBottom: 16 }}>
+                * Mínimo 6 caracteres
+              </Text>
+              <View style={styles.modalActions}>
+                <Button onPress={() => setPasswordModalVisible(false)}>Cancelar</Button>
+                <Button mode="contained" onPress={changePassword} loading={saving} disabled={saving}>
+                  Guardar
+                </Button>
+              </View>
+            </>
+          )}
+        </Modal>
+      </Portal>
+
+      {/* SNACKBAR */}
+      <Portal>
+        <Modal visible={snackbar.visible} onDismiss={() => setSnackbar({...snackbar, visible: false})} contentContainerStyle={[styles.modal, { padding: 16, maxWidth: 400 }]}>
+          <Text variant="bodyMedium" style={{ color: snackbar.type === 'error' ? '#f44336' : '#4CAF50' }}>
+            {snackbar.type === 'error' ? '❌' : '✅'} {snackbar.message}
+          </Text>
+          <Button onPress={() => setSnackbar({...snackbar, visible: false})} style={{ marginTop: 16 }}>
+            Cerrar
+          </Button>
+        </Modal>
       </Portal>
     </View>
   );
