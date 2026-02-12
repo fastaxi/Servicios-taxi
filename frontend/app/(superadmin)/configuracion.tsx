@@ -37,7 +37,7 @@ export default function ConfiguracionScreen() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setConfig({
-        nombre: response.data.nombre || '',
+        nombre: response.data.nombre_radio_taxi || response.data.nombre || '',
         telefono: response.data.telefono || '',
         web: response.data.web || '',
         email: response.data.email || '',
