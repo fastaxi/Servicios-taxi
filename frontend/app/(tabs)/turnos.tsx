@@ -190,15 +190,15 @@ export default function TurnosScreen() {
       const km = parseInt(combustibleKm);
       
       if (isNaN(litros) || litros <= 0) {
-        setSnackbar({ visible: true, message: 'Los litros deben ser un número mayor que 0' });
+        setSnackbar({ visible: true, message: 'Los litros deben ser un numero mayor que 0' });
         return;
       }
       if (!combustibleVehiculoId) {
-        setSnackbar({ visible: true, message: 'Selecciona un vehículo para el repostaje' });
+        setSnackbar({ visible: true, message: 'Selecciona un vehiculo para el repostaje' });
         return;
       }
       if (isNaN(km) || km < 0) {
-        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un número válido >= 0' });
+        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un numero válido >= 0' });
         return;
       }
     }
@@ -314,7 +314,7 @@ export default function TurnosScreen() {
               </View>
 
               <View style={styles.infoRow}>
-                <Text variant="bodyMedium" style={styles.label}>Vehículo:</Text>
+                <Text variant="bodyMedium" style={styles.label}>Vehiculo:</Text>
                 <Text variant="bodyMedium">🚗 {turnoActivo.vehiculo_matricula}</Text>
               </View>
 
@@ -389,7 +389,7 @@ export default function TurnosScreen() {
                           icon="car"
                           style={styles.combustibleInput}
                         >
-                          {combustibleVehiculoMatricula || 'Seleccionar vehículo *'}
+                          {combustibleVehiculoMatricula || 'Seleccionar vehiculo *'}
                         </Button>
                       }
                     >
@@ -407,7 +407,7 @@ export default function TurnosScreen() {
                     </Menu>
 
                     <TextInput
-                      label="KM del vehículo *"
+                      label="KM del vehiculo *"
                       value={combustibleKm}
                       onChangeText={setCombustibleKm}
                       mode="outlined"
@@ -620,7 +620,7 @@ export default function TurnosScreen() {
           <Dialog.Title>Finalizar Turno</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium" style={styles.dialogText}>
-              Ingresa los kilómetros finales del vehículo
+              Ingresa los kilómetros finales del vehiculo
             </Text>
             
             {/* PR2: Info sobre hora automática */}

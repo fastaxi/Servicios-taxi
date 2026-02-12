@@ -172,7 +172,7 @@ export default function CompaniesScreen() {
       <Text style={[styles.tableHeaderText, styles.colCIF]}>CIF/NIF</Text>
       <Text style={[styles.tableHeaderText, styles.colCliente]}>Nº Cliente</Text>
       <Text style={[styles.tableHeaderText, styles.colContacto]}>Contacto</Text>
-      <Text style={[styles.tableHeaderText, styles.colTelefono]}>Teléfono</Text>
+      <Text style={[styles.tableHeaderText, styles.colTelefono]}>Telefono</Text>
       <Text style={[styles.tableHeaderText, styles.colEmail]}>Email</Text>
       <Text style={[styles.tableHeaderText, styles.colAcciones]}>Acciones</Text>
     </View>
@@ -229,7 +229,7 @@ export default function CompaniesScreen() {
             <Card.Content>
               {company.cif && <Text>CIF/NIF: {company.cif}</Text>}
               {company.contacto && <Text>Contacto: {company.contacto}</Text>}
-              {company.telefono && <Text>Teléfono: {company.telefono}</Text>}
+              {company.telefono && <Text>Telefono: {company.telefono}</Text>}
               {company.email && <Text>Email: {company.email}</Text>}
               {company.direccion && <Text>Direccion: {company.direccion}</Text>}
             </Card.Content>
@@ -282,7 +282,7 @@ export default function CompaniesScreen() {
                 style={styles.input}
               />
               <TextInput
-                label="Número de Cliente *"
+                label="Numero de Cliente *"
                 value={numeroCliente}
                 onChangeText={setNumeroCliente}
                 mode="outlined"
@@ -296,7 +296,7 @@ export default function CompaniesScreen() {
                 style={styles.input}
               />
               <TextInput
-                label="Teléfono"
+                label="Telefono"
                 value={telefono}
                 onChangeText={setTelefono}
                 mode="outlined"

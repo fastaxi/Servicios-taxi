@@ -243,7 +243,7 @@ export default function OrganizationsScreen() {
   };
 
   const handleDeleteOrganization = async (org: Organization) => {
-    const confirmMsg = `¿Estás seguro de eliminar "${org.nombre}"? Se eliminarán TODOS los datos: usuarios, vehículos, clientes, turnos y servicios.`;
+    const confirmMsg = `¿Estás seguro de eliminar "${org.nombre}"? Se eliminarán TODOS los datos: usuarios, vehiculos, clientes, turnos y servicios.`;
     
     if (Platform.OS === 'web') {
       if (!window.confirm(confirmMsg)) return;
@@ -344,7 +344,7 @@ export default function OrganizationsScreen() {
         style={styles.input}
       />
       <TextInput
-        label="Código Postal"
+        label="Codigo Postal"
         value={data.codigo_postal}
         onChangeText={(text) => setData({...data, codigo_postal: text})}
         mode="outlined"
@@ -372,7 +372,7 @@ export default function OrganizationsScreen() {
       <Text variant="titleSmall" style={styles.sectionTitle}>Contacto</Text>
 
       <TextInput
-        label="Teléfono"
+        label="Telefono"
         value={data.telefono}
         onChangeText={(text) => setData({...data, telefono: text})}
         mode="outlined"
@@ -538,7 +538,7 @@ export default function OrganizationsScreen() {
 
                 <View style={styles.statsRow}>
                   <Chip icon="account" style={styles.statChip}>{org.total_taxistas} taxistas</Chip>
-                  <Chip icon="car" style={styles.statChip}>{org.total_vehiculos} vehículos</Chip>
+                  <Chip icon="car" style={styles.statChip}>{org.total_vehiculos} vehiculos</Chip>
                   <Chip icon="briefcase" style={styles.statChip}>{org.total_clientes} clientes</Chip>
                 </View>
               </Card.Content>

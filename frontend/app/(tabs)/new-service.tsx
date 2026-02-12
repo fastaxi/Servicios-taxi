@@ -83,13 +83,13 @@ export default function NewServiceScreen() {
   // PR2: Determinar si es organizacion Taxitur
   const isTaxitur = isTaxiturOrg(user?.organization_id);
 
-  // PR2: Determinar vehículo por defecto del turno
+  // PR2: Determinar vehiculo por defecto del turno
   const vehiculoDefaultId = turnoActivo?.vehiculo_id || '';
   
-  // PR2: Determinar si cambió de vehículo (solo si hay un default)
+  // PR2: Determinar si cambió de vehiculo (solo si hay un default)
   const vehiculoCambiado = vehiculoDefaultId && vehiculoId && vehiculoId !== vehiculoDefaultId;
 
-  // Función para parsear números en formato europeo
+  // Función para parsear numeros en formato europeo
   const parseEuroNumber = (value: string): number => {
     if (!value) return 0;
     return parseFloat(value.replace(/\./g, '').replace(',', '.'));
@@ -146,7 +146,7 @@ export default function NewServiceScreen() {
           vehiculo_id: turno.vehiculo_id,
           vehiculo_matricula: turno.vehiculo_matricula,
         });
-        // Preseleccionar vehículo del turno
+        // Preseleccionar vehiculo del turno
         setVehiculoId(turno.vehiculo_id);
         setVehiculoMatricula(turno.vehiculo_matricula);
       }
@@ -175,7 +175,7 @@ export default function NewServiceScreen() {
 
     const importeNum = parseEuroNumber(importe);
     if (isNaN(importeNum) || importeNum <= 0) {
-      setSnackbar({ visible: true, message: 'El importe debe ser un número válido mayor que 0' });
+      setSnackbar({ visible: true, message: 'El importe debe ser un numero válido mayor que 0' });
       return false;
     }
 
@@ -183,7 +183,7 @@ export default function NewServiceScreen() {
     if (kilometros) {
       const kmNum = parseEuroNumber(kilometros);
       if (isNaN(kmNum) || kmNum < 0) {
-        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un número válido >= 0' });
+        setSnackbar({ visible: true, message: 'Los kilómetros deben ser un numero válido >= 0' });
         return false;
       }
     }
@@ -191,7 +191,7 @@ export default function NewServiceScreen() {
     if (importeEspera) {
       const importeEsperaNum = parseEuroNumber(importeEspera);
       if (isNaN(importeEsperaNum) || importeEsperaNum < 0) {
-        setSnackbar({ visible: true, message: 'El importe de espera debe ser un número válido' });
+        setSnackbar({ visible: true, message: 'El importe de espera debe ser un numero válido' });
         return false;
       }
     }
@@ -202,17 +202,17 @@ export default function NewServiceScreen() {
       return false;
     }
 
-    // PR2: Validar km de vehículo si cambió
+    // PR2: Validar km de vehiculo si cambió
     if (vehiculoCambiado) {
       const kmInicio = parseInt(kmInicioVehiculo);
       const kmFin = parseInt(kmFinVehiculo);
       
       if (!kmInicioVehiculo || isNaN(kmInicio) || kmInicio < 0) {
-        setSnackbar({ visible: true, message: 'Al cambiar de vehículo, debes indicar los km de inicio (>= 0)' });
+        setSnackbar({ visible: true, message: 'Al cambiar de vehiculo, debes indicar los km de inicio (>= 0)' });
         return false;
       }
       if (!kmFinVehiculo || isNaN(kmFin)) {
-        setSnackbar({ visible: true, message: 'Al cambiar de vehículo, debes indicar los km de fin' });
+        setSnackbar({ visible: true, message: 'Al cambiar de vehiculo, debes indicar los km de fin' });
         return false;
       }
       if (kmFin < kmInicio) {
@@ -252,7 +252,7 @@ export default function NewServiceScreen() {
       serviceData.origen_taxitur = origenTaxitur;
     }
 
-    // PR2: Añadir km de vehículo si cambió
+    // PR2: Añadir km de vehiculo si cambió
     if (vehiculoCambiado) {
       serviceData.km_inicio_vehiculo = parseInt(kmInicioVehiculo);
       serviceData.km_fin_vehiculo = parseInt(kmFinVehiculo);
@@ -307,7 +307,7 @@ export default function NewServiceScreen() {
     setOrigenTaxitur('');
     setKmInicioVehiculo('');
     setKmFinVehiculo('');
-    // Restaurar vehículo del turno
+    // Restaurar vehiculo del turno
     if (turnoActivo) {
       setVehiculoId(turnoActivo.vehiculo_id);
       setVehiculoMatricula(turnoActivo.vehiculo_matricula);
@@ -403,9 +403,9 @@ export default function NewServiceScreen() {
             right={<TextInput.Icon icon="calculator" />}
           />
 
-          {/* PR2: Selector de vehículo */}
+          {/* PR2: Selector de vehiculo */}
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Vehículo
+            Vehiculo
           </Text>
           <Menu
             visible={vehiculoMenuVisible}
@@ -417,7 +417,7 @@ export default function NewServiceScreen() {
                 icon="car"
                 style={styles.input}
               >
-                {vehiculoMatricula || 'Seleccionar vehículo'}
+                {vehiculoMatricula || 'Seleccionar vehiculo'}
               </Button>
             }
           >
@@ -435,15 +435,15 @@ export default function NewServiceScreen() {
             ))}
           </Menu>
 
-          {/* PR2: Mostrar campos de km si cambió de vehículo */}
+          {/* PR2: Mostrar campos de km si cambió de vehiculo */}
           {vehiculoCambiado && (
             <View style={styles.kmCambioContainer}>
               <Text variant="bodySmall" style={styles.kmCambioWarning}>
-                ⚠️ Has cambiado de vehículo. Debes indicar los kilómetros:
+                ⚠️ Has cambiado de vehiculo. Debes indicar los kilómetros:
               </Text>
               <View style={styles.row}>
                 <TextInput
-                  label="KM inicio vehículo *"
+                  label="KM inicio vehiculo *"
                   value={kmInicioVehiculo}
                   onChangeText={setKmInicioVehiculo}
                   mode="outlined"
@@ -451,7 +451,7 @@ export default function NewServiceScreen() {
                   style={styles.halfInput}
                 />
                 <TextInput
-                  label="KM fin vehículo *"
+                  label="KM fin vehiculo *"
                   value={kmFinVehiculo}
                   onChangeText={setKmFinVehiculo}
                   mode="outlined"
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingVertical: 8,
   },
-  // PR2: Estilos para cambio de vehículo
+  // PR2: Estilos para cambio de vehiculo
   kmCambioContainer: {
     backgroundColor: '#FFF3E0',
     padding: 12,

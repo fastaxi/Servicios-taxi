@@ -169,7 +169,7 @@ export default function ConfigScreen() {
             />
 
             <TextInput
-              label="Teléfono *"
+              label="Telefono *"
               value={formData.telefono}
               onChangeText={(text) => setFormData({ ...formData, telefono: text })}
               mode="outlined"
@@ -178,7 +178,7 @@ export default function ConfigScreen() {
             />
 
             <TextInput
-              label="Página Web *"
+              label="Pagina Web *"
               value={formData.web}
               onChangeText={(text) => setFormData({ ...formData, web: text })}
               mode="outlined"
