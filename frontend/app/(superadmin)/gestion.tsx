@@ -455,6 +455,7 @@ export default function GestionScreen() {
             onValueChange={setActiveTab}
             buttons={[
               { value: 'taxistas', label: `Taxistas (${filteredTaxistas.length})`, icon: 'account-group' },
+              { value: 'admins', label: `Admins (${filteredAdmins.length})`, icon: 'shield-account' },
               { value: 'vehiculos', label: `Vehículos (${filteredVehiculos.length})`, icon: 'car' },
             ]}
           />
