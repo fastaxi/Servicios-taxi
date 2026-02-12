@@ -346,6 +346,43 @@ export default function GestionScreen() {
     setDetailModalVisible(true);
   };
 
+  // Change password
+  const openPasswordModal = (user: {id: string, nombre: string, username: string}) => {
+    setSelectedUserForPassword(user);
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordModalVisible(true);
+  };
+
+  const changePassword = async () => {
+    if (!selectedUserForPassword) return;
+    
+    if (newPassword.length < 6) {
+      setSnackbar({ visible: true, message: 'La contraseña debe tener al menos 6 caracteres', type: 'error' });
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setSnackbar({ visible: true, message: 'Las contraseñas no coinciden', type: 'error' });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(`${API_URL}/superadmin/users/${selectedUserForPassword.id}/change-password`, {
+        new_password: newPassword
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      
+      setPasswordModalVisible(false);
+      setSnackbar({ visible: true, message: `Contraseña de "${selectedUserForPassword.nombre}" actualizada correctamente`, type: 'success' });
+    } catch (error: any) {
+      setSnackbar({ visible: true, message: error.response?.data?.detail || 'Error al cambiar contraseña', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
