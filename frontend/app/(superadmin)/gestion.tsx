@@ -258,6 +258,23 @@ export default function GestionScreen() {
     }
   };
 
+  // ADMIN DELETE
+  const deleteAdmin = async (admin: Admin) => {
+    if (!confirm(`¿Eliminar al administrador "${admin.nombre}" (@${admin.username})?\n\nEsta acción no se puede deshacer.`)) {
+      return;
+    }
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.delete(`${API_URL}/superadmin/users/${admin.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      loadData();
+      setSnackbar({ visible: true, message: `Admin "${admin.nombre}" eliminado correctamente`, type: 'success' });
+    } catch (error: any) {
+      setSnackbar({ visible: true, message: error.response?.data?.detail || 'Error al eliminar admin', type: 'error' });
+    }
+  };
+
   // VEHICULO CRUD
   const openVehiculoModal = (vehiculo?: Vehiculo) => {
     if (vehiculo) {
