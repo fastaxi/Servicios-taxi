@@ -562,6 +562,48 @@ export default function GestionScreen() {
             </>
           )}
 
+          {/* ADMINS TAB */}
+          {activeTab === 'admins' && (
+            <>
+              {filteredAdmins.length === 0 ? (
+                <Card style={styles.emptyCard}>
+                  <Card.Content style={styles.emptyContent}>
+                    <MaterialCommunityIcons name="shield-account-outline" size={64} color="#ccc" />
+                    <Text variant="titleMedium" style={styles.emptyText}>No hay administradores</Text>
+                    <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
+                      Los administradores se crean desde la sección "Organizaciones"
+                    </Text>
+                  </Card.Content>
+                </Card>
+              ) : (
+                filteredAdmins.map(admin => (
+                  <Card key={admin.id} style={styles.itemCard}>
+                    <Card.Content>
+                      <View style={styles.itemHeader}>
+                        <View style={styles.itemInfo}>
+                          <View style={[styles.avatarContainer, { backgroundColor: '#9C27B0' }]}>
+                            <MaterialCommunityIcons name="shield-account" size={28} color="#fff" />
+                          </View>
+                          <View style={{ marginLeft: 12, flex: 1 }}>
+                            <Text variant="titleMedium">{admin.nombre}</Text>
+                            <Text variant="bodySmall" style={styles.subText}>@{admin.username}</Text>
+                            {admin.email && (
+                              <Text variant="bodySmall" style={styles.subText}>{admin.email}</Text>
+                            )}
+                          </View>
+                        </View>
+                        <Chip style={styles.orgChip}>{admin.organization_nombre || 'Sin org'}</Chip>
+                      </View>
+                    </Card.Content>
+                    <Card.Actions style={styles.cardActions}>
+                      <Button onPress={() => openPasswordModal({id: admin.id, nombre: admin.nombre, username: admin.username})} icon="lock-reset">Cambiar Clave</Button>
+                    </Card.Actions>
+                  </Card>
+                ))
+              )}
+            </>
+          )}
+
           {/* VEHICULOS TAB */}
           {activeTab === 'vehiculos' && (
             <>
