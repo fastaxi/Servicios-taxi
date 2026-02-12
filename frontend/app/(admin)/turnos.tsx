@@ -377,7 +377,7 @@ export default function AdminTurnosScreen() {
     if (isNaN(kmNum) || kmNum < turnoSeleccionado.km_inicio) {
       setSnackbar({ 
         visible: true, 
-        message: 'Los kilómetros finales deben ser mayores a los iniciales' 
+        message: 'Los kilometros finales deben ser mayores a los iniciales' 
       });
       return;
     }
@@ -883,7 +883,7 @@ export default function AdminTurnosScreen() {
           </View>
           
           <View style={styles.estadRow}>
-            <Text variant="bodyMedium">Kilómetros:</Text>
+            <Text variant="bodyMedium">Kilometros:</Text>
             <Text variant="bodyMedium">{estadisticas?.total_kilometros || 0} km</Text>
           </View>
           
@@ -1110,7 +1110,7 @@ export default function AdminTurnosScreen() {
           <Dialog.Title>Confirmar Eliminación</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              ¿Estás seguro de que deseas eliminar este turno? 
+              ¿Estas seguro de que deseas eliminar este turno? 
             </Text>
             <Text variant="bodyMedium" style={{ marginTop: 8, color: '#D32F2F' }}>
               Esta accion también eliminará todos los servicios asociados y no se puede deshacer.
@@ -1137,7 +1137,7 @@ export default function AdminTurnosScreen() {
           <Dialog.Title>Finalizar Turno</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium" style={styles.dialogText}>
-              Ingresa la hora de finalización y los kilómetros finales
+              Ingresa la hora de finalización y los kilometros finales
             </Text>
             <TextInput
               label="Hora de finalización (HH:mm) *"
@@ -1148,7 +1148,7 @@ export default function AdminTurnosScreen() {
               style={styles.input}
             />
             <TextInput
-              label="Kilómetros finales *"
+              label="Kilometros finales *"
               value={kmFin}
               onChangeText={setKmFin}
               mode="outlined"

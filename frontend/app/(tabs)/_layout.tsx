@@ -132,7 +132,7 @@ export default function TabsLayout() {
           <Dialog.Content>
             <Text variant="bodyLarge">¿Desea iniciar un turno ahora?</Text>
             <Text variant="bodySmall" style={{ marginTop: 8, color: '#666' }}>
-              Si selecciona "No", podrá consultar y editar servicios, pero deberá iniciar un turno desde la sección "Turnos" para registrar nuevos servicios.
+              Si selecciona "No", podrá consultar y editar servicios, pero deberá iniciar un turno desde la seccion "Turnos" para registrar nuevos servicios.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>

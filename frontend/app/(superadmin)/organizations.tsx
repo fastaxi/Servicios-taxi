@@ -98,7 +98,7 @@ export default function OrganizationsScreen() {
       // Request permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        alert('Se necesita permiso para acceder a la galería');
+        alert('Se necesita permiso para acceder a la galeria');
         return;
       }
 
@@ -243,7 +243,7 @@ export default function OrganizationsScreen() {
   };
 
   const handleDeleteOrganization = async (org: Organization) => {
-    const confirmMsg = `¿Estás seguro de eliminar "${org.nombre}"? Se eliminarán TODOS los datos: usuarios, vehiculos, clientes, turnos y servicios.`;
+    const confirmMsg = `¿Estas seguro de eliminar "${org.nombre}"? Se eliminaran TODOS los datos: usuarios, vehiculos, clientes, turnos y servicios.`;
     
     if (Platform.OS === 'web') {
       if (!window.confirm(confirmMsg)) return;
@@ -301,7 +301,7 @@ export default function OrganizationsScreen() {
           <TouchableOpacity style={styles.logoPlaceholder} onPress={() => pickImage(isEdit)}>
             <MaterialCommunityIcons name="image-plus" size={40} color="#999" />
             <Text variant="bodySmall" style={styles.logoPlaceholderText}>
-              Pulsa para añadir logo
+              Pulsa para anadir logo
             </Text>
             <Text variant="labelSmall" style={styles.logoHint}>
               Recomendado: imagen cuadrada
@@ -398,7 +398,7 @@ export default function OrganizationsScreen() {
       <Divider style={{ marginVertical: 16 }} />
       <Text variant="titleSmall" style={styles.sectionTitle}>Personalizacion de marca</Text>
       <Text variant="bodySmall" style={styles.brandingHint}>
-        Estos colores se mostrarán en la app de los taxistas
+        Estos colores se mostraran en la app de los taxistas
       </Text>
       
       <View style={styles.row}>
@@ -672,7 +672,7 @@ export default function OrganizationsScreen() {
             autoCapitalize="none"
           />
           <TextInput
-            label="Contraseña *"
+            label="Contrasena *"
             value={adminData.password}
             onChangeText={(text) => setAdminData({...adminData, password: text})}
             mode="outlined"

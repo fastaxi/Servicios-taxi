@@ -117,7 +117,7 @@ export default function UsersScreen() {
       setFormData({
         username: user.username,
         nombre: user.nombre,
-        password: '', // No mostramos la contraseña
+        password: '', // No mostramos la contrasena
         confirmPassword: '',
         licencia: user.licencia || '',
         vehiculo_id: user.vehiculo_id || '',
@@ -150,7 +150,7 @@ export default function UsersScreen() {
     console.log('formData:', formData);
     
     if (editingUser) {
-      // Modo edición: no requerimos contraseña (es opcional)
+      // Modo edición: no requerimos contrasena (es opcional)
       if (!formData.nombre || !formData.licencia) {
         setSnackbar({ visible: true, message: 'Por favor, completa todos los campos obligatorios' });
         return;
@@ -158,15 +158,15 @@ export default function UsersScreen() {
     } else {
       // Modo creación: requerimos nombre, password y licencia (username se genera automáticamente)
       if (!formData.nombre || !formData.password || !formData.licencia) {
-        setSnackbar({ visible: true, message: 'Por favor, completa: Nombre, Contraseña y Licencia' });
+        setSnackbar({ visible: true, message: 'Por favor, completa: Nombre, Contrasena y Licencia' });
         return;
       }
     }
 
-    // Validar que las contraseñas coincidan
+    // Validar que las contrasenas coincidan
     if (formData.password && formData.password.trim() !== '') {
       if (formData.password !== formData.confirmPassword) {
-        setSnackbar({ visible: true, message: 'Las contraseñas no coinciden' });
+        setSnackbar({ visible: true, message: 'Las contrasenas no coinciden' });
         return;
       }
     }
@@ -184,7 +184,7 @@ export default function UsersScreen() {
           role: 'taxista'
         };
         
-        // Solo incluir contraseña si se proporcionó y coincide
+        // Solo incluir contrasena si se proporcionó y coincide
         if (formData.password && formData.password.trim() !== '') {
           updateData.password = formData.password;
         }
@@ -383,23 +383,23 @@ export default function UsersScreen() {
               )}
 
               <TextInput
-                label={editingUser ? "Contraseña (dejar vacío para no cambiar)" : "Contraseña *"}
+                label={editingUser ? "Contrasena (dejar vacio para no cambiar)" : "Contrasena *"}
                 value={formData.password}
                 onChangeText={(text) => setFormData({ ...formData, password: text })}
                 mode="outlined"
                 secureTextEntry
                 style={styles.input}
-                placeholder={editingUser ? "Dejar vacío si no deseas cambiar" : ""}
+                placeholder={editingUser ? "Dejar vacio si no deseas cambiar" : ""}
               />
 
               <TextInput
-                label={editingUser ? "Confirmar Contraseña" : "Confirmar Contraseña *"}
+                label={editingUser ? "Confirmar Contrasena" : "Confirmar Contrasena *"}
                 value={formData.confirmPassword}
                 onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
                 mode="outlined"
                 secureTextEntry
                 style={styles.input}
-                placeholder="Vuelve a escribir la contraseña"
+                placeholder="Vuelve a escribir la contrasena"
               />
 
               <TextInput

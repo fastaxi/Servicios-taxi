@@ -126,14 +126,14 @@ export default function VehiculosScreen() {
     // Confirmación compatible con web y móvil
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(
-        `¿Estás seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`
+        `¿Estas seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`
       );
       if (!confirmed) return;
     } else {
       // En móvil usar Alert.alert
       Alert.alert(
         'Eliminar Vehiculo',
-        `¿Estás seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`,
+        `¿Estas seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -347,7 +347,7 @@ export default function VehiculosScreen() {
                 style={styles.input}
               />
               <TextInput
-                label="Kilómetros Iniciales *"
+                label="Kilometros Iniciales *"
                 value={kmIniciales}
                 onChangeText={setKmIniciales}
                 mode="outlined"

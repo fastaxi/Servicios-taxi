@@ -132,7 +132,7 @@ export default function EditServiceScreen() {
     }
 
     if (isNaN(kmNum) || kmNum <= 0) {
-      setSnackbar({ visible: true, message: 'Los kilómetros deben ser un numero válido mayor que 0' });
+      setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero válido mayor que 0' });
       return false;
     }
 
@@ -274,7 +274,7 @@ export default function EditServiceScreen() {
               style={styles.halfInput}
             />
             <TextInput
-              label="Kilómetros *"
+              label="Kilometros *"
               value={kilometros}
               onChangeText={setKilometros}
               mode="outlined"
@@ -360,7 +360,7 @@ export default function EditServiceScreen() {
         <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
           <Dialog.Title>Eliminar Servicio</Dialog.Title>
           <Dialog.Content>
-            <Text variant="bodyMedium">¿Estás seguro de que deseas eliminar este servicio?</Text>
+            <Text variant="bodyMedium">¿Estas seguro de que deseas eliminar este servicio?</Text>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDeleteDialogVisible(false)}>Cancelar</Button>
