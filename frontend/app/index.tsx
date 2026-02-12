@@ -9,6 +9,7 @@ import TaxiFastLogo from '../components/TaxiFastLogo';
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { user, login, loading: authLoading } = useAuth();
