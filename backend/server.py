@@ -1222,6 +1222,41 @@ async def assign_user_to_organization(
         "organization_nombre": org.get("nombre")
     }
 
+# Modelo para cambio de contraseña
+class PasswordChange(BaseModel):
+    new_password: str = Field(..., min_length=6, description="Nueva contraseña (mínimo 6 caracteres)")
+
+# Endpoint para cambiar contraseña de un usuario (superadmin)
+@api_router.put("/superadmin/users/{user_id}/change-password")
+async def superadmin_change_user_password(
+    user_id: str,
+    password_data: PasswordChange,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Cambiar contraseña de cualquier usuario (solo superadmin)"""
+    # Validar ID
+    user_oid = _get_object_id_or_400(user_id, "user_id")
+    
+    # Verificar que el usuario existe
+    user = await db.users.find_one({"_id": user_oid})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # Encriptar nueva contraseña
+    hashed_password = get_password_hash(password_data.new_password)
+    
+    # Actualizar contraseña
+    await db.users.update_one(
+        {"_id": user_oid},
+        {"$set": {"password": hashed_password, "updated_at": get_spain_now()}}
+    )
+    
+    return {
+        "message": f"Contraseña de '{user.get('nombre')}' actualizada correctamente",
+        "user_id": user_id,
+        "username": user.get("username")
+    }
+
 # ==========================================
 # SUPERADMIN - GESTIÓN DE TAXISTAS
 # ==========================================
