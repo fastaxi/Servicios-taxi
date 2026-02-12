@@ -156,7 +156,7 @@ export default function UsersScreen() {
         return;
       }
     } else {
-      // Modo creación: requerimos nombre, password y licencia (username se genera automáticamente)
+      // Modo creación: requerimos nombre, password y licencia (username se genera automaticamente)
       if (!formData.nombre || !formData.password || !formData.licencia) {
         setSnackbar({ visible: true, message: 'Por favor, completa: Nombre, Contrasena y Licencia' });
         return;
@@ -378,7 +378,7 @@ export default function UsersScreen() {
 
               {!editingUser && (
                 <Text variant="bodySmall" style={styles.helperText}>
-                  El usuario se generará automáticamente a partir del nombre
+                  El usuario se generará automaticamente a partir del nombre
                 </Text>
               )}
 

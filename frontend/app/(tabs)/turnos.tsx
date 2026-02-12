@@ -142,7 +142,7 @@ export default function TurnosScreen() {
       const activo = response.data.find((t: Turno) => !t.cerrado);
       setTurnoActivo(activo || null);
       
-      // Ordenar turnos del más reciente al más antiguo
+      // Ordenar turnos del mas reciente al mas antiguo
       const turnosOrdenados = response.data.sort((a: Turno, b: Turno) => {
         const fechaHoraA = `${a.fecha_inicio} ${a.hora_inicio}`;
         const fechaHoraB = `${b.fecha_inicio} ${b.hora_inicio}`;
@@ -198,7 +198,7 @@ export default function TurnosScreen() {
         return;
       }
       if (isNaN(km) || km < 0) {
-        setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero válido >= 0' });
+        setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero valido >= 0' });
         return;
       }
     }
@@ -626,7 +626,7 @@ export default function TurnosScreen() {
             {/* PR2: Info sobre hora automática */}
             <View style={styles.serverTimeInfo}>
               <Text variant="bodySmall" style={styles.serverTimeText}>
-                ⏰ La hora de finalización se registrará automáticamente del servidor
+                ⏰ La hora de finalización se registrará automaticamente del servidor
               </Text>
             </View>
 

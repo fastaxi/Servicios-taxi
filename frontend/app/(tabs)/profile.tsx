@@ -54,7 +54,7 @@ export default function ProfileScreen() {
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Sincronización
+            Sincronizacion
           </Text>
           <View style={styles.infoRow}>
             <Text variant="bodyMedium" style={styles.label}>Servicios pendientes:</Text>

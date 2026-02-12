@@ -188,7 +188,7 @@ export default function AdminTurnosScreen() {
         params,
       });
       
-      // Ordenar del más reciente al más antiguo
+      // Ordenar del mas reciente al mas antiguo
       const turnosOrdenados = response.data.sort((a: Turno, b: Turno) => {
         const fechaHoraA = `${a.fecha_inicio} ${a.hora_inicio}`;
         const fechaHoraB = `${b.fecha_inicio} ${b.hora_inicio}`;
@@ -368,7 +368,7 @@ export default function AdminTurnosScreen() {
     if (!horaRegex.test(horaFin)) {
       setSnackbar({ 
         visible: true, 
-        message: 'Formato de hora inválido. Usa HH:mm' 
+        message: 'Formato de hora invalido. Usa HH:mm' 
       });
       return;
     }

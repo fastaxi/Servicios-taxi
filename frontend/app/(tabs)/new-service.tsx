@@ -86,7 +86,7 @@ export default function NewServiceScreen() {
   // PR2: Determinar vehiculo por defecto del turno
   const vehiculoDefaultId = turnoActivo?.vehiculo_id || '';
   
-  // PR2: Determinar si cambió de vehiculo (solo si hay un default)
+  // PR2: Determinar si cambio de vehiculo (solo si hay un default)
   const vehiculoCambiado = vehiculoDefaultId && vehiculoId && vehiculoId !== vehiculoDefaultId;
 
   // Función para parsear numeros en formato europeo
@@ -95,7 +95,7 @@ export default function NewServiceScreen() {
     return parseFloat(value.replace(/\./g, '').replace(',', '.'));
   };
 
-  // Calcular importe total automáticamente
+  // Calcular importe total automaticamente
   useEffect(() => {
     const calcularTotal = () => {
       const importeNum = importe ? parseEuroNumber(importe) : 0;
@@ -175,15 +175,15 @@ export default function NewServiceScreen() {
 
     const importeNum = parseEuroNumber(importe);
     if (isNaN(importeNum) || importeNum <= 0) {
-      setSnackbar({ visible: true, message: 'El importe debe ser un numero válido mayor que 0' });
+      setSnackbar({ visible: true, message: 'El importe debe ser un numero valido mayor que 0' });
       return false;
     }
 
-    // PR2: Kilometros ahora opcionales, pero si se rellenan deben ser válidos
+    // PR2: Kilometros ahora opcionales, pero si se rellenan deben ser validos
     if (kilometros) {
       const kmNum = parseEuroNumber(kilometros);
       if (isNaN(kmNum) || kmNum < 0) {
-        setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero válido >= 0' });
+        setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero valido >= 0' });
         return false;
       }
     }
@@ -191,7 +191,7 @@ export default function NewServiceScreen() {
     if (importeEspera) {
       const importeEsperaNum = parseEuroNumber(importeEspera);
       if (isNaN(importeEsperaNum) || importeEsperaNum < 0) {
-        setSnackbar({ visible: true, message: 'El importe de espera debe ser un numero válido' });
+        setSnackbar({ visible: true, message: 'El importe de espera debe ser un numero valido' });
         return false;
       }
     }
@@ -202,7 +202,7 @@ export default function NewServiceScreen() {
       return false;
     }
 
-    // PR2: Validar km de vehiculo si cambió
+    // PR2: Validar km de vehiculo si cambio
     if (vehiculoCambiado) {
       const kmInicio = parseInt(kmInicioVehiculo);
       const kmFin = parseInt(kmFinVehiculo);
@@ -252,7 +252,7 @@ export default function NewServiceScreen() {
       serviceData.origen_taxitur = origenTaxitur;
     }
 
-    // PR2: Anadir km de vehiculo si cambió
+    // PR2: Anadir km de vehiculo si cambio
     if (vehiculoCambiado) {
       serviceData.km_inicio_vehiculo = parseInt(kmInicioVehiculo);
       serviceData.km_fin_vehiculo = parseInt(kmFinVehiculo);
@@ -270,7 +270,7 @@ export default function NewServiceScreen() {
         await addPendingService(serviceData);
         setSnackbar({
           visible: true,
-          message: 'Servicio guardado localmente. Se sincronizará cuando haya conexión',
+          message: 'Servicio guardado localmente. Se sincronizara cuando haya conexion',
         });
       }
 
@@ -435,7 +435,7 @@ export default function NewServiceScreen() {
             ))}
           </Menu>
 
-          {/* PR2: Mostrar campos de km si cambió de vehiculo */}
+          {/* PR2: Mostrar campos de km si cambio de vehiculo */}
           {vehiculoCambiado && (
             <View style={styles.kmCambioContainer}>
               <Text variant="bodySmall" style={styles.kmCambioWarning}>
@@ -462,9 +462,9 @@ export default function NewServiceScreen() {
             </View>
           )}
 
-          {/* PR2: Método de pago */}
+          {/* PR2: Metodo de pago */}
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Método de Pago
+            Metodo de Pago
           </Text>
           <SegmentedButtons
             value={metodoPago}

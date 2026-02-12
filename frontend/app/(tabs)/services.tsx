@@ -124,7 +124,7 @@ export default function ServicesScreen() {
       grupos[servicio.fecha].push(servicio);
     });
     
-    // Ordenar fechas de más reciente a más antigua
+    // Ordenar fechas de mas reciente a mas antigua
     const fechasOrdenadas = Object.keys(grupos).sort((a, b) => {
       // Convertir dd/mm/yyyy a Date para comparar
       const [diaA, mesA, añoA] = a.split('/').map(Number);
