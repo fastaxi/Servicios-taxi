@@ -189,6 +189,17 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 12,
+    top: 16,
+    padding: 4,
+  },
   button: {
     marginTop: 8,
     paddingVertical: 8,
