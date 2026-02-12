@@ -127,19 +127,19 @@ export default function EditServiceScreen() {
     const kmNum = parseEuroNumber(kilometros);
 
     if (isNaN(importeNum) || importeNum <= 0) {
-      setSnackbar({ visible: true, message: 'El importe debe ser un numero válido mayor que 0' });
+      setSnackbar({ visible: true, message: 'El importe debe ser un numero valido mayor que 0' });
       return false;
     }
 
     if (isNaN(kmNum) || kmNum <= 0) {
-      setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero válido mayor que 0' });
+      setSnackbar({ visible: true, message: 'Los kilometros deben ser un numero valido mayor que 0' });
       return false;
     }
 
     if (importeEspera) {
       const importeEsperaNum = parseEuroNumber(importeEspera);
       if (isNaN(importeEsperaNum) || importeEsperaNum < 0) {
-        setSnackbar({ visible: true, message: 'El importe de espera debe ser un numero válido' });
+        setSnackbar({ visible: true, message: 'El importe de espera debe ser un numero valido' });
         return false;
       }
     }
@@ -202,7 +202,7 @@ export default function EditServiceScreen() {
       
       setSnackbar({ visible: true, message: 'Servicio eliminado correctamente' });
       
-      // Navegar directamente al dashboard después de 1 segundo
+      // Navegar directamente al dashboard despues de 1 segundo
       setTimeout(() => {
         router.replace('/(admin)/dashboard');
       }, 1000);

@@ -148,7 +148,7 @@ export default function VehiculosScreen() {
       return;
     }
 
-    // En web, ejecutar directamente después de la confirmación
+    // En web, ejecutar directamente despues de la confirmación
     await performDelete(vehiculo.id);
   };
 
