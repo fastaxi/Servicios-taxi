@@ -11,6 +11,7 @@ const menuItems = [
   { path: '/(superadmin)/organizations', label: 'Organizaciones', icon: 'domain' },
   { path: '/(superadmin)/gestion', label: 'Gestion Global', icon: 'cog' },
   { path: '/(superadmin)/users', label: 'Usuarios Sin Asignar', icon: 'account-alert' },
+  { path: '/(superadmin)/configuracion', label: 'Configuracion', icon: 'cog-outline' },
 ];
 
 export default function SuperAdminLayout() {
