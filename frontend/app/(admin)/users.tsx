@@ -90,7 +90,7 @@ export default function UsersScreen() {
       const response = await axios.get(`${API_URL}/vehiculos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Vehículos cargados:', response.data);
+      console.log('Vehiculos cargados:', response.data);
       setVehiculos(response.data);
     } catch (error) {
       console.error('Error loading vehiculos:', error);
@@ -106,9 +106,9 @@ export default function UsersScreen() {
   const openModal = (user?: User) => {
     console.log('=== openModal llamado ===');
     console.log('user recibido:', user);
-    console.log('Vehículos disponibles:', vehiculos);
+    console.log('Vehiculos disponibles:', vehiculos);
     
-    // Recargar vehículos para asegurar que tenemos la lista actualizada
+    // Recargar vehiculos para asegurar que tenemos la lista actualizada
     loadVehiculos();
     
     if (user) {
@@ -209,7 +209,7 @@ export default function UsersScreen() {
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
           .replace(/\s+/g, '') // Eliminar espacios
-          .replace(/[^a-z0-9]/g, ''); // Solo letras y números
+          .replace(/[^a-z0-9]/g, ''); // Solo letras y numeros
         
         console.log('Username generado:', generatedUsername);
         
@@ -311,7 +311,7 @@ export default function UsersScreen() {
           onValueChange={setActiveTab}
           buttons={[
             { value: 'taxistas', label: 'Taxistas' },
-            { value: 'vehiculos', label: 'Vehículos' },
+            { value: 'vehiculos', label: 'Vehiculos' },
           ]}
         />
       </View>
@@ -420,7 +420,7 @@ export default function UsersScreen() {
                     icon="car"
                     style={styles.input}
                   >
-                    {formData.vehiculo_matricula || 'Sin vehículo asignado'}
+                    {formData.vehiculo_matricula || 'Sin vehiculo asignado'}
                   </Button>
                 }
               >
@@ -429,7 +429,7 @@ export default function UsersScreen() {
                     setFormData({ ...formData, vehiculo_id: '', vehiculo_matricula: '' });
                     setVehiculoMenuVisible(false);
                   }}
-                  title="Sin vehículo"
+                  title="Sin vehiculo"
                 />
                 {vehiculos.map((vehiculo) => (
                   <Menu.Item

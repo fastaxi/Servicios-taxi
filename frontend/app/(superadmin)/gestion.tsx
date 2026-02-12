@@ -326,9 +326,9 @@ export default function GestionScreen() {
 
       setVehiculoModalVisible(false);
       loadData();
-      alert(editingVehiculo ? 'Vehículo actualizado' : 'Vehículo creado');
+      alert(editingVehiculo ? 'Vehiculo actualizado' : 'Vehiculo creado');
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Error al guardar vehículo');
+      alert(error.response?.data?.detail || 'Error al guardar vehiculo');
     } finally {
       setSaving(false);
     }
@@ -336,7 +336,7 @@ export default function GestionScreen() {
 
   const deleteVehiculo = async (vehiculo: Vehiculo) => {
     if (Platform.OS === 'web') {
-      if (!window.confirm(`¿Eliminar vehículo "${vehiculo.matricula}"?`)) return;
+      if (!window.confirm(`¿Eliminar vehiculo "${vehiculo.matricula}"?`)) return;
     }
 
     try {
@@ -345,7 +345,7 @@ export default function GestionScreen() {
         headers: { Authorization: `Bearer ${token}` }
       });
       loadData();
-      alert('Vehículo eliminado');
+      alert('Vehiculo eliminado');
     } catch (error: any) {
       alert(error.response?.data?.detail || 'Error al eliminar');
     }
@@ -369,9 +369,9 @@ export default function GestionScreen() {
       
       setAssignVehiculoModalVisible(false);
       loadData();
-      alert(vehiculoId ? 'Vehículo asignado' : 'Vehículo desasignado');
+      alert(vehiculoId ? 'Vehiculo asignado' : 'Vehiculo desasignado');
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Error al asignar vehículo');
+      alert(error.response?.data?.detail || 'Error al asignar vehiculo');
     } finally {
       setSaving(false);
     }
@@ -439,7 +439,7 @@ export default function GestionScreen() {
         <View style={styles.header}>
           <Text variant="headlineMedium" style={styles.title}>⚙️ Gestion Global</Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
-            Administra taxistas y vehículos de todas las organizaciones
+            Administra taxistas y vehiculos de todas las organizaciones
           </Text>
         </View>
 
@@ -456,7 +456,7 @@ export default function GestionScreen() {
             <Card.Content style={styles.statContent}>
               <MaterialCommunityIcons name="car" size={32} color="#2196F3" />
               <Text variant="headlineMedium" style={styles.statNumber}>{vehiculos.length}</Text>
-              <Text variant="bodySmall">Vehículos</Text>
+              <Text variant="bodySmall">Vehiculos</Text>
             </Card.Content>
           </Card>
           <Card style={styles.statCard}>
@@ -476,7 +476,7 @@ export default function GestionScreen() {
             buttons={[
               { value: 'taxistas', label: `Taxistas (${filteredTaxistas.length})`, icon: 'account-group' },
               { value: 'admins', label: `Admins (${filteredAdmins.length})`, icon: 'shield-account' },
-              { value: 'vehiculos', label: `Vehículos (${filteredVehiculos.length})`, icon: 'car' },
+              { value: 'vehiculos', label: `Vehiculos (${filteredVehiculos.length})`, icon: 'car' },
             ]}
           />
         </View>
@@ -556,7 +556,7 @@ export default function GestionScreen() {
                                 {taxista.vehiculo_asignado_matricula}
                               </Chip>
                             ) : (
-                              <Text variant="bodySmall" style={styles.noVehiculo}>Sin vehículo asignado</Text>
+                              <Text variant="bodySmall" style={styles.noVehiculo}>Sin vehiculo asignado</Text>
                             )}
                           </View>
                         </View>
@@ -573,7 +573,7 @@ export default function GestionScreen() {
                       <Button onPress={() => openDetailModal(taxista, 'taxista')} icon="eye">Ver</Button>
                       <Button onPress={() => openTaxistaModal(taxista)} icon="pencil">Editar</Button>
                       <Button onPress={() => openPasswordModal({id: taxista.id, nombre: taxista.nombre, username: taxista.username})} icon="lock-reset">Clave</Button>
-                      <Button onPress={() => openAssignVehiculoModal(taxista)} icon="car">Vehículo</Button>
+                      <Button onPress={() => openAssignVehiculoModal(taxista)} icon="car">Vehiculo</Button>
                       <Button onPress={() => deleteTaxista(taxista)} icon="delete" textColor="#f44336">Eliminar</Button>
                     </Card.Actions>
                   </Card>
@@ -634,7 +634,7 @@ export default function GestionScreen() {
                     <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
                     <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organizacion</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Antes de crear vehículos, debes crear al menos una organizacion en la sección "Organizaciones"
+                      Antes de crear vehiculos, debes crear al menos una organizacion en la sección "Organizaciones"
                     </Text>
                   </Card.Content>
                 </Card>
@@ -642,9 +642,9 @@ export default function GestionScreen() {
                 <Card style={styles.emptyCard}>
                   <Card.Content style={styles.emptyContent}>
                     <MaterialCommunityIcons name="car-off" size={64} color="#ccc" />
-                    <Text variant="titleMedium" style={styles.emptyText}>No hay vehículos</Text>
+                    <Text variant="titleMedium" style={styles.emptyText}>No hay vehiculos</Text>
                     <Button mode="contained" onPress={() => openVehiculoModal()} style={{ marginTop: 16 }}>
-                      Crear Primer Vehículo
+                      Crear Primer Vehiculo
                     </Button>
                   </Card.Content>
                 </Card>
@@ -696,7 +696,7 @@ export default function GestionScreen() {
           icon="plus"
           style={styles.fab}
           onPress={() => activeTab === 'taxistas' ? openTaxistaModal() : openVehiculoModal()}
-          label={activeTab === 'taxistas' ? 'Nuevo Taxista' : 'Nuevo Vehículo'}
+          label={activeTab === 'taxistas' ? 'Nuevo Taxista' : 'Nuevo Vehiculo'}
         />
       )}
 
@@ -751,7 +751,7 @@ export default function GestionScreen() {
             )}
             
             <TextInput
-              label="Teléfono"
+              label="Telefono"
               value={taxistaForm.telefono}
               onChangeText={(v) => setTaxistaForm({...taxistaForm, telefono: v})}
               mode="outlined"
@@ -769,7 +769,7 @@ export default function GestionScreen() {
             />
 
             <TextInput
-              label="Número de Licencia"
+              label="Numero de Licencia"
               value={taxistaForm.licencia}
               onChangeText={(v) => setTaxistaForm({...taxistaForm, licencia: v})}
               mode="outlined"
@@ -809,12 +809,12 @@ export default function GestionScreen() {
         </Modal>
       </Portal>
 
-      {/* Modal Vehículo */}
+      {/* Modal Vehiculo */}
       <Portal>
         <Modal visible={vehiculoModalVisible} onDismiss={() => setVehiculoModalVisible(false)} contentContainerStyle={styles.modal}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text variant="headlineSmall" style={styles.modalTitle}>
-              {editingVehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo'}
+              {editingVehiculo ? 'Editar Vehiculo' : 'Nuevo Vehiculo'}
             </Text>
             
             <TextInput
@@ -840,7 +840,7 @@ export default function GestionScreen() {
               style={styles.input}
             />
             <TextInput
-              label="Número de Licencia"
+              label="Numero de Licencia"
               value={vehiculoForm.licencia}
               onChangeText={(v) => setVehiculoForm({...vehiculoForm, licencia: v})}
               mode="outlined"
@@ -871,7 +871,7 @@ export default function GestionScreen() {
             />
 
             <View style={styles.switchRow}>
-              <Text variant="bodyLarge">Vehículo activo</Text>
+              <Text variant="bodyLarge">Vehiculo activo</Text>
               <Switch
                 value={vehiculoForm.activo}
                 onValueChange={(v) => setVehiculoForm({...vehiculoForm, activo: v})}
@@ -903,10 +903,10 @@ export default function GestionScreen() {
         </Modal>
       </Portal>
 
-      {/* Modal Asignar Vehículo */}
+      {/* Modal Asignar Vehiculo */}
       <Portal>
         <Modal visible={assignVehiculoModalVisible} onDismiss={() => setAssignVehiculoModalVisible(false)} contentContainerStyle={styles.modal}>
-          <Text variant="headlineSmall" style={styles.modalTitle}>Asignar Vehículo</Text>
+          <Text variant="headlineSmall" style={styles.modalTitle}>Asignar Vehiculo</Text>
           {selectedTaxistaForAssign && (
             <Text variant="bodyMedium" style={{ marginBottom: 16, color: '#666' }}>
               Taxista: <Text style={{ fontWeight: 'bold' }}>{selectedTaxistaForAssign.nombre}</Text>
@@ -915,8 +915,8 @@ export default function GestionScreen() {
           
           <List.Section>
             <List.Item
-              title="Sin vehículo"
-              description="Quitar vehículo asignado"
+              title="Sin vehiculo"
+              description="Quitar vehiculo asignado"
               left={props => <List.Icon {...props} icon="car-off" />}
               onPress={() => assignVehiculo(null)}
               style={styles.listItem}
@@ -946,17 +946,17 @@ export default function GestionScreen() {
           {selectedDetail && (
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text variant="headlineSmall" style={styles.modalTitle}>
-                {detailType === 'taxista' ? '👤 Detalles del Taxista' : '🚗 Detalles del Vehículo'}
+                {detailType === 'taxista' ? '👤 Detalles del Taxista' : '🚗 Detalles del Vehiculo'}
               </Text>
               
               {detailType === 'taxista' && (
                 <>
                   <List.Item title="Nombre" description={(selectedDetail as Taxista).nombre} left={props => <List.Icon {...props} icon="account" />} />
                   <List.Item title="Usuario" description={(selectedDetail as Taxista).username} left={props => <List.Icon {...props} icon="at" />} />
-                  <List.Item title="Teléfono" description={(selectedDetail as Taxista).telefono || 'No especificado'} left={props => <List.Icon {...props} icon="phone" />} />
+                  <List.Item title="Telefono" description={(selectedDetail as Taxista).telefono || 'No especificado'} left={props => <List.Icon {...props} icon="phone" />} />
                   <List.Item title="Email" description={(selectedDetail as Taxista).email || 'No especificado'} left={props => <List.Icon {...props} icon="email" />} />
                   <List.Item title="Organizacion" description={(selectedDetail as Taxista).organization_nombre || 'Sin asignar'} left={props => <List.Icon {...props} icon="domain" />} />
-                  <List.Item title="Vehículo" description={(selectedDetail as Taxista).vehiculo_asignado_matricula || 'Sin vehículo'} left={props => <List.Icon {...props} icon="car" />} />
+                  <List.Item title="Vehiculo" description={(selectedDetail as Taxista).vehiculo_asignado_matricula || 'Sin vehiculo'} left={props => <List.Icon {...props} icon="car" />} />
                   <List.Item title="Estado" description={(selectedDetail as Taxista).activo !== false ? 'Activo' : 'Inactivo'} left={props => <List.Icon {...props} icon={(selectedDetail as Taxista).activo !== false ? "check-circle" : "close-circle"} color={(selectedDetail as Taxista).activo !== false ? '#4CAF50' : '#f44336'} />} />
                 </>
               )}

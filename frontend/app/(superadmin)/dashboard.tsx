@@ -125,7 +125,7 @@ export default function SuperAdminDashboard() {
           <Card.Content style={styles.statContent}>
             <MaterialCommunityIcons name="car" size={32} color="#f57c00" />
             <Text variant="headlineLarge" style={styles.statNumber}>{stats.totalVehiculos}</Text>
-            <Text variant="bodyMedium">Vehículos</Text>
+            <Text variant="bodyMedium">Vehiculos</Text>
             <Text variant="bodySmall" style={styles.statSubtext}>Registrados</Text>
           </Card.Content>
         </Card>
@@ -171,7 +171,7 @@ export default function SuperAdminDashboard() {
           </Card.Content>
         </Card>
 
-        {/* Quick Action: Gestion de Taxistas y Vehículos */}
+        {/* Quick Action: Gestion de Taxistas y Vehiculos */}
         <Card style={[styles.actionCard, { marginBottom: 16, backgroundColor: '#E3F2FD' }]}>
           <Card.Content style={styles.actionContent}>
             <View style={styles.actionInfo}>
@@ -179,7 +179,7 @@ export default function SuperAdminDashboard() {
               <View style={{ marginLeft: 16, flex: 1 }}>
                 <Text variant="titleMedium">Gestion Global</Text>
                 <Text variant="bodySmall" style={{ color: '#666' }}>
-                  Administrar taxistas y vehículos de todas las organizaciones
+                  Administrar taxistas y vehiculos de todas las organizaciones
                 </Text>
               </View>
             </View>

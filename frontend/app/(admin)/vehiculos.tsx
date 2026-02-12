@@ -55,7 +55,7 @@ export default function VehiculosScreen() {
       setVehiculos(response.data);
     } catch (error) {
       console.error('Error loading vehiculos:', error);
-      setSnackbar({ visible: true, message: 'Error al cargar vehículos' });
+      setSnackbar({ visible: true, message: 'Error al cargar vehiculos' });
     }
   };
 
@@ -105,19 +105,19 @@ export default function VehiculosScreen() {
         await axios.put(`${API_URL}/vehiculos/${editingVehiculo.id}`, vehiculoData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSnackbar({ visible: true, message: 'Vehículo actualizado correctamente' });
+        setSnackbar({ visible: true, message: 'Vehiculo actualizado correctamente' });
       } else {
         await axios.post(`${API_URL}/vehiculos`, vehiculoData, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSnackbar({ visible: true, message: 'Vehículo creado correctamente' });
+        setSnackbar({ visible: true, message: 'Vehiculo creado correctamente' });
       }
       
       setModalVisible(false);
       resetForm();
       loadVehiculos();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || 'Error al guardar el vehículo';
+      const errorMsg = error.response?.data?.detail || 'Error al guardar el vehiculo';
       setSnackbar({ visible: true, message: errorMsg });
     }
   };
@@ -126,14 +126,14 @@ export default function VehiculosScreen() {
     // Confirmación compatible con web y móvil
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(
-        `¿Estás seguro de que deseas eliminar el vehículo ${vehiculo.matricula}?`
+        `¿Estás seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`
       );
       if (!confirmed) return;
     } else {
       // En móvil usar Alert.alert
       Alert.alert(
-        'Eliminar Vehículo',
-        `¿Estás seguro de que deseas eliminar el vehículo ${vehiculo.matricula}?`,
+        'Eliminar Vehiculo',
+        `¿Estás seguro de que deseas eliminar el vehiculo ${vehiculo.matricula}?`,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -157,10 +157,10 @@ export default function VehiculosScreen() {
       await axios.delete(`${API_URL}/vehiculos/${vehiculoId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setSnackbar({ visible: true, message: 'Vehículo eliminado correctamente' });
+      setSnackbar({ visible: true, message: 'Vehiculo eliminado correctamente' });
       loadVehiculos();
     } catch (error) {
-      setSnackbar({ visible: true, message: 'Error al eliminar el vehículo' });
+      setSnackbar({ visible: true, message: 'Error al eliminar el vehiculo' });
     }
   };
 
@@ -220,7 +220,7 @@ export default function VehiculosScreen() {
           {vehiculos.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text variant="bodyLarge" style={styles.emptyText}>
-                No hay vehículos registrados
+                No hay vehiculos registrados
               </Text>
             </View>
           ) : (
@@ -235,7 +235,7 @@ export default function VehiculosScreen() {
           {vehiculos.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text variant="bodyLarge" style={styles.emptyText}>
-                No hay vehículos registrados
+                No hay vehiculos registrados
               </Text>
             </View>
           ) : (
@@ -302,7 +302,7 @@ export default function VehiculosScreen() {
         <View style={styles.modalContainer}>
           <Appbar.Header>
             <Appbar.BackAction onPress={() => setModalVisible(false)} />
-            <Appbar.Content title={editingVehiculo ? 'Editar Vehículo' : 'Nuevo Vehículo'} />
+            <Appbar.Content title={editingVehiculo ? 'Editar Vehiculo' : 'Nuevo Vehiculo'} />
             <Appbar.Action icon="check" onPress={handleSubmit} />
           </Appbar.Header>
           
@@ -325,7 +325,7 @@ export default function VehiculosScreen() {
                 autoCapitalize="characters"
               />
               <TextInput
-                label="Número de Plazas *"
+                label="Numero de Plazas *"
                 value={plazas}
                 onChangeText={setPlazas}
                 mode="outlined"

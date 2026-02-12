@@ -63,7 +63,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="users"
         options={{
-          title: 'Taxistas/Vehículos',
+          title: 'Taxistas/Vehiculos',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="car-multiple" size={size} color={color} />
           ),
@@ -98,7 +98,7 @@ export default function AdminLayout() {
         name="vehiculos"
         options={{
           href: null,
-          title: 'Vehículos',
+          title: 'Vehiculos',
         }}
       />
       <Tabs.Screen

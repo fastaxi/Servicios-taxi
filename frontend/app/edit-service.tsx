@@ -74,7 +74,7 @@ export default function EditServiceScreen() {
   };
 
   const formatNumberToEuro = (num: number): string => {
-    // Convierte número a formato europeo (123.45 → "123,45")
+    // Convierte numero a formato europeo (123.45 → "123,45")
     return num.toString().replace('.', ',');
   };
 
@@ -132,19 +132,19 @@ export default function EditServiceScreen() {
     const kmNum = parseEuroNumber(kilometros);
 
     if (isNaN(importeNum) || importeNum <= 0) {
-      setSnackbar({ visible: true, message: 'El importe debe ser un número válido mayor que 0' });
+      setSnackbar({ visible: true, message: 'El importe debe ser un numero válido mayor que 0' });
       return false;
     }
 
     if (isNaN(kmNum) || kmNum <= 0) {
-      setSnackbar({ visible: true, message: 'Los kilómetros deben ser un número válido mayor que 0' });
+      setSnackbar({ visible: true, message: 'Los kilómetros deben ser un numero válido mayor que 0' });
       return false;
     }
 
     if (importeEspera) {
       const importeEsperaNum = parseEuroNumber(importeEspera);
       if (isNaN(importeEsperaNum) || importeEsperaNum < 0) {
-        setSnackbar({ visible: true, message: 'El importe de espera debe ser un número válido' });
+        setSnackbar({ visible: true, message: 'El importe de espera debe ser un numero válido' });
         return false;
       }
     }

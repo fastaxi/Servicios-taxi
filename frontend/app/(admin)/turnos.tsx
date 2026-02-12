@@ -604,7 +604,7 @@ export default function AdminTurnosScreen() {
               </View>
               {turno.combustible.vehiculo_matricula && (
                 <View style={styles.infoRow}>
-                  <Text variant="bodySmall" style={styles.label}>Vehículo:</Text>
+                  <Text variant="bodySmall" style={styles.label}>Vehiculo:</Text>
                   <Text variant="bodySmall">{turno.combustible.vehiculo_matricula}</Text>
                 </View>
               )}
@@ -773,7 +773,7 @@ export default function AdminTurnosScreen() {
       <DataTable>
         <DataTable.Header>
           <DataTable.Title style={{ width: 100 }}>Taxista</DataTable.Title>
-          <DataTable.Title style={{ width: 100 }}>Vehículo</DataTable.Title>
+          <DataTable.Title style={{ width: 100 }}>Vehiculo</DataTable.Title>
           <DataTable.Title style={{ width: 90 }}>Fecha</DataTable.Title>
           <DataTable.Title style={{ width: 50 }}>KM</DataTable.Title>
           <DataTable.Title numeric style={{ width: 50 }}>Servs.</DataTable.Title>
