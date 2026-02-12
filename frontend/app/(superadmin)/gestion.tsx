@@ -714,7 +714,8 @@ export default function GestionScreen() {
                   onChangeText={(v) => setTaxistaForm({...taxistaForm, password: v})}
                   mode="outlined"
                   style={styles.input}
-                  secureTextEntry
+                  secureTextEntry={!showTaxistaPassword}
+                  right={<TextInput.Icon icon={showTaxistaPassword ? "eye-off" : "eye"} onPress={() => setShowTaxistaPassword(!showTaxistaPassword)} />}
                 />
               </>
             )}
@@ -726,7 +727,8 @@ export default function GestionScreen() {
                 onChangeText={(v) => setTaxistaForm({...taxistaForm, password: v})}
                 mode="outlined"
                 style={styles.input}
-                secureTextEntry
+                secureTextEntry={!showTaxistaPassword}
+                right={<TextInput.Icon icon={showTaxistaPassword ? "eye-off" : "eye"} onPress={() => setShowTaxistaPassword(!showTaxistaPassword)} />}
               />
             )}
             
