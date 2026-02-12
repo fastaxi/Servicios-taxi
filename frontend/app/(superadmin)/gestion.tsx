@@ -42,10 +42,22 @@ interface Vehiculo {
   taxista_asignado_nombre?: string;
 }
 
+interface Admin {
+  id: string;
+  username: string;
+  nombre: string;
+  email?: string;
+  telefono?: string;
+  organization_id?: string;
+  organization_nombre?: string;
+  created_at?: string;
+}
+
 export default function GestionScreen() {
   const [activeTab, setActiveTab] = useState('taxistas');
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [taxistas, setTaxistas] = useState<Taxista[]>([]);
+  const [admins, setAdmins] = useState<Admin[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
