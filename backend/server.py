@@ -1260,6 +1260,30 @@ async def superadmin_change_user_password(
 # ==========================================
 # SUPERADMIN - GESTIÓN DE TAXISTAS
 # ==========================================
+@api_router.get("/superadmin/admins")
+async def superadmin_list_admins(current_user: dict = Depends(get_current_superadmin)):
+    """Listar todos los administradores de organizaciones (solo superadmin)"""
+    admins = await db.users.find({"role": "admin"}).to_list(1000)
+    
+    # Get organization names
+    org_ids = list(set([a.get("organization_id") for a in admins if a.get("organization_id")]))
+    orgs = await db.organizations.find({"_id": {"$in": [ObjectId(oid) for oid in org_ids if oid]}}).to_list(100)
+    org_map = {str(o["_id"]): o.get("nombre") for o in orgs}
+    
+    result = []
+    for a in admins:
+        result.append({
+            "id": str(a["_id"]),
+            "username": a.get("username"),
+            "nombre": a.get("nombre"),
+            "email": a.get("email"),
+            "telefono": a.get("telefono"),
+            "organization_id": a.get("organization_id"),
+            "organization_nombre": org_map.get(a.get("organization_id"), "Sin asignar"),
+            "created_at": a.get("created_at")
+        })
+    return result
+
 @api_router.get("/superadmin/taxistas")
 async def superadmin_list_taxistas(current_user: dict = Depends(get_current_superadmin)):
     """Listar todos los taxistas de todas las organizaciones (solo superadmin)"""
