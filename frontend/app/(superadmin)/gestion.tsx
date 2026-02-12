@@ -973,17 +973,19 @@ export default function GestionScreen() {
                 label="Nueva Contraseña"
                 value={newPassword}
                 onChangeText={setNewPassword}
-                secureTextEntry
+                secureTextEntry={!showNewPassword}
                 mode="outlined"
                 style={styles.input}
+                right={<TextInput.Icon icon={showNewPassword ? "eye-off" : "eye"} onPress={() => setShowNewPassword(!showNewPassword)} />}
               />
               <TextInput
                 label="Confirmar Contraseña"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                secureTextEntry
+                secureTextEntry={!showConfirmPassword}
                 mode="outlined"
                 style={styles.input}
+                right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} />}
               />
               <Text variant="bodySmall" style={{ color: '#999', marginBottom: 16 }}>
                 * Mínimo 6 caracteres
