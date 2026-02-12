@@ -86,16 +86,27 @@ export default function LoginScreen() {
             disabled={loading}
           />
 
-          <TextInput
-            label="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            secureTextEntry={!showPassword}
-            style={styles.input}
-            disabled={loading}
-            right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              label="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              mode="outlined"
+              secureTextEntry={!showPassword}
+              style={[styles.input, { flex: 1 }]}
+              disabled={loading}
+            />
+            <TouchableOpacity 
+              style={styles.eyeButton} 
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <MaterialCommunityIcons 
+                name={showPassword ? "eye-off" : "eye"} 
+                size={24} 
+                color="#666" 
+              />
+            </TouchableOpacity>
+          </View>
 
           <Button
             mode="contained"
