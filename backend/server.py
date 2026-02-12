@@ -1257,6 +1257,38 @@ async def superadmin_change_user_password(
         "username": user.get("username")
     }
 
+# Endpoint para eliminar un usuario (superadmin)
+@api_router.delete("/superadmin/users/{user_id}")
+async def superadmin_delete_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Eliminar cualquier usuario excepto superadmin (solo superadmin)"""
+    # Validar ID
+    user_oid = _get_object_id_or_400(user_id, "user_id")
+    
+    # Verificar que el usuario existe
+    user = await db.users.find_one({"_id": user_oid})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # No permitir eliminar superadmin
+    if user.get("role") == "superadmin":
+        raise HTTPException(status_code=403, detail="No se puede eliminar un superadmin")
+    
+    # No permitir eliminarse a sí mismo
+    if str(user["_id"]) == str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="No puedes eliminarte a ti mismo")
+    
+    # Eliminar usuario
+    await db.users.delete_one({"_id": user_oid})
+    
+    return {
+        "message": f"Usuario '{user.get('nombre')}' eliminado correctamente",
+        "user_id": user_id,
+        "username": user.get("username")
+    }
+
 # ==========================================
 # SUPERADMIN - GESTIÓN DE TAXISTAS
 # ==========================================
