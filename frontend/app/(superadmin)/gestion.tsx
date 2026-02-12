@@ -78,6 +78,9 @@ export default function GestionScreen() {
   const [saving, setSaving] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showTaxistaPassword, setShowTaxistaPassword] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '', type: 'success' });
 
   // Form data
