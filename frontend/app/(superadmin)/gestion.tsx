@@ -617,6 +617,7 @@ export default function GestionScreen() {
                     </Card.Content>
                     <Card.Actions style={styles.cardActions}>
                       <Button onPress={() => openPasswordModal({id: admin.id, nombre: admin.nombre, username: admin.username})} icon="lock-reset">Cambiar Clave</Button>
+                      <Button onPress={() => deleteAdmin(admin)} icon="delete" textColor="#f44336">Eliminar</Button>
                     </Card.Actions>
                   </Card>
                 ))
