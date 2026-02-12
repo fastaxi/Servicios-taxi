@@ -90,9 +90,10 @@ export default function LoginScreen() {
             value={password}
             onChangeText={setPassword}
             mode="outlined"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             style={styles.input}
             disabled={loading}
+            right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
           />
 
           <Button
