@@ -55,11 +55,18 @@ export default function ConfiguracionScreen() {
     setMessage({ text: '', type: '' });
     try {
       const token = await AsyncStorage.getItem('token');
-      await axios.put(`${API_URL}/config`, config, {
+      await axios.put(`${API_URL}/superadmin/config`, {
+        nombre_radio_taxi: config.nombre,
+        telefono: config.telefono,
+        web: config.web,
+        email: config.email,
+        direccion: config.direccion
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage({ text: '✅ Configuracion guardada correctamente', type: 'success' });
     } catch (error: any) {
+      console.error('Error saving config:', error);
       setMessage({ text: error.response?.data?.detail || 'Error al guardar', type: 'error' });
     } finally {
       setSaving(false);
