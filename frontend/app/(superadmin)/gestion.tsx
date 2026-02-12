@@ -56,12 +56,17 @@ export default function GestionScreen() {
   const [vehiculoModalVisible, setVehiculoModalVisible] = useState(false);
   const [assignVehiculoModalVisible, setAssignVehiculoModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [editingTaxista, setEditingTaxista] = useState<Taxista | null>(null);
   const [editingVehiculo, setEditingVehiculo] = useState<Vehiculo | null>(null);
   const [selectedTaxistaForAssign, setSelectedTaxistaForAssign] = useState<Taxista | null>(null);
   const [selectedDetail, setSelectedDetail] = useState<Taxista | Vehiculo | null>(null);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<{id: string, nombre: string, username: string} | null>(null);
   const [detailType, setDetailType] = useState<'taxista' | 'vehiculo'>('taxista');
   const [saving, setSaving] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [snackbar, setSnackbar] = useState({ visible: false, message: '', type: 'success' });
 
   // Form data
   const [taxistaForm, setTaxistaForm] = useState({
