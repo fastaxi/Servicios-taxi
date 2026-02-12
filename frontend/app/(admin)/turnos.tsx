@@ -434,7 +434,7 @@ export default function AdminTurnosScreen() {
       
       // En web, descargar directamente usando fetch y blob
       if (Platform.OS === 'web') {
-        // Esperar a que window esté disponible si estamos en SSR
+        // Esperar a que window este disponible si estamos en SSR
         if (typeof window === 'undefined') {
           setSnackbar({ visible: true, message: 'Por favor, espera un momento e intenta de nuevo' });
           setExportMenuVisible(false);
@@ -655,7 +655,7 @@ export default function AdminTurnosScreen() {
           )}
         </View>
 
-        {/* Botón para ver servicios */}
+        {/* Boton para ver servicios */}
         <Button
           mode="text"
           onPress={() => toggleTurnoExpanded(turno.id)}
@@ -991,7 +991,7 @@ export default function AdminTurnosScreen() {
         style={styles.vistaButtons}
       />
 
-      {/* Contenido según vista */}
+      {/* Contenido segun vista */}
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -1104,7 +1104,7 @@ export default function AdminTurnosScreen() {
         </Dialog>
       </Portal>
 
-      {/* Modal de confirmación de eliminación */}
+      {/* Modal de confirmacion de eliminación */}
       <Portal>
         <Dialog visible={deleteConfirmVisible} onDismiss={() => setDeleteConfirmVisible(false)}>
           <Dialog.Title>Confirmar Eliminación</Dialog.Title>
@@ -1137,10 +1137,10 @@ export default function AdminTurnosScreen() {
           <Dialog.Title>Finalizar Turno</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium" style={styles.dialogText}>
-              Ingresa la hora de finalización y los kilometros finales
+              Ingresa la hora de finalizacion y los kilometros finales
             </Text>
             <TextInput
-              label="Hora de finalización (HH:mm) *"
+              label="Hora de finalizacion (HH:mm) *"
               value={horaFin}
               onChangeText={setHoraFin}
               mode="outlined"

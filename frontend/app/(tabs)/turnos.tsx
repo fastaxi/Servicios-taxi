@@ -532,7 +532,7 @@ export default function TurnosScreen() {
                     </Text>
                   </View>
 
-                  {/* Botón para expandir/contraer servicios */}
+                  {/* Boton para expandir/contraer servicios */}
                   <Button
                     mode="text"
                     onPress={() => toggleTurnoExpanded(turno.id)}
@@ -623,10 +623,10 @@ export default function TurnosScreen() {
               Ingresa los kilometros finales del vehiculo
             </Text>
             
-            {/* PR2: Info sobre hora automática */}
+            {/* PR2: Info sobre hora automatica */}
             <View style={styles.serverTimeInfo}>
               <Text variant="bodySmall" style={styles.serverTimeText}>
-                ⏰ La hora de finalización se registrará automaticamente del servidor
+                ⏰ La hora de finalizacion se registrará automaticamente del servidor
               </Text>
             </View>
 

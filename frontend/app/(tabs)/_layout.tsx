@@ -125,19 +125,19 @@ export default function TabsLayout() {
         />
       </Tabs>
 
-      {/* Diálogo de confirmación para iniciar turno */}
+      {/* Dialogo de confirmacion para iniciar turno */}
       <Portal>
         <Dialog visible={confirmarTurnoVisible} dismissable={false}>
           <Dialog.Title>Iniciar Turno</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyLarge">¿Desea iniciar un turno ahora?</Text>
             <Text variant="bodySmall" style={{ marginTop: 8, color: '#666' }}>
-              Si selecciona "No", podrá consultar y editar servicios, pero deberá iniciar un turno desde la seccion "Turnos" para registrar nuevos servicios.
+              Si selecciona "No", podra consultar y editar servicios, pero debera iniciar un turno desde la seccion "Turnos" para registrar nuevos servicios.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={handleIniciarTurnoNo}>No</Button>
-            <Button onPress={handleIniciarTurnoSi} mode="contained">Sí</Button>
+            <Button onPress={handleIniciarTurnoSi} mode="contained">Si</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
