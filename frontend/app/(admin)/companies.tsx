@@ -150,7 +150,7 @@ export default function CompaniesScreen() {
       return;
     }
 
-    // En web, ejecutar directamente despues de la confirmación
+    // En web, ejecutar directamente despues de la confirmacion
     await performDeleteCompany(company.id);
   };
 

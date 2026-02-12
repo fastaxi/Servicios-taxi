@@ -89,7 +89,7 @@ export default function NewServiceScreen() {
   // PR2: Determinar si cambio de vehiculo (solo si hay un default)
   const vehiculoCambiado = vehiculoDefaultId && vehiculoId && vehiculoId !== vehiculoDefaultId;
 
-  // Función para parsear numeros en formato europeo
+  // Funcion para parsear numeros en formato europeo
   const parseEuroNumber = (value: string): number => {
     if (!value) return 0;
     return parseFloat(value.replace(/\./g, '').replace(',', '.'));

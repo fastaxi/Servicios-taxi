@@ -123,7 +123,7 @@ export default function DashboardScreen() {
     }
   };
 
-  // Función para convertir fecha dd/mm/yyyy a formato comparable yyyy-mm-dd
+  // Funcion para convertir fecha dd/mm/yyyy a formato comparable yyyy-mm-dd
   const convertToComparableDate = (dateStr: string): string => {
     if (!dateStr) return '';
     const parts = dateStr.split('/');
@@ -234,7 +234,7 @@ export default function DashboardScreen() {
 
       // En web, descargar directamente usando fetch y blob
       if (Platform.OS === 'web') {
-        // Esperar a que window esté disponible si estamos en SSR
+        // Esperar a que window este disponible si estamos en SSR
         if (typeof window === 'undefined') {
           setSnackbar({ visible: true, message: 'Por favor, espera un momento e intenta de nuevo' });
           setExportMenuVisible(false);

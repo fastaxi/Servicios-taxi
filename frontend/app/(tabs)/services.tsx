@@ -95,7 +95,7 @@ export default function ServicesScreen() {
     return amount.toFixed(2).replace('.', ',') + ' €';
   };
 
-  // Filtrar servicios según si se muestra historial o no
+  // Filtrar servicios segun si se muestra historial o no
   const getServiciosFiltrados = () => {
     // Si no hay turno activo, mostrar todos siempre
     if (!turnoActivo) {
@@ -127,10 +127,10 @@ export default function ServicesScreen() {
     // Ordenar fechas de mas reciente a mas antigua
     const fechasOrdenadas = Object.keys(grupos).sort((a, b) => {
       // Convertir dd/mm/yyyy a Date para comparar
-      const [diaA, mesA, añoA] = a.split('/').map(Number);
-      const [diaB, mesB, añoB] = b.split('/').map(Number);
-      const fechaA = new Date(añoA, mesA - 1, diaA);
-      const fechaB = new Date(añoB, mesB - 1, diaB);
+      const [diaA, mesA, anoA] = a.split('/').map(Number);
+      const [diaB, mesB, anoB] = b.split('/').map(Number);
+      const fechaA = new Date(anoA, mesA - 1, diaA);
+      const fechaB = new Date(anoB, mesB - 1, diaB);
       return fechaB.getTime() - fechaA.getTime();
     });
     
@@ -244,7 +244,7 @@ export default function ServicesScreen() {
         </View>
       )}
 
-      {/* Botón para ver/ocultar historial - solo si hay turno activo */}
+      {/* Boton para ver/ocultar historial - solo si hay turno activo */}
       {turnoActivo && serviciosArchivados > 0 && (
         <View style={styles.historialButtonContainer}>
           <Button
