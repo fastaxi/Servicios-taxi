@@ -156,7 +156,7 @@ export default function UsersScreen() {
         return;
       }
     } else {
-      // Modo creación: requerimos nombre, password y licencia (username se genera automaticamente)
+      // Modo creacion: requerimos nombre, password y licencia (username se genera automaticamente)
       if (!formData.nombre || !formData.password || !formData.licencia) {
         setSnackbar({ visible: true, message: 'Por favor, completa: Nombre, Contrasena y Licencia' });
         return;
@@ -184,7 +184,7 @@ export default function UsersScreen() {
           role: 'taxista'
         };
         
-        // Solo incluir contrasena si se proporcionó y coincide
+        // Solo incluir contrasena si se proporciono y coincide
         if (formData.password && formData.password.trim() !== '') {
           updateData.password = formData.password;
         }
@@ -378,7 +378,7 @@ export default function UsersScreen() {
 
               {!editingUser && (
                 <Text variant="bodySmall" style={styles.helperText}>
-                  El usuario se generará automaticamente a partir del nombre
+                  El usuario se generara automaticamente a partir del nombre
                 </Text>
               )}
 

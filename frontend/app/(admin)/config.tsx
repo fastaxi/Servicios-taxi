@@ -64,7 +64,7 @@ export default function ConfigScreen() {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (permissionResult.granted === false) {
-        setSnackbar({ visible: true, message: 'Se necesita permiso para acceder a las imágenes' });
+        setSnackbar({ visible: true, message: 'Se necesita permiso para acceder a las imagenes' });
         return;
       }
 
@@ -106,7 +106,7 @@ export default function ConfigScreen() {
       // Recargar la configuracion en toda la app
       await reloadConfig();
       
-      setSnackbar({ visible: true, message: 'Configuracion guardada correctamente. Los cambios se aplicarán en toda la app.' });
+      setSnackbar({ visible: true, message: 'Configuracion guardada correctamente. Los cambios se aplicaran en toda la app.' });
     } catch (error: any) {
       console.error('Error saving config:', error);
       setSnackbar({
