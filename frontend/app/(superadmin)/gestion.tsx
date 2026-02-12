@@ -533,6 +533,7 @@ export default function GestionScreen() {
                     <Card.Actions style={styles.cardActions}>
                       <Button onPress={() => openDetailModal(taxista, 'taxista')} icon="eye">Ver</Button>
                       <Button onPress={() => openTaxistaModal(taxista)} icon="pencil">Editar</Button>
+                      <Button onPress={() => openPasswordModal({id: taxista.id, nombre: taxista.nombre, username: taxista.username})} icon="lock-reset">Clave</Button>
                       <Button onPress={() => openAssignVehiculoModal(taxista)} icon="car">Vehículo</Button>
                       <Button onPress={() => deleteTaxista(taxista)} icon="delete" textColor="#f44336">Eliminar</Button>
                     </Card.Actions>
