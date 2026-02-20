@@ -1026,9 +1026,14 @@ async def get_organizations(
     result = []
     for org in organizations:
         org_id = str(org["_id"])
+        # Asegurar que el campo nombre existe (fix para testing)
+        org_data = {k: v for k, v in org.items() if k != "_id"}
+        if "nombre" not in org_data or not org_data["nombre"]:
+            org_data["nombre"] = f"Organización {org_id[:8]}"
+        
         result.append(OrganizationResponse(
             id=org_id,
-            **{k: v for k, v in org.items() if k != "_id"},
+            **org_data,
             total_taxistas=taxistas_map.get(org_id, 0),
             total_vehiculos=vehiculos_map.get(org_id, 0),
             total_clientes=clientes_map.get(org_id, 0)
