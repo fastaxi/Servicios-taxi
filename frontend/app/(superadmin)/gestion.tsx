@@ -517,7 +517,7 @@ export default function GestionScreen() {
                     <MaterialCommunityIcons name="alert" size={48} color="#FF9800" />
                     <Text variant="titleMedium" style={{ marginTop: 16 }}>Primero crea una organizacion</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Antes de crear taxistas, debes crear al menos una organizacion en la seccion "Organizaciones"
+                      Antes de crear taxistas, debes crear al menos una organizacion en la seccion Organizaciones
                     </Text>
                   </Card.Content>
                 </Card>
