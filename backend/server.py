@@ -4621,6 +4621,21 @@ async def startup_event():
     except Exception as cleanup_err:
         print(f"[STARTUP] Error limpieza client_uuid: {cleanup_err}")
     
+    # --- PRE-LIMPIEZA: Eliminar cualquier índice con client_uuid (parcial o completo) ---
+    try:
+        existing_indexes = await db.services.index_information()
+        for idx_name, idx_info in existing_indexes.items():
+            if idx_name == "_id_":
+                continue
+            keys = idx_info.get("key", [])
+            # Si el índice tiene client_uuid, eliminarlo
+            if any("client_uuid" in str(k) for k in keys):
+                print(f"[STARTUP] Eliminando indice existente con client_uuid: {idx_name}")
+                await db.services.drop_index(idx_name)
+                print(f"[STARTUP] Indice {idx_name} eliminado")
+    except Exception as drop_err:
+        print(f"[STARTUP] Info: Error eliminando indices client_uuid: {drop_err}")
+    
     # --- Migrar índice de vehiculos.matricula ---
     try:
         vehiculos_indexes = await db.vehiculos.index_information()
