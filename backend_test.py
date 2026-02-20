@@ -110,8 +110,7 @@ class MultiTenantConfigTester:
             "telefono": "CIF: G33045147", 
             "web": "Federación Asturiana Sindical del Taxi",
             "direccion": "Plataforma SaaS Multi-tenant",
-            "email": "info@taxifast.com",
-            "logo_base64": None
+            "email": "info@taxifast.com"
         }
         response = self.make_request("PUT", "/config", superadmin_token, json=config_data)
         self.log_test(
