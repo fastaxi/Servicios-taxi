@@ -4,6 +4,11 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 import { useAuth } from './AuthContext';
 
+interface OrganizationFeatures {
+  taxitur_origen?: boolean;
+  [key: string]: boolean | undefined;
+}
+
 interface OrganizationBranding {
   id: string | null;
   nombre: string;
@@ -17,12 +22,14 @@ interface OrganizationBranding {
   direccion: string;
   localidad: string;
   provincia: string;
+  features: OrganizationFeatures;
 }
 
 interface OrganizationContextType {
   organization: OrganizationBranding;
   loading: boolean;
   refreshOrganization: () => Promise<void>;
+  hasFeature: (featureName: string) => boolean;
 }
 
 const defaultOrganization: OrganizationBranding = {
@@ -38,6 +45,7 @@ const defaultOrganization: OrganizationBranding = {
   direccion: '',
   localidad: '',
   provincia: '',
+  features: {},
 };
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
@@ -70,10 +78,16 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         headers: { Authorization: `Bearer ${storedToken}` }
       });
 
-      setOrganization(response.data);
+      // Asegurar que features existe
+      const orgData = {
+        ...response.data,
+        features: response.data.features || {}
+      };
+
+      setOrganization(orgData);
       
       // Cache the organization data
-      await AsyncStorage.setItem('organization', JSON.stringify(response.data));
+      await AsyncStorage.setItem('organization', JSON.stringify(orgData));
     } catch (error) {
       console.error('[OrganizationContext] Error loading organization:', error);
       
@@ -81,7 +95,11 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       try {
         const cached = await AsyncStorage.getItem('organization');
         if (cached) {
-          setOrganization(JSON.parse(cached));
+          const cachedData = JSON.parse(cached);
+          setOrganization({
+            ...cachedData,
+            features: cachedData.features || {}
+          });
         } else {
           setOrganization(defaultOrganization);
         }
@@ -97,8 +115,13 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     await loadOrganization();
   };
 
+  // Helper function to check if a feature is enabled
+  const hasFeature = (featureName: string): boolean => {
+    return organization.features?.[featureName] === true;
+  };
+
   return (
-    <OrganizationContext.Provider value={{ organization, loading, refreshOrganization }}>
+    <OrganizationContext.Provider value={{ organization, loading, refreshOrganization, hasFeature }}>
       {children}
     </OrganizationContext.Provider>
   );
