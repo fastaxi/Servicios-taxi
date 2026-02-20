@@ -4256,6 +4256,139 @@ async def superadmin_update_config(config: dict, current_user: dict = Depends(ge
         }
     }
 
+# ========================================
+# MIGRACIÓN INCREMENTAL: datetime fields
+# ========================================
+MIGRATION_BATCH_SIZE = 2000
+
+async def run_datetime_migration():
+    """
+    Migración incremental e idempotente para backfill de campos datetime.
+    Procesa en batches para no bloquear el arranque.
+    """
+    try:
+        # --- Migración de services.service_dt_utc ---
+        migration_key = "services_datetime_v1"
+        migration_state = await db.migrations.find_one({"_id": migration_key})
+        
+        if not migration_state:
+            migration_state = {"_id": migration_key, "last_id": None, "done": False, "migrated_count": 0}
+            await db.migrations.insert_one(migration_state)
+        
+        if not migration_state.get("done", False):
+            # Buscar services sin service_dt_utc
+            query = {"service_dt_utc": {"$exists": False}}
+            if migration_state.get("last_id"):
+                query["_id"] = {"$gt": ObjectId(migration_state["last_id"])}
+            
+            services_to_migrate = await db.services.find(query).sort("_id", 1).limit(MIGRATION_BATCH_SIZE).to_list(MIGRATION_BATCH_SIZE)
+            
+            if services_to_migrate:
+                migrated = 0
+                last_id = None
+                for service in services_to_migrate:
+                    fecha = service.get("fecha", "")
+                    hora = service.get("hora", "00:00")
+                    service_dt_utc = parse_spanish_date_to_utc(fecha, hora)
+                    
+                    if service_dt_utc:
+                        await db.services.update_one(
+                            {"_id": service["_id"]},
+                            {"$set": {"service_dt_utc": service_dt_utc}}
+                        )
+                        migrated += 1
+                    else:
+                        # Fecha malformada - loggear y continuar
+                        logger.warning(f"[MIGRATION] Service {service['_id']} tiene fecha malformada: '{fecha}' '{hora}'")
+                    
+                    last_id = str(service["_id"])
+                
+                # Actualizar estado de migracion
+                total_migrated = migration_state.get("migrated_count", 0) + migrated
+                await db.migrations.update_one(
+                    {"_id": migration_key},
+                    {"$set": {"last_id": last_id, "migrated_count": total_migrated}}
+                )
+                print(f"[MIGRATION] Services: migrados {migrated} documentos (total: {total_migrated})")
+            else:
+                # No quedan documentos sin migrar
+                await db.migrations.update_one(
+                    {"_id": migration_key},
+                    {"$set": {"done": True}}
+                )
+                print(f"[MIGRATION] Services: migracion completada ({migration_state.get('migrated_count', 0)} docs)")
+        else:
+            print(f"[MIGRATION] Services: ya completada")
+        
+        # --- Migración de turnos.inicio_dt_utc/fin_dt_utc ---
+        migration_key_turnos = "turnos_datetime_v1"
+        migration_state_turnos = await db.migrations.find_one({"_id": migration_key_turnos})
+        
+        if not migration_state_turnos:
+            migration_state_turnos = {"_id": migration_key_turnos, "last_id": None, "done": False, "migrated_count": 0}
+            await db.migrations.insert_one(migration_state_turnos)
+        
+        if not migration_state_turnos.get("done", False):
+            # Buscar turnos sin inicio_dt_utc
+            query = {"inicio_dt_utc": {"$exists": False}}
+            if migration_state_turnos.get("last_id"):
+                query["_id"] = {"$gt": ObjectId(migration_state_turnos["last_id"])}
+            
+            turnos_to_migrate = await db.turnos.find(query).sort("_id", 1).limit(MIGRATION_BATCH_SIZE).to_list(MIGRATION_BATCH_SIZE)
+            
+            if turnos_to_migrate:
+                migrated = 0
+                last_id = None
+                for turno in turnos_to_migrate:
+                    update_fields = {}
+                    
+                    # inicio_dt_utc
+                    fecha_inicio = turno.get("fecha_inicio", "")
+                    hora_inicio = turno.get("hora_inicio", "00:00")
+                    inicio_dt_utc = parse_spanish_date_to_utc(fecha_inicio, hora_inicio)
+                    if inicio_dt_utc:
+                        update_fields["inicio_dt_utc"] = inicio_dt_utc
+                    
+                    # fin_dt_utc (solo si tiene fecha_fin)
+                    fecha_fin = turno.get("fecha_fin")
+                    hora_fin = turno.get("hora_fin", "00:00")
+                    if fecha_fin:
+                        fin_dt_utc = parse_spanish_date_to_utc(fecha_fin, hora_fin)
+                        if fin_dt_utc:
+                            update_fields["fin_dt_utc"] = fin_dt_utc
+                    
+                    if update_fields:
+                        await db.turnos.update_one(
+                            {"_id": turno["_id"]},
+                            {"$set": update_fields}
+                        )
+                        migrated += 1
+                    else:
+                        logger.warning(f"[MIGRATION] Turno {turno['_id']} tiene fechas malformadas")
+                    
+                    last_id = str(turno["_id"])
+                
+                # Actualizar estado de migracion
+                total_migrated = migration_state_turnos.get("migrated_count", 0) + migrated
+                await db.migrations.update_one(
+                    {"_id": migration_key_turnos},
+                    {"$set": {"last_id": last_id, "migrated_count": total_migrated}}
+                )
+                print(f"[MIGRATION] Turnos: migrados {migrated} documentos (total: {total_migrated})")
+            else:
+                # No quedan documentos sin migrar
+                await db.migrations.update_one(
+                    {"_id": migration_key_turnos},
+                    {"$set": {"done": True}}
+                )
+                print(f"[MIGRATION] Turnos: migracion completada ({migration_state_turnos.get('migrated_count', 0)} docs)")
+        else:
+            print(f"[MIGRATION] Turnos: ya completada")
+            
+    except Exception as e:
+        logger.error(f"[MIGRATION] Error en migracion datetime: {e}")
+        # No crashear el startup por errores de migración
+
 # Initialize default admin user and config
 @app.on_event("startup")
 async def startup_event():
