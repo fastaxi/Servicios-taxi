@@ -4603,6 +4603,17 @@ async def startup_event():
     # ========================================
     print("[STARTUP] Migrando indices para multi-tenant...")
     
+    # --- PRE-LIMPIEZA: Remover client_uuid null para que sparse funcione ---
+    try:
+        cleanup_result = await db.services.update_many(
+            {"client_uuid": None},
+            {"$unset": {"client_uuid": ""}}
+        )
+        if cleanup_result.modified_count > 0:
+            print(f"[STARTUP] Limpiados {cleanup_result.modified_count} servicios con client_uuid null")
+    except Exception as cleanup_err:
+        print(f"[STARTUP] Info: Limpieza client_uuid: {cleanup_err}")
+    
     # --- Migrar índice de vehiculos.matricula ---
     try:
         vehiculos_indexes = await db.vehiculos.index_information()
