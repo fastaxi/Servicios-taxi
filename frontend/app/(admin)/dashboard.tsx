@@ -75,12 +75,13 @@ export default function DashboardScreen() {
   const [exportMenuVisible, setExportMenuVisible] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
   const { token, user } = useAuth();
+  const { hasFeature } = useOrganization();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === 'web' && width >= 1024;
   
-  // Verificar si el admin pertenece a Taxitur
-  const isTaxitur = isTaxiturOrg(user?.organization_id);
+  // Feature flag: Verificar si la organizacion tiene activo taxitur_origen
+  const hasTaxiturOrigenFeature = hasFeature('taxitur_origen');
 
   useEffect(() => {
     if (token) {
