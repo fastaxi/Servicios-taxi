@@ -167,9 +167,14 @@ class MultiTenantTester:
         
         superadmin_token = self.tokens["superadmin"]
         
+        # Use timestamp to ensure unique usernames
+        import time
+        timestamp = str(int(time.time()))[-6:]  # Last 6 digits
+        
         # Create admin for TestOrgA
+        admin_a_username = f"admin_testa_{timestamp}"
         admin_a_data = {
-            "username": "admin_testa",
+            "username": admin_a_username,
             "password": "admin123", 
             "nombre": "Admin Test A"
         }
@@ -182,16 +187,17 @@ class MultiTenantTester:
             200
         )
         self.log_test(
-            "Crear admin_testa",
+            f"Crear {admin_a_username}",
             "200",
             str(result_a["status_code"]), 
             result_a["success"],
-            f"Admin creado para TestOrgA"
+            f"Admin creado para TestOrgA: {result_a['data'].get('detail', 'OK') if not result_a['success'] else 'OK'}"
         )
         
         # Create admin for TestOrgB
+        admin_b_username = f"admin_testb_{timestamp}"
         admin_b_data = {
-            "username": "admin_testb",
+            "username": admin_b_username,
             "password": "admin123",
             "nombre": "Admin Test B"
         }
@@ -204,21 +210,25 @@ class MultiTenantTester:
             200
         )
         self.log_test(
-            "Crear admin_testb", 
+            f"Crear {admin_b_username}", 
             "200",
             str(result_b["status_code"]),
             result_b["success"],
-            f"Admin creado para TestOrgB"
+            f"Admin creado para TestOrgB: {result_b['data'].get('detail', 'OK') if not result_b['success'] else 'OK'}"
         )
 
         # Login as both admins to get their tokens
         if result_a["success"]:
-            admin_a_token = self.login({"username": "admin_testa", "password": "admin123"}, "admin_testa")
+            admin_a_token = self.login({"username": admin_a_username, "password": "admin123"}, "admin_testa")
             self.tokens["admin_testa"] = admin_a_token
+        else:
+            raise Exception(f"Failed to create admin for TestOrgA: {result_a['data']}")
             
         if result_b["success"]:
-            admin_b_token = self.login({"username": "admin_testb", "password": "admin123"}, "admin_testb") 
+            admin_b_token = self.login({"username": admin_b_username, "password": "admin123"}, "admin_testb") 
             self.tokens["admin_testb"] = admin_b_token
+        else:
+            raise Exception(f"Failed to create admin for TestOrgB: {result_b['data']}")
 
     def test_vehiculos_multitenant_matricula(self):
         """PARTE 1: Vehículos - misma matrícula en diferentes orgs"""
