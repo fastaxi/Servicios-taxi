@@ -105,7 +105,13 @@ class MultiTenantConfigTester:
         )
         
         # Test 1.2: Login como superadmin - PUT /config debe retornar 200
-        config_data = {"nombre_radio_taxi": "TaxiFast"}
+        config_data = {
+            "nombre_radio_taxi": "TaxiFast",
+            "telefono": "CIF: G33045147",
+            "web": "Federación Asturiana Sindical del Taxi",
+            "direccion": "Plataforma SaaS Multi-tenant",
+            "email": "info@taxifast.com"
+        }
         response = self.make_request("PUT", "/config", superadmin_token, json=config_data)
         self.log_test(
             "1.2", "PUT", "/config",
