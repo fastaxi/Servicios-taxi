@@ -2360,3 +2360,50 @@ agent_communication:
       Sistema de feature flags 100% operativo según especificaciones del PR.
       La validación de origen_taxitur ahora depende del campo features.taxitur_origen
       de la organización, NO del TAXITUR_ORG_ID hardcodeado.
+
+  - agent: "main"
+    message: |
+      🎯 TESTING ÍNDICES ÚNICOS MULTI-TENANT
+      
+      **CAMBIOS IMPLEMENTADOS:**
+      Se han corregido los índices únicos globales que rompían el multi-tenant.
+      
+      **MIGRACIÓN AUTOMÁTICA DE ÍNDICES:**
+      ✅ Eliminado índice único global: vehiculos.matricula_1
+      ✅ Eliminado índice único global: companies.numero_cliente_1
+      ✅ Creado índice compuesto: ux_org_matricula (organization_id, matricula) UNIQUE
+      ✅ Creado índice compuesto: ux_org_numero_cliente (organization_id, numero_cliente) UNIQUE SPARSE
+      
+      **VALIDACIONES DE NEGOCIO ACTUALIZADAS:**
+      - POST /vehiculos: "La matricula ya existe en tu organizacion"
+      - POST /companies: "El numero de cliente ya existe en tu organizacion"
+      - POST /superadmin/vehiculos: "La matricula ya existe en esta organizacion"
+      
+      **TESTS REQUERIDOS:**
+      
+      **PARTE 1: Vehículos - mismo matricula en diferentes orgs**
+      1. Crear OrgA y OrgB (o usar existentes)
+      2. Login con admin de OrgA
+      3. POST /vehiculos con matricula "ABC123" → 200 (OK)
+      4. Login con admin de OrgB
+      5. POST /vehiculos con matricula "ABC123" → 200 (OK - diferentes orgs)
+      6. POST /vehiculos con matricula "ABC123" → 400 (ERROR - misma org)
+      
+      **PARTE 2: Empresas - mismo numero_cliente en diferentes orgs**
+      1. Login con admin de OrgA
+      2. POST /companies con numero_cliente "C001" → 200 (OK)
+      3. Login con admin de OrgB
+      4. POST /companies con numero_cliente "C001" → 200 (OK - diferentes orgs)
+      5. POST /companies con numero_cliente "C001" → 400 (ERROR - misma org)
+      
+      **PARTE 3: Superadmin creando en diferentes orgs**
+      1. Login como superadmin
+      2. POST /superadmin/vehiculos con matricula "XYZ789" en OrgA → 200
+      3. POST /superadmin/vehiculos con matricula "XYZ789" en OrgB → 200
+      4. POST /superadmin/vehiculos con matricula "XYZ789" en OrgA → 400
+      
+      **CREDENCIALES:**
+      - Superadmin: superadmin / superadmin123
+      - Admin Taxitur: admintur / admin123
+      
+      Por favor ejecutar testing exhaustivo.
