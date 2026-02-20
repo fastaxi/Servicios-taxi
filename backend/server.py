@@ -3671,13 +3671,31 @@ async def get_services(
     # Apply filters
     if tipo:
         query["tipo"] = tipo
-    if fecha_inicio:
-        query["fecha"] = {"$gte": fecha_inicio}
-    if fecha_fin:
-        if "fecha" in query:
-            query["fecha"]["$lte"] = fecha_fin
-        else:
-            query["fecha"] = {"$lte": fecha_fin}
+    
+    # Filtros por rango de fechas usando service_dt_utc para queries correctos
+    if fecha_inicio or fecha_fin:
+        start_utc, end_utc = get_date_range_utc(fecha_inicio, fecha_fin) if fecha_inicio and fecha_fin else (None, None)
+        
+        # Si ambas fechas son validas, usar service_dt_utc
+        if start_utc and end_utc:
+            query["service_dt_utc"] = {"$gte": start_utc, "$lte": end_utc}
+        elif fecha_inicio:
+            # Solo fecha inicio - usar fallback con conversion
+            start_utc = parse_spanish_date_to_utc(fecha_inicio, "00:00")
+            if start_utc:
+                query["service_dt_utc"] = {"$gte": start_utc}
+            else:
+                # Fallback a string comparison (datos antiguos sin migration)
+                query["fecha"] = {"$gte": fecha_inicio}
+        elif fecha_fin:
+            # Solo fecha fin - usar fallback con conversion
+            end_utc = parse_spanish_date_to_utc(fecha_fin, "23:59")
+            if end_utc:
+                end_utc = end_utc.replace(second=59, microsecond=999999)
+                query["service_dt_utc"] = {"$lte": end_utc}
+            else:
+                # Fallback a string comparison (datos antiguos sin migration)
+                query["fecha"] = {"$lte": fecha_fin}
     
     # (D) Filtro por método de pago
     if metodo_pago:
