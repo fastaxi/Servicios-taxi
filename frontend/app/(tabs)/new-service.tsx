@@ -231,6 +231,10 @@ export default function NewServiceScreen() {
 
     setLoading(true);
 
+    // Generar client_uuid para idempotencia (Paso 5B)
+    // Este UUID se mantiene estable para reintentos
+    const clientUUID = newClientUUID();
+
     const serviceData: any = {
       fecha,
       hora,
@@ -247,6 +251,8 @@ export default function NewServiceScreen() {
       // PR2: Nuevos campos
       metodo_pago: metodoPago,
       vehiculo_id: vehiculoId || null,
+      // Paso 5B: client_uuid para idempotencia
+      client_uuid: clientUUID,
     };
 
     // PR2: Solo enviar origen_taxitur si la org tiene el feature activo
