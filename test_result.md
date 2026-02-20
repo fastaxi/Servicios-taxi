@@ -1398,6 +1398,18 @@ backend:
         agent: "testing"
         comment: "✅ TESTING EXHAUSTIVO COMPLETADO: Sistema multi-tenant 100% operativo. VERIFICADO: Autenticación multi-rol (superadmin/admin/taxista) ✓, Gestión organizaciones CRUD ✓, Aislamiento datos entre organizaciones ✓, Endpoint branding móvil ✓, CRUD multi-tenant ✓, Turnos/servicios aislados ✓, Compatibilidad legacy ✓, Seguridad y permisos ✓. CREDENCIALES VERIFICADAS: superadmin/superadmin123, admin_tineo/tineo123, admin_madrid/madrid123, taxista_tineo1/tax123, taxista_madrid1/tax123, admin/admin123. Todas las funcionalidades requeridas implementadas y funcionando correctamente."
 
+  - task: "Feature Flag TAXITUR_ORIGEN Testing"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING EXHAUSTIVO FEATURE FLAGS COMPLETADO: Sistema de feature flags taxitur_origen 100% operativo. PARTE 1: /my-organization devuelve features correctamente - Usuario Taxitur ve features.taxitur_origen=true ✓, Usuario admin (otras orgs) ve features.taxitur_origen=false ✓. PARTE 2: Org CON feature activo - POST sin origen_taxitur → 400 (correctamente rechazado con mensaje específico) ✓, POST con origen_taxitur='parada' → 200 (aceptado) ✓, POST con origen_taxitur='lagos' → 200 (aceptado) ✓. PARTE 3: Feature toggle dinámico - Desactivar feature vía PUT /organizations ✓, Cambio se refleja en /my-organization ✓, Reactivar feature ✓. PARTE 4: Filtros GET /services - origen_taxitur=parada ✓, origen_taxitur=lagos ✓. VERIFICACIÓN CRÍTICA: Feature flag se lee desde BD campo 'features' (NO hardcoded) ✓, 10 organizaciones verificadas (1 CON feature, 9 SIN feature) ✓, Validación depende del feature flag de la organización ✓. Sistema multi-tenant funcionando perfectamente."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
