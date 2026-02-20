@@ -117,7 +117,7 @@ export default function OrganizationBranding({ variant = 'header' }: Organizatio
         </View>
       )}
       <Text variant="labelLarge" style={styles.headerName} numberOfLines={1}>
-        {organization.nombre}
+        {displayName}
       </Text>
     </View>
   );
