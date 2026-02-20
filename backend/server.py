@@ -4603,16 +4603,23 @@ async def startup_event():
     # ========================================
     print("[STARTUP] Migrando indices para multi-tenant...")
     
-    # --- PRE-LIMPIEZA: Remover client_uuid null para que sparse funcione ---
+    # --- PRE-LIMPIEZA: Remover client_uuid null/None para que sparse funcione ---
     try:
+        # Buscar documentos con client_uuid null o que exista pero sea None
         cleanup_result = await db.services.update_many(
-            {"client_uuid": None},
+            {"$or": [
+                {"client_uuid": None},
+                {"client_uuid": {"$type": "null"}},
+                {"client_uuid": ""}
+            ]},
             {"$unset": {"client_uuid": ""}}
         )
         if cleanup_result.modified_count > 0:
-            print(f"[STARTUP] Limpiados {cleanup_result.modified_count} servicios con client_uuid null")
+            print(f"[STARTUP] Limpiados {cleanup_result.modified_count} servicios con client_uuid null/vacio")
+        else:
+            print("[STARTUP] No hay servicios con client_uuid null/vacio para limpiar")
     except Exception as cleanup_err:
-        print(f"[STARTUP] Info: Limpieza client_uuid: {cleanup_err}")
+        print(f"[STARTUP] Error limpieza client_uuid: {cleanup_err}")
     
     # --- Migrar índice de vehiculos.matricula ---
     try:
