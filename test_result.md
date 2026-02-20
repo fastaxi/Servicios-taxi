@@ -2636,3 +2636,46 @@ agent_communication:
       - Admin Taxitur: admintur / admin123
       
       Por favor ejecutar testing exhaustivo.
+
+  - agent: "main"
+    message: |
+      🎯 TESTING MULTI-TENANT CONFIG HARDENING (PASO 4)
+      
+      **CAMBIOS IMPLEMENTADOS:**
+      
+      **Backend:**
+      1. ✅ Campo `settings` añadido al modelo Organization
+      2. ✅ `/api/my-organization` devuelve `features` y `settings`
+      3. ✅ PUT `/api/config` ahora requiere SUPERADMIN (403 para admin)
+      4. ✅ Nuevo endpoint PUT `/api/my-organization/settings` (admin actualiza su org)
+      5. ✅ Nuevo endpoint PUT `/api/superadmin/organizations/{org_id}/settings`
+      6. ✅ Whitelist de keys para settings (display_name, logo_url, footer_name, etc.)
+      7. ✅ Validación: strings max 500 chars, solo string/bool/null
+      
+      **Frontend:**
+      1. ✅ OrganizationContext actualizado con `settings` y `getSetting()`
+      2. ✅ Nueva función `updateSettings()` para actualizar via API
+      3. ✅ OrganizationBranding usa settings.display_name y settings.logo_url
+      
+      **TESTS REQUERIDOS:**
+      
+      **PARTE 1: Permisos /api/config**
+      1. Admin -> PUT /api/config => 403 (DEBE FALLAR)
+      2. Superadmin -> PUT /api/config => 200 (OK)
+      
+      **PARTE 2: Settings por organización**
+      1. Admin -> PUT /api/my-organization/settings => 200
+      2. Verificar que settings se persiste correctamente
+      3. GET /api/my-organization incluye settings
+      
+      **PARTE 3: Whitelist de keys**
+      1. PUT settings con key invalida => 400
+      2. PUT settings con key valida (footer_name) => 200
+      
+      **PARTE 4: Superadmin edita settings de otra org**
+      1. Superadmin -> PUT /api/superadmin/organizations/{id}/settings => 200
+      2. Admin -> PUT /api/superadmin/organizations/{id}/settings => 403
+      
+      **CREDENCIALES:**
+      - Superadmin: superadmin / superadmin123
+      - Admin Taxitur: admintur / admin123
