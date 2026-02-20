@@ -218,8 +218,8 @@ export default function DashboardScreen() {
         }
       }
 
-      // Filtro por origen Taxitur (solo para org Taxitur)
-      if (selectedOrigenTaxitur && isTaxitur) {
+      // Filtro por origen Taxitur (solo si la org tiene el feature activo)
+      if (selectedOrigenTaxitur && hasTaxiturOrigenFeature) {
         queryParams.append('origen_taxitur', selectedOrigenTaxitur);
       }
 
