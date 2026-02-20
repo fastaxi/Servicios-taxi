@@ -389,9 +389,8 @@ def test_parte_4_turnos_with_datetime():
     taxista_data = {
         "username": test_username,
         "password": "test123", 
-        "name": "Taxista Test Turnos",
+        "nombre": "Taxista Test Turnos",
         "role": "taxista",
-        "telefono": "987654321",
         "licencia": "TURNO001"
     }
     
