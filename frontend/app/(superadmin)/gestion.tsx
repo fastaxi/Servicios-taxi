@@ -591,7 +591,7 @@ export default function GestionScreen() {
                     <MaterialCommunityIcons name="shield-account-outline" size={64} color="#ccc" />
                     <Text variant="titleMedium" style={styles.emptyText}>No hay administradores</Text>
                     <Text variant="bodySmall" style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
-                      Los administradores se crean desde la seccion "Organizaciones"
+                      Los administradores se crean desde la seccion Organizaciones
                     </Text>
                   </Card.Content>
                 </Card>
