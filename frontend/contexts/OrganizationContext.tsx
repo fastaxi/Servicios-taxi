@@ -9,6 +9,18 @@ interface OrganizationFeatures {
   [key: string]: boolean | undefined;
 }
 
+interface OrganizationSettings {
+  display_name?: string;
+  logo_url?: string;
+  footer_name?: string;
+  footer_cif?: string;
+  footer_extra?: string;
+  primary_color?: string;
+  support_email?: string;
+  support_phone?: string;
+  [key: string]: string | boolean | undefined;
+}
+
 interface OrganizationBranding {
   id: string | null;
   nombre: string;
@@ -22,7 +34,9 @@ interface OrganizationBranding {
   direccion: string;
   localidad: string;
   provincia: string;
+  cif: string;
   features: OrganizationFeatures;
+  settings: OrganizationSettings;
 }
 
 interface OrganizationContextType {
@@ -30,6 +44,8 @@ interface OrganizationContextType {
   loading: boolean;
   refreshOrganization: () => Promise<void>;
   hasFeature: (featureName: string) => boolean;
+  getSetting: <T extends string | boolean | undefined>(key: string, defaultValue: T) => T;
+  updateSettings: (settings: Partial<OrganizationSettings>) => Promise<boolean>;
 }
 
 const defaultOrganization: OrganizationBranding = {
@@ -45,7 +61,9 @@ const defaultOrganization: OrganizationBranding = {
   direccion: '',
   localidad: '',
   provincia: '',
+  cif: '',
   features: {},
+  settings: {},
 };
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
@@ -78,10 +96,12 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         headers: { Authorization: `Bearer ${storedToken}` }
       });
 
-      // Asegurar que features existe
+      // Asegurar que features y settings existen
       const orgData = {
         ...response.data,
-        features: response.data.features || {}
+        features: response.data.features || {},
+        settings: response.data.settings || {},
+        cif: response.data.cif || '',
       };
 
       setOrganization(orgData);
@@ -98,7 +118,8 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
           const cachedData = JSON.parse(cached);
           setOrganization({
             ...cachedData,
-            features: cachedData.features || {}
+            features: cachedData.features || {},
+            settings: cachedData.settings || {},
           });
         } else {
           setOrganization(defaultOrganization);
@@ -120,8 +141,45 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     return organization.features?.[featureName] === true;
   };
 
+  // Helper function to get a setting value with fallback
+  const getSetting = <T extends string | boolean | undefined>(key: string, defaultValue: T): T => {
+    const value = organization.settings?.[key];
+    if (value === undefined || value === null) {
+      return defaultValue;
+    }
+    return value as T;
+  };
+
+  // Function to update organization settings via API
+  const updateSettings = async (settings: Partial<OrganizationSettings>): Promise<boolean> => {
+    try {
+      const storedToken = await AsyncStorage.getItem('token');
+      if (!storedToken) return false;
+
+      await axios.put(
+        `${API_URL}/my-organization/settings`,
+        settings,
+        { headers: { Authorization: `Bearer ${storedToken}` } }
+      );
+
+      // Refresh organization data after update
+      await refreshOrganization();
+      return true;
+    } catch (error) {
+      console.error('[OrganizationContext] Error updating settings:', error);
+      return false;
+    }
+  };
+
   return (
-    <OrganizationContext.Provider value={{ organization, loading, refreshOrganization, hasFeature }}>
+    <OrganizationContext.Provider value={{ 
+      organization, 
+      loading, 
+      refreshOrganization, 
+      hasFeature, 
+      getSetting,
+      updateSettings 
+    }}>
       {children}
     </OrganizationContext.Provider>
   );
