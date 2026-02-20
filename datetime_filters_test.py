@@ -152,7 +152,9 @@ def test_parte_1_verify_service_dt_utc():
         "matricula": f"TEST{int(datetime.now().timestamp() % 10000)}",
         "plazas": 4,
         "marca": "Test",
-        "modelo": "DateTime"
+        "modelo": "DateTime",
+        "km_iniciales": 50000,
+        "fecha_compra": "01/01/2025"
     }
     
     success, response = make_request("POST", "/vehiculos", headers=headers, data=vehiculo_data)
