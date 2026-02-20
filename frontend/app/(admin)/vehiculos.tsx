@@ -185,7 +185,7 @@ export default function VehiculosScreen() {
       <Text style={[styles.tableCell, styles.colPlazas, styles.centerText]}>{vehiculo.plazas}</Text>
       <Text style={[styles.tableCell, styles.colKmIniciales, styles.rightText]}>{vehiculo.km_iniciales}</Text>
       <Text style={[styles.tableCell, styles.colFechaCompra]}>{vehiculo.fecha_compra}</Text>
-      <View style={[styles.tableCell, styles.colEstado]}>
+      <View style={styles.colEstado}>
         <Chip
           mode="flat"
           style={[styles.statusChip, vehiculo.activo ? styles.statusChipActive : styles.statusChipInactive]}
@@ -194,7 +194,7 @@ export default function VehiculosScreen() {
           {vehiculo.activo ? 'Activo' : 'Inactivo'}
         </Chip>
       </View>
-      <View style={[styles.tableCell, styles.colAcciones]}>
+      <View style={styles.colAcciones}>
         <IconButton
           icon="pencil"
           size={18}
