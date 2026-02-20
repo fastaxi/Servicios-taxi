@@ -2755,3 +2755,41 @@ agent_communication:
       El sistema de configuración multi-tenant está completamente endurecido
       y listo para producción. Separación perfecta entre config global 
       (solo superadmin) y settings por organización (tenant-scoped).
+  - agent: "main"
+    message: |
+      🎯 TESTING IDEMPOTENCIA CON CLIENT_UUID (Paso 5A)
+      
+      **CAMBIOS IMPLEMENTADOS:**
+      
+      **Backend:**
+      1. ✅ Campo `client_uuid` añadido a ServiceBase y ServiceResponse
+      2. ✅ POST /services: Si viene client_uuid, busca existente antes de insertar
+      3. ✅ POST /services/sync: Batch idempotente con status por item
+      4. ✅ Validación: client_uuid 8-64 caracteres
+      5. ✅ Índice ux_org_client_uuid (sparse, unique) - puede fallar en entorno con datos legacy
+      
+      **Respuesta de /services/sync:**
+      - results: [{client_uuid, server_id, status: created|existing|failed|created_no_uuid}]
+      - errors: []
+      
+      **TESTS REQUERIDOS:**
+      
+      **PARTE 1: POST /services idempotencia**
+      1. POST con client_uuid="u1" → 200 (created)
+      2. POST con client_uuid="u1" → 200 (mismo _id)
+      3. Verificar que solo hay 1 servicio con ese client_uuid
+      
+      **PARTE 2: Aislamiento por organización**
+      1. OrgA: POST con client_uuid="u1" → 200
+      2. OrgB: POST con client_uuid="u1" → 200 (diferente _id)
+      
+      **PARTE 3: /services/sync batch idempotente**
+      1. POST /services/sync con [u2, u2] → 1 created + 1 existing
+      2. Verificar que solo hay 1 servicio con client_uuid="u2"
+      
+      **PARTE 4: Sin client_uuid**
+      1. POST /services sin client_uuid → 200 (created_no_uuid)
+      2. Repetir → 200 (crea duplicado - no es idempotente)
+      
+      **CREDENCIALES:**
+      - Admin Taxitur: admintur / admin123
