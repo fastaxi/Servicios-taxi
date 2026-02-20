@@ -1344,6 +1344,17 @@ backend:
         agent: "testing"
         comment: "✅ TESTING COMPLETO: POST /organizations (superadmin ✓), GET /organizations (superadmin ✓, 3 organizaciones encontradas), GET /organizations/{id} (superadmin ✓), PUT /organizations/{id} (superadmin ✓), POST /organizations/{org_id}/admin (superadmin ✓). DELETE /organizations/{id} con eliminación en cascada funcionando correctamente. CRUD Organizations 100% operativo."
 
+  - task: "Multi-tenancy - Índices Únicos"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING EXHAUSTIVO COMPLETADO (19/19 tests - 100% éxito). PARTE 1 Vehículos: ✓ Matrícula MULTI123 creada en TestOrgA, ✓ Misma matrícula permitida en TestOrgB (multi-tenant), ✓ Duplicado rechazado en TestOrgA (400: 'La matricula ya existe en tu organizacion'). PARTE 2 Empresas: ✓ Numero_cliente CLI001 creado en TestOrgA, ✓ Mismo numero_cliente permitido en TestOrgB, ✓ Duplicado rechazado (400: 'El numero de cliente ya existe en tu organizacion'). PARTE 4 Superadmin: ✓ SUPER123 creado en TestOrgA, ✓ SUPER123 permitido en TestOrgB, ✓ Duplicado SUPER123 rechazado en TestOrgA. VERIFICACIONES: ✓ Admin Taxitur acceso correcto (6 vehículos, 0 empresas), ✓ Aislamiento perfecto entre orgs, ✓ Superadmin vista global (4 MULTI123, 4 SUPER123 en 17 organizaciones). Índices multi-tenant ux_org_matricula y ux_org_numero_cliente funcionando 100% correctamente. Mensajes de error claros. LISTO PARA PRODUCCIÓN."
   - task: "Multi-tenancy - Superadmin Role"
     implemented: true
     working: true
