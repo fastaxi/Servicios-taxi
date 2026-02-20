@@ -408,7 +408,9 @@ def test_parte_4_turnos_with_datetime():
         "matricula": f"TURNO{int(datetime.now().timestamp() % 10000)}",
         "plazas": 4,
         "marca": "Test",
-        "modelo": "Turnos"
+        "modelo": "Turnos",
+        "km_iniciales": 40000,
+        "fecha_compra": "01/01/2025"
     }
     
     success, response = make_request("POST", "/vehiculos", headers=headers, data=vehiculo_data)
