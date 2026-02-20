@@ -20,6 +20,7 @@ import {
   IconButton,
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
+import { useOrganization } from '../../contexts/OrganizationContext';
 import { useRouter, useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -28,7 +29,6 @@ import { format } from 'date-fns';
 import { encode as base64Encode } from 'base-64';
 
 import { API_URL } from '../../config/api';
-import { isTaxiturOrg } from '../../config/constants';
 
 interface Service {
   id: string;
