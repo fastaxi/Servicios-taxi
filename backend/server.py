@@ -3605,11 +3605,14 @@ async def get_services(
         if metodo_pago in ("efectivo", "tpv"):
             query["metodo_pago"] = metodo_pago
     
-    # (E) Filtro por origen Taxitur (solo tiene sentido para Taxitur)
-    if origen_taxitur:
+    # (E) Filtro por origen Taxitur (solo si la org tiene el feature activo)
+    if origen_taxitur and origen_taxitur in ("parada", "lagos"):
         org_id = get_user_organization_id(current_user)
-        if org_id == TAXITUR_ORG_ID and origen_taxitur in ("parada", "lagos"):
-            query["origen_taxitur"] = origen_taxitur
+        if org_id:
+            # Verificar si la org tiene el feature activo
+            org_doc = await db.organizations.find_one({"_id": ObjectId(org_id)})
+            if org_doc and org_doc.get("features", {}).get("taxitur_origen", False):
+                query["origen_taxitur"] = origen_taxitur
     
     # Validar y ajustar límite
     if limit <= 0:
