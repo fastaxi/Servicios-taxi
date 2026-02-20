@@ -186,7 +186,7 @@ export default function CompaniesScreen() {
       <Text style={[styles.tableCell, styles.colContacto]} numberOfLines={1}>{company.contacto || '-'}</Text>
       <Text style={[styles.tableCell, styles.colTelefono]}>{company.telefono || '-'}</Text>
       <Text style={[styles.tableCell, styles.colEmail]} numberOfLines={1}>{company.email || '-'}</Text>
-      <View style={[styles.tableCell, styles.colAcciones]}>
+      <View style={styles.colAcciones}>
         <IconButton
           icon="pencil"
           size={18}
