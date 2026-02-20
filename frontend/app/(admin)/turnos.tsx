@@ -1509,10 +1509,6 @@ const styles = StyleSheet.create({
     width: 90,
     paddingRight: 15,
   },
-  totalText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
   tableCellCombustible: {
     width: 80,
     paddingLeft: 10,
@@ -1525,9 +1521,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   // Estilos para combustible
-  tableCellCombustible: {
-    width: 65,
-  },
   combustibleSi: {
     fontSize: 12,
     color: '#4CAF50',
