@@ -18,13 +18,13 @@ import {
 } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
+import { useOrganization } from '../../contexts/OrganizationContext';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 
 import { API_URL } from '../../config/api';
-import { TAXITUR_ORG_ID, isTaxiturOrg } from '../../config/constants';
 
 interface Company {
   id: string;
