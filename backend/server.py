@@ -924,11 +924,12 @@ async def get_my_organization(current_user: dict = Depends(get_current_user)):
             "direccion": "",
             "localidad": "",
             "provincia": "",
+            "features": {},  # Sin features activos por defecto
         }
     
     org = await db.organizations.find_one({"_id": ObjectId(org_id)})
     if not org:
-        raise HTTPException(status_code=404, detail="Organización no encontrada")
+        raise HTTPException(status_code=404, detail="Organizacion no encontrada")
     
     return {
         "id": str(org["_id"]),
@@ -943,6 +944,7 @@ async def get_my_organization(current_user: dict = Depends(get_current_user)):
         "direccion": org.get("direccion", ""),
         "localidad": org.get("localidad", ""),
         "provincia": org.get("provincia", ""),
+        "features": org.get("features", {}),  # Feature flags de la organización
     }
 
 # ==========================================
