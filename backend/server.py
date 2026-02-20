@@ -4159,8 +4159,49 @@ async def superadmin_update_config(config: dict, current_user: dict = Depends(ge
 # Initialize default admin user and config
 @app.on_event("startup")
 async def startup_event():
-    # Create database indexes for performance
-    print("[STARTUP] Creating database indexes...")
+    # ========================================
+    # MIGRACIÓN DE ÍNDICES MULTI-TENANT
+    # ========================================
+    print("[STARTUP] Migrando indices para multi-tenant...")
+    
+    # --- Migrar índice de vehiculos.matricula ---
+    try:
+        vehiculos_indexes = await db.vehiculos.index_information()
+        # Buscar y eliminar índice único global sobre matricula
+        for idx_name, idx_info in vehiculos_indexes.items():
+            if idx_name == "_id_":
+                continue
+            keys = idx_info.get("key", [])
+            is_unique = idx_info.get("unique", False)
+            # Detectar índice único global: key=[("matricula", 1)] y unique=True
+            if is_unique and keys == [("matricula", 1)]:
+                print(f"[STARTUP] Eliminando indice unico global de vehiculos: {idx_name}")
+                await db.vehiculos.drop_index(idx_name)
+                print(f"[STARTUP] Indice {idx_name} eliminado correctamente")
+    except Exception as e:
+        print(f"[STARTUP] Info: No se pudo verificar indices de vehiculos: {e}")
+    
+    # --- Migrar índice de companies.numero_cliente ---
+    try:
+        companies_indexes = await db.companies.index_information()
+        # Buscar y eliminar índice único global sobre numero_cliente
+        for idx_name, idx_info in companies_indexes.items():
+            if idx_name == "_id_":
+                continue
+            keys = idx_info.get("key", [])
+            is_unique = idx_info.get("unique", False)
+            # Detectar índice único global: key=[("numero_cliente", 1)] y unique=True
+            if is_unique and keys == [("numero_cliente", 1)]:
+                print(f"[STARTUP] Eliminando indice unico global de companies: {idx_name}")
+                await db.companies.drop_index(idx_name)
+                print(f"[STARTUP] Indice {idx_name} eliminado correctamente")
+    except Exception as e:
+        print(f"[STARTUP] Info: No se pudo verificar indices de companies: {e}")
+    
+    # ========================================
+    # CREAR ÍNDICES DE BASE DE DATOS
+    # ========================================
+    print("[STARTUP] Creando indices de base de datos...")
     try:
         # Services indexes - Multi-tenant
         await db.services.create_index("turno_id")
@@ -4186,21 +4227,32 @@ async def startup_event():
         await db.users.create_index("organization_id")  # Multi-tenant index
         await db.users.create_index([("organization_id", 1), ("role", 1)])  # Multi-tenant compound
         
-        # Vehiculos indexes - Multi-tenant
-        await db.vehiculos.create_index("matricula", unique=True)
+        # Vehiculos indexes - Multi-tenant (ÚNICO POR ORGANIZACIÓN)
         await db.vehiculos.create_index("organization_id")  # Multi-tenant index
+        await db.vehiculos.create_index(
+            [("organization_id", 1), ("matricula", 1)], 
+            unique=True, 
+            name="ux_org_matricula"
+        )
+        print("[STARTUP] Indice ux_org_matricula creado (matricula unica por organizacion)")
         
-        # Companies indexes - Multi-tenant
-        await db.companies.create_index("numero_cliente", unique=True, sparse=True)
+        # Companies indexes - Multi-tenant (ÚNICO POR ORGANIZACIÓN)
         await db.companies.create_index("organization_id")  # Multi-tenant index
+        await db.companies.create_index(
+            [("organization_id", 1), ("numero_cliente", 1)], 
+            unique=True, 
+            sparse=True,
+            name="ux_org_numero_cliente"
+        )
+        print("[STARTUP] Indice ux_org_numero_cliente creado (numero_cliente unico por organizacion)")
         
-        # Organizations indexes (NEW)
+        # Organizations indexes
         await db.organizations.create_index("slug", unique=True)
         await db.organizations.create_index("activa")
         
-        print("[STARTUP] Database indexes created successfully")
+        print("[STARTUP] Todos los indices creados correctamente")
     except Exception as e:
-        print(f"[STARTUP WARNING] Error creating indexes: {e}")
+        print(f"[STARTUP WARNING] Error creando indices: {e}")
         # No fallar si los índices ya existen
     
     # Compatibilidad hacia atrás: Si existe TAXITUR_ORG_ID, activar feature flag automáticamente
