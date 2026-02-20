@@ -1036,6 +1036,123 @@ async def get_my_organization(current_user: dict = Depends(get_current_user)):
         "settings": org.get("settings", {}),  # Tenant settings
     }
 
+def validate_settings(settings: dict) -> dict:
+    """Validar y sanitizar settings según whitelist"""
+    validated = {}
+    invalid_keys = []
+    
+    for key, value in settings.items():
+        if key not in ALLOWED_SETTINGS_KEYS:
+            invalid_keys.append(key)
+            continue
+        
+        # Validar tipos: solo strings y booleanos, max 500 chars para strings
+        if isinstance(value, str):
+            if len(value) > 500:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"El valor de '{key}' excede 500 caracteres"
+                )
+            validated[key] = value
+        elif isinstance(value, bool):
+            validated[key] = value
+        elif value is None:
+            validated[key] = None
+        else:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"El valor de '{key}' debe ser string, boolean o null"
+            )
+    
+    if invalid_keys:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Keys no permitidas en settings: {', '.join(invalid_keys)}. Permitidas: {', '.join(ALLOWED_SETTINGS_KEYS)}"
+        )
+    
+    return validated
+
+@api_router.put("/my-organization/settings")
+async def update_my_organization_settings(
+    settings_data: dict,
+    current_user: dict = Depends(get_current_admin)
+):
+    """Actualizar settings de la organización del admin actual (Admin o Superadmin)"""
+    org_id = current_user.get("organization_id")
+    
+    if not org_id:
+        raise HTTPException(
+            status_code=400, 
+            detail="Usuario sin organizacion asociada. No puede actualizar settings."
+        )
+    
+    # Validar y sanitizar settings
+    validated_settings = validate_settings(settings_data)
+    
+    # Obtener settings actuales y mergear
+    org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organizacion no encontrada")
+    
+    current_settings = org.get("settings", {})
+    # Merge: los nuevos valores sobreescriben los existentes
+    merged_settings = {**current_settings, **validated_settings}
+    
+    # Actualizar en BD
+    await db.organizations.update_one(
+        {"_id": ObjectId(org_id)},
+        {"$set": {"settings": merged_settings, "updated_at": datetime.utcnow()}}
+    )
+    
+    # Devolver org actualizada
+    updated_org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    return {
+        "id": str(updated_org["_id"]),
+        "nombre": updated_org.get("nombre"),
+        "settings": updated_org.get("settings", {}),
+        "features": updated_org.get("features", {}),
+        "message": "Settings actualizados correctamente"
+    }
+
+@api_router.put("/superadmin/organizations/{org_id}/settings")
+async def superadmin_update_org_settings(
+    org_id: str,
+    settings_data: dict,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Actualizar settings de cualquier organización (solo Superadmin)"""
+    # Verificar que la org existe
+    try:
+        org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    except:
+        raise HTTPException(status_code=400, detail="ID de organizacion invalido")
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Organizacion no encontrada")
+    
+    # Validar y sanitizar settings
+    validated_settings = validate_settings(settings_data)
+    
+    # Obtener settings actuales y mergear
+    current_settings = org.get("settings", {})
+    merged_settings = {**current_settings, **validated_settings}
+    
+    # Actualizar en BD
+    await db.organizations.update_one(
+        {"_id": ObjectId(org_id)},
+        {"$set": {"settings": merged_settings, "updated_at": datetime.utcnow()}}
+    )
+    
+    # Devolver org actualizada
+    updated_org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    return {
+        "id": str(updated_org["_id"]),
+        "nombre": updated_org.get("nombre"),
+        "settings": updated_org.get("settings", {}),
+        "features": updated_org.get("features", {}),
+        "message": "Settings actualizados correctamente"
+    }
+
 # ==========================================
 # ORGANIZATION ENDPOINTS (Superadmin only)
 # ==========================================
