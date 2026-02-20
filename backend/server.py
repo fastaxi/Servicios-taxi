@@ -3422,6 +3422,14 @@ async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(
             "cerrado": False
         })
     
+    # Obtener features de la organizacion para validaciones
+    org_features = {}
+    if org_id:
+        org_doc = await db.organizations.find_one({"_id": ObjectId(org_id)})
+        if org_doc:
+            org_features = org_doc.get("features", {})
+    has_taxitur_origen_feature = org_features.get("taxitur_origen", False)
+    
     for idx, service in enumerate(service_sync.services):
         try:
             service_dict = service.dict()
