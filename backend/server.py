@@ -33,6 +33,51 @@ def get_spain_now():
     """Obtener la hora actual en España"""
     return datetime.now(SPAIN_TZ)
 
+def parse_spanish_date_to_utc(fecha_str: str, hora_str: str = "00:00") -> Optional[datetime]:
+    """
+    Convierte fecha dd/mm/yyyy + hora HH:mm (hora de España) a datetime UTC.
+    Retorna None si el formato es inválido.
+    """
+    try:
+        if not fecha_str:
+            return None
+        # Parsear fecha
+        parts = fecha_str.split("/")
+        if len(parts) != 3:
+            return None
+        day, month, year = int(parts[0]), int(parts[1]), int(parts[2])
+        
+        # Parsear hora (default 00:00 si no se proporciona)
+        hora_str = hora_str or "00:00"
+        hora_parts = hora_str.split(":")
+        hour = int(hora_parts[0]) if len(hora_parts) >= 1 else 0
+        minute = int(hora_parts[1]) if len(hora_parts) >= 2 else 0
+        
+        # Crear datetime naive en hora de España
+        local_dt = datetime(year, month, day, hour, minute, 0)
+        # Localizar a España
+        spain_dt = SPAIN_TZ.localize(local_dt)
+        # Convertir a UTC
+        utc_dt = spain_dt.astimezone(pytz.UTC).replace(tzinfo=None)
+        return utc_dt
+    except (ValueError, TypeError, IndexError) as e:
+        logger.warning(f"Error parsing date '{fecha_str}' + '{hora_str}': {e}")
+        return None
+
+def get_date_range_utc(start_date: str, end_date: str) -> tuple:
+    """
+    Convierte rango de fechas dd/mm/yyyy (España) a rango UTC para queries.
+    start_date 00:00:00 España -> UTC
+    end_date 23:59:59 España -> UTC
+    Retorna (start_utc, end_utc) o (None, None) si inválido.
+    """
+    start_utc = parse_spanish_date_to_utc(start_date, "00:00")
+    end_utc = parse_spanish_date_to_utc(end_date, "23:59")
+    if end_utc:
+        # Añadir 59 segundos para incluir todo el último minuto
+        end_utc = end_utc.replace(second=59, microsecond=999999)
+    return (start_utc, end_utc)
+
 # Simple in-memory cache
 class SimpleCache:
     """Cache simple en memoria para datos consultados frecuentemente"""
