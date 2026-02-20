@@ -73,7 +73,7 @@ export default function OrganizationBranding({ variant = 'header' }: Organizatio
           </View>
         )}
         <Text variant="labelMedium" style={styles.compactName} numberOfLines={1}>
-          {organization.nombre}
+          {displayName}
         </Text>
       </View>
     );
