@@ -511,8 +511,8 @@ export default function DashboardScreen() {
           ))}
         </Menu>
 
-        {/* Filtro por Origen Taxitur - Solo visible para org Taxitur */}
-        {isTaxitur && (
+        {/* Filtro por Origen Taxitur - Solo visible si la org tiene el feature activo */}
+        {hasTaxiturOrigenFeature && (
           <Menu
             visible={origenTaxiturMenuVisible}
             onDismiss={() => setOrigenTaxiturMenuVisible(false)}
