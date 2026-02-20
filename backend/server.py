@@ -356,6 +356,7 @@ class OrganizationBase(BaseModel):
     color_secundario: Optional[str] = "#FFD700"  # Color secundario
     notas: Optional[str] = ""
     activa: bool = True  # Si la organización está activa
+    features: Optional[dict] = None  # Feature flags: {"taxitur_origen": true/false, ...}
 
 class OrganizationCreate(OrganizationBase):
     pass
@@ -376,11 +377,13 @@ class OrganizationUpdate(BaseModel):
     color_secundario: Optional[str] = None
     notas: Optional[str] = None
     activa: Optional[bool] = None
+    features: Optional[dict] = None  # Feature flags
 
 class OrganizationResponse(OrganizationBase):
     id: str
     created_at: datetime
     updated_at: Optional[datetime] = None
+    features: Optional[dict] = None  # Feature flags
     # Estadísticas calculadas
     total_taxistas: Optional[int] = 0
     total_vehiculos: Optional[int] = 0
