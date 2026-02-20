@@ -514,6 +514,18 @@ backend:
         agent: "testing"
         comment: "✅ TESTING FILTROS DATETIME PASO 3 COMPLETO (4/4 tests): Verificados filtros por rango de fechas con datetime UTC. Test crítico: filtro 2025 excluye 2024 ✓, filtro 2024 excluye 2025 ✓, caso específico 2026 no incluye 2025 ✓ (bug string comparison RESUELTO), ordenación DESC correcta ✓. Campo service_dt_utc implementado internamente, migración completada (27 servicios), índices datetime creados. BUG ORIGINAL COMPLETAMENTE RESUELTO."
 
+  - task: "Idempotencia con client_uuid (Paso 5A)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING IDEMPOTENCIA PASO 5A COMPLETO (16/16 tests): POST /services idempotente con client_uuid ✓, POST /services/sync batch idempotente ✓, Aislamiento por organización ✓, Validación client_uuid (8-64 chars) ✓, Sin client_uuid no idempotente ✓. Índice ux_org_client_uuid funcionando. Casos edge: duplicados retornan mismo ID, batch con mismo UUID (1 created + 1 existing), UUID corto rechazado (400), manejo concurrencia. SISTEMA LISTO PARA PRODUCCIÓN CON IDEMPOTENCIA COMPLETA."
+
 frontend:
   - task: "Login Screen"
     implemented: true
