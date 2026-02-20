@@ -248,8 +248,8 @@ export default function NewServiceScreen() {
       vehiculo_id: vehiculoId || null,
     };
 
-    // PR2: Solo enviar origen_taxitur si es Taxitur
-    if (isTaxitur) {
+    // PR2: Solo enviar origen_taxitur si la org tiene el feature activo
+    if (hasTaxiturOrigenFeature) {
       serviceData.origen_taxitur = origenTaxitur;
     }
 
