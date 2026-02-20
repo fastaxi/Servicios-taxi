@@ -4350,10 +4350,20 @@ async def startup_event():
         await db.organizations.create_index("slug", unique=True)
         await db.organizations.create_index("activa")
         
+        # NUEVOS: Índices para datetime fields (filtros por rango de fechas)
+        await db.services.create_index([("organization_id", 1), ("service_dt_utc", -1)], name="idx_org_service_dt")
+        await db.turnos.create_index([("organization_id", 1), ("inicio_dt_utc", -1)], name="idx_org_inicio_dt")
+        print("[STARTUP] Indices datetime creados (service_dt_utc, inicio_dt_utc)")
+        
         print("[STARTUP] Todos los indices creados correctamente")
     except Exception as e:
         print(f"[STARTUP WARNING] Error creando indices: {e}")
         # No fallar si los índices ya existen
+    
+    # ========================================
+    # MIGRACIÓN INCREMENTAL: Backfill datetime fields
+    # ========================================
+    await run_datetime_migration()
     
     # Compatibilidad hacia atrás: Si existe TAXITUR_ORG_ID, activar feature flag automáticamente
     if TAXITUR_ORG_ID:
