@@ -4713,6 +4713,15 @@ async def startup_event():
         print("[STARTUP] Indices datetime creados (service_dt_utc, inicio_dt_utc)")
         
         # NUEVO: Índice para idempotencia con client_uuid (Paso 5A)
+        # Primero eliminar cualquier índice parcialmente creado
+        try:
+            existing_indexes = await db.services.index_information()
+            if "ux_org_client_uuid" in existing_indexes:
+                await db.services.drop_index("ux_org_client_uuid")
+                print("[STARTUP] Indice ux_org_client_uuid eliminado (existia parcialmente)")
+        except Exception as drop_err:
+            print(f"[STARTUP] Info: Drop ux_org_client_uuid: {drop_err}")
+        
         await db.services.create_index(
             [("organization_id", 1), ("client_uuid", 1)],
             unique=True,
