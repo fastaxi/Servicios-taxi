@@ -3641,6 +3641,10 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
                 id=str(existing_service["_id"]),
                 **{k: v for k, v in existing_service.items() if k != "_id"}
             )
+    else:
+        # Sin client_uuid: eliminar del dict para que sparse funcione
+        if "client_uuid" in service_dict:
+            del service_dict["client_uuid"]
     
     # Asignar turno_id: priorizar el validado del payload, luego turno activo
     if turno_from_payload:
