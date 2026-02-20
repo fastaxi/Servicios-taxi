@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
 import { useOrganization } from '../../contexts/OrganizationContext';
+import { newClientUUID } from '../../utils/uuid';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { format } from 'date-fns';
