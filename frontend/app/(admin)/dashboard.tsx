@@ -150,8 +150,8 @@ export default function DashboardScreen() {
       filtered = filtered.filter((s) => s.taxista_nombre === selectedTaxista);
     }
 
-    // Filtro por origen Taxitur (solo para org Taxitur)
-    if (selectedOrigenTaxitur && isTaxitur) {
+    // Filtro por origen Taxitur (solo si la org tiene el feature activo)
+    if (selectedOrigenTaxitur && hasTaxiturOrigenFeature) {
       filtered = filtered.filter((s) => s.origen_taxitur === selectedOrigenTaxitur);
     }
 
