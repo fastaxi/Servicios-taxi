@@ -539,7 +539,7 @@ class ServiceBase(BaseModel):
     destino: str
     importe: float  # IVA 10% incluido
     importe_espera: float  # Importe de espera en euros
-    importe_total: Optional[float] = None  # Se calcula automáticamente
+    importe_total: Optional[float] = None  # Se calcula automaticamente
     kilometros: Optional[float] = None  # Ahora opcional (B)
     tipo: str  # "empresa" or "particular"
     empresa_id: Optional[str] = None
@@ -550,11 +550,13 @@ class ServiceBase(BaseModel):
     # Nuevos campos funcionales PR1
     metodo_pago: Optional[str] = "efectivo"  # "efectivo" | "tpv" | null (D)
     origen_taxitur: Optional[str] = None  # "parada" | "lagos" - Solo para org Taxitur (E)
-    vehiculo_id: Optional[str] = None  # Vehículo usado en el servicio (A)
+    vehiculo_id: Optional[str] = None  # Vehiculo usado en el servicio (A)
     vehiculo_matricula: Optional[str] = None  # Denormalizado para exports (A)
-    vehiculo_cambiado: Optional[bool] = False  # True si usó vehículo distinto al default (A)
+    vehiculo_cambiado: Optional[bool] = False  # True si uso vehiculo distinto al default (A)
     km_inicio_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
     km_fin_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
+    # Idempotencia (Paso 5A)
+    client_uuid: Optional[str] = None  # UUID generado por cliente para evitar duplicados
 
 class ServiceCreate(ServiceBase):
     pass
@@ -583,11 +585,13 @@ class ServiceResponse(BaseModel):
     # Nuevos campos funcionales PR1
     metodo_pago: Optional[str] = None  # "efectivo" | "tpv" (D)
     origen_taxitur: Optional[str] = None  # "parada" | "lagos" - Solo para org Taxitur (E)
-    vehiculo_id: Optional[str] = None  # Vehículo usado en el servicio (A)
+    vehiculo_id: Optional[str] = None  # Vehiculo usado en el servicio (A)
     vehiculo_matricula: Optional[str] = None  # Denormalizado para exports (A)
-    vehiculo_cambiado: Optional[bool] = False  # True si usó vehículo distinto al default (A)
+    vehiculo_cambiado: Optional[bool] = False  # True si uso vehiculo distinto al default (A)
     km_inicio_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
     km_fin_vehiculo: Optional[int] = None  # Obligatorio si vehiculo_cambiado=True (A)
+    # Idempotencia (Paso 5A)
+    client_uuid: Optional[str] = None  # UUID del cliente para idempotencia
 
     class Config:
         from_attributes = True
