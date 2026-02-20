@@ -2479,3 +2479,50 @@ agent_communication:
       - Admin Taxitur: admintur / admin123
       
       Por favor ejecutar testing exhaustivo.
+
+  - agent: "main"
+    message: |
+      🎯 TESTING FILTROS DATETIME
+      
+      **CAMBIOS IMPLEMENTADOS:**
+      
+      **A) Nuevos campos datetime:**
+      - services.service_dt_utc (datetime UTC calculado desde fecha+hora España)
+      - turnos.inicio_dt_utc y fin_dt_utc
+      
+      **B) Escrituras:**
+      - POST/PUT services calcula y guarda service_dt_utc
+      - POST turnos calcula inicio_dt_utc
+      - PUT turnos/finalizar calcula fin_dt_utc
+      
+      **C) Lecturas y filtros:**
+      - GET /services usa service_dt_utc para filtros por rango
+      - Ordenación por service_dt_utc DESC
+      
+      **D) Índices:**
+      - idx_org_service_dt (organization_id, service_dt_utc)
+      - idx_org_inicio_dt (organization_id, inicio_dt_utc)
+      
+      **E) Migración:**
+      - Migración incremental completada: 27 services, 14 turnos
+      
+      **TESTS REQUERIDOS:**
+      
+      **TEST CRÍTICO: Filtros por rango de fechas**
+      1. Crear 3 services con fechas:
+         - 31/12/2025 23:50
+         - 01/01/2026 00:10
+         - 15/01/2026 12:00
+      2. GET /services?fecha_inicio=01/01/2026&fecha_fin=31/01/2026
+         - Esperado: Solo 2 services (01/01 y 15/01), NO el de 31/12
+      3. Verificar ordenación DESC por fecha/hora
+      
+      **TEST: service_dt_utc se guarda correctamente**
+      1. POST /services con fecha=20/02/2026, hora=14:30
+      2. Verificar que service_dt_utc existe y es datetime UTC
+      
+      **CREDENCIALES:**
+      - Superadmin: superadmin / superadmin123
+      - Admin Taxitur: admintur / admin123
+      
+      Por favor ejecutar testing exhaustivo.
