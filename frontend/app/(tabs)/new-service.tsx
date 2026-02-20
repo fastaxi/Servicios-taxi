@@ -477,8 +477,8 @@ export default function NewServiceScreen() {
             style={styles.segmented}
           />
 
-          {/* PR2: Origen Taxitur (solo para Taxitur) */}
-          {isTaxitur && (
+          {/* PR2: Origen Taxitur (solo si la org tiene el feature activo) */}
+          {hasTaxiturOrigenFeature && (
             <>
               <Text variant="titleMedium" style={styles.sectionTitle}>
                 Origen Taxitur *
