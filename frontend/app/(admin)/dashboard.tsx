@@ -388,7 +388,7 @@ export default function DashboardScreen() {
       <Text style={[styles.tableCell, styles.colTipo]} numberOfLines={1}>
         {item.tipo === 'empresa' ? item.empresa_nombre : 'Particular'}
       </Text>
-      <View style={[styles.tableCell, styles.colAcciones]}>
+      <View style={styles.colAcciones}>
         <IconButton
           icon="pencil"
           size={18}
