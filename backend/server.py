@@ -547,8 +547,15 @@ class VehiculoBase(BaseModel):
 class VehiculoCreate(VehiculoBase):
     pass
 
-class VehiculoResponse(VehiculoBase):
+class VehiculoResponse(BaseModel):
     id: str
+    matricula: str
+    plazas: Optional[int] = 4  # Default value for compatibility
+    marca: Optional[str] = ""
+    modelo: Optional[str] = ""
+    km_iniciales: Optional[int] = 0  # Default value for compatibility
+    fecha_compra: Optional[str] = ""  # Default value for compatibility
+    activo: Optional[bool] = True
     organization_id: Optional[str] = None
 
     class Config:
