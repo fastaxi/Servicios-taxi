@@ -455,12 +455,14 @@ class OrganizationUpdate(BaseModel):
     notas: Optional[str] = None
     activa: Optional[bool] = None
     features: Optional[dict] = None  # Feature flags
+    settings: Optional[dict] = None  # Tenant settings
 
 class OrganizationResponse(OrganizationBase):
     id: str
     created_at: datetime
     updated_at: Optional[datetime] = None
     features: Optional[dict] = None  # Feature flags
+    settings: Optional[dict] = None  # Tenant settings
     # Estadísticas calculadas
     total_taxistas: Optional[int] = 0
     total_vehiculos: Optional[int] = 0
