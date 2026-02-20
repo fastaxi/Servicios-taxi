@@ -95,7 +95,7 @@ export default function OrganizationBranding({ variant = 'header' }: Organizatio
         )}
         <View style={styles.sidebarTextContainer}>
           <Text variant="titleMedium" style={styles.sidebarName} numberOfLines={2}>
-            {organization.nombre}
+            {displayName}
           </Text>
         </View>
       </View>
