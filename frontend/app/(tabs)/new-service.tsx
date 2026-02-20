@@ -197,8 +197,8 @@ export default function NewServiceScreen() {
       }
     }
 
-    // PR2: Validar origen_taxitur obligatorio para Taxitur
-    if (isTaxitur && !origenTaxitur) {
+    // PR2: Validar origen_taxitur obligatorio si la org tiene el feature activo
+    if (hasTaxiturOrigenFeature && !origenTaxitur) {
       setSnackbar({ visible: true, message: 'Debes seleccionar el origen (Parada o Lagos)' });
       return false;
     }
