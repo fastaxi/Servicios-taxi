@@ -2203,3 +2203,48 @@ agent_communication:
       3. Verificar validación de formularios React Native Paper
       4. Verificar configuración de API endpoints
       5. Verificar CORS/headers de autenticación
+
+  - agent: "main"
+    message: |
+      🎯 TESTING FEATURE FLAG TAXITUR_ORIGEN
+      
+      **CAMBIOS IMPLEMENTADOS:**
+      Se ha refactorizado el sistema para que el campo `origen_taxitur` dependa de un
+      feature flag por organización (`features.taxitur_origen: bool`) en lugar de un 
+      ORG_ID hardcodeado.
+      
+      **CAMBIOS EN BACKEND:**
+      1. ✅ Campo `features` (dict) añadido al modelo Organization
+      2. ✅ Endpoint `/my-organization` devuelve `features`
+      3. ✅ Compatibilidad hacia atrás: Si existe env TAXITUR_ORG_ID, activa el feature automáticamente
+      4. ✅ Validación en creación/edición de servicios usa el feature flag
+      5. ✅ Filtro por `origen_taxitur` en GET /services usa el feature flag
+      
+      **CAMBIOS EN FRONTEND:**
+      1. ✅ OrganizationContext incluye `features` y función `hasFeature()`
+      2. ✅ `new-service.tsx` usa `hasFeature('taxitur_origen')` en vez de `isTaxiturOrg()`
+      3. ✅ `dashboard.tsx` usa `hasFeature('taxitur_origen')` en vez de `isTaxiturOrg()`
+      
+      **OBJETIVO DEL TESTING:**
+      Verificar que el sistema de feature flags funciona correctamente:
+      
+      1. **ORG CON FEATURE ACTIVO (Taxitur):**
+         - POST /services SIN origen_taxitur → 400 (debe rechazar)
+         - POST /services CON origen_taxitur='parada' → 200 (debe aceptar)
+         - POST /services CON origen_taxitur='lagos' → 200 (debe aceptar)
+         - GET /my-organization debe incluir `features.taxitur_origen: true`
+      
+      2. **ORG SIN FEATURE ACTIVO (otra organización):**
+         - POST /services SIN origen_taxitur → 200 (debe aceptar)
+         - POST /services CON origen_taxitur='parada' → 400 (debe rechazar)
+         - GET /my-organization debe incluir `features: {}` o sin `taxitur_origen`
+      
+      **CREDENCIALES:**
+      - Superadmin: superadmin / superadmin123
+      - Admin Taxitur: admintur / admin123
+      - TAXITUR_ORG_ID: 69484bec187c3bc2b0fdb8f4
+      
+      **IMPORTANTE:**
+      El feature flag debe leerse desde la base de datos, no desde env vars hardcodeados.
+      
+      Por favor ejecutar testing completo de la funcionalidad de feature flags.
