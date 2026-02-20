@@ -2321,3 +2321,42 @@ agent_communication:
       El feature flag debe leerse desde la base de datos, no desde env vars hardcodeados.
       
       Por favor ejecutar testing completo de la funcionalidad de feature flags.
+
+  - agent: "testing"
+    message: |
+      🎯 TESTING FEATURE FLAG TAXITUR_ORIGEN - 100% EXITOSO
+      
+      **🔍 VERIFICACIÓN CRÍTICA - NO HARDCODED:**
+      ✅ Feature flag se lee desde BD campo 'features.taxitur_origen'
+      ✅ NO depende del TAXITUR_ORG_ID hardcodeado
+      ✅ 10 organizaciones verificadas: 1 CON feature (Taxitur), 9 SIN feature
+      ✅ Validación depende exclusivamente del feature flag de cada organización
+      
+      **PARTE 1: /my-organization devuelve features**
+      ✅ GET /my-organization (admin Taxitur) → features.taxitur_origen: true
+      ✅ GET /my-organization (otra org) → features: {} (sin taxitur_origen)
+      
+      **PARTE 2: ORG CON FEATURE ACTIVO (Taxitur)**
+      ✅ POST /services SIN origen_taxitur → 400 (rechazado correctamente)
+      ✅ POST /services CON origen_taxitur='parada' → 200 (aceptado)
+      ✅ POST /services CON origen_taxitur='lagos' → 200 (aceptado)
+      
+      **PARTE 3: ORG SIN FEATURE ACTIVO**
+      ✅ GET /my-organization → features: {} (sin taxitur_origen)
+      ✅ POST /services SIN origen_taxitur → 200 (aceptado)
+      ✅ POST /services CON origen_taxitur='parada' → El campo se ignora
+      
+      **PARTE 4: Filtros GET /services**
+      ✅ GET /services?origen_taxitur=parada → Filtra correctamente
+      ✅ GET /services?origen_taxitur=lagos → Filtra correctamente
+      
+      **PARTE 5: Feature toggle dinámico**
+      ✅ PUT /organizations/{id} - Desactivar feature → 200
+      ✅ Verificación: POST sin origen_taxitur → 200 (ya no requiere)
+      ✅ PUT /organizations/{id} - Reactivar feature → 200
+      ✅ Verificación: POST sin origen_taxitur → 400 (vuelve a requerir)
+      
+      **🎉 CONCLUSIÓN:**
+      Sistema de feature flags 100% operativo según especificaciones del PR.
+      La validación de origen_taxitur ahora depende del campo features.taxitur_origen
+      de la organización, NO del TAXITUR_ORG_ID hardcodeado.
