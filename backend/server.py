@@ -3821,15 +3821,78 @@ async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(
             # Calcular importe_total
             service_dict["importe_total"] = service_dict.get("importe", 0) + service_dict.get("importe_espera", 0)
             
-            result = await db.services.insert_one(service_dict)
-            created_services.append(str(result.inserted_id))
+            # Calcular service_dt_utc para ordenacion y filtros correctos
+            service_dt_utc = parse_spanish_date_to_utc(service_dict["fecha"], service_dict.get("hora", "00:00"))
+            if service_dt_utc:
+                service_dict["service_dt_utc"] = service_dt_utc
+            
+            # ========================================
+            # IDEMPOTENCIA (Paso 5A): Verificar client_uuid
+            # ========================================
+            client_uuid = service_dict.get("client_uuid")
+            status = "created_no_uuid"  # Default: sin idempotencia
+            
+            if client_uuid:
+                # Validar formato de client_uuid
+                client_uuid = str(client_uuid).strip()
+                if len(client_uuid) >= 8 and len(client_uuid) <= 64:
+                    service_dict["client_uuid"] = client_uuid
+                    
+                    # Buscar si ya existe
+                    existing_service = await db.services.find_one({
+                        "organization_id": org_id,
+                        "client_uuid": client_uuid
+                    })
+                    
+                    if existing_service:
+                        # Ya existe - marcar como existing
+                        created_services.append({
+                            "client_uuid": client_uuid,
+                            "server_id": str(existing_service["_id"]),
+                            "status": "existing"
+                        })
+                        continue  # No insertar
+                    
+                    status = "created"  # Con idempotencia
+                else:
+                    # client_uuid invalido, eliminar del dict
+                    del service_dict["client_uuid"]
+            else:
+                # Sin client_uuid: eliminar del dict para sparse
+                if "client_uuid" in service_dict:
+                    del service_dict["client_uuid"]
+            
+            # Intentar insertar
+            try:
+                result = await db.services.insert_one(service_dict)
+                created_services.append({
+                    "client_uuid": client_uuid if client_uuid and len(str(client_uuid)) >= 8 else None,
+                    "server_id": str(result.inserted_id),
+                    "status": status
+                })
+            except Exception as insert_err:
+                # Si falla por DuplicateKeyError, buscar el existente
+                if "duplicate key error" in str(insert_err).lower() and client_uuid:
+                    existing_service = await db.services.find_one({
+                        "organization_id": org_id,
+                        "client_uuid": client_uuid
+                    })
+                    if existing_service:
+                        created_services.append({
+                            "client_uuid": client_uuid,
+                            "server_id": str(existing_service["_id"]),
+                            "status": "existing"
+                        })
+                        continue
+                # Otro error
+                errors.append(f"Servicio {idx}: error al insertar - {str(insert_err)}")
             
         except Exception as e:
             errors.append(f"Servicio {idx}: error inesperado - {str(e)}")
     
     return {
-        "message": f"Synced {len(created_services)} services",
-        "ids": created_services,
+        "message": f"Processed {len(created_services)} services",
+        "results": created_services,
         "errors": errors if errors else None
     }
 
