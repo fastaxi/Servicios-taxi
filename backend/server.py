@@ -3273,20 +3273,30 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
                 detail="El turno especificado no existe o no pertenece a esta organización"
             )
     
-    # (D) MÉTODO DE PAGO: Validar valores permitidos
+    # (D) METODO DE PAGO: Validar valores permitidos
     if service.metodo_pago and service.metodo_pago not in ("efectivo", "tpv"):
         raise HTTPException(
             status_code=400,
             detail="metodo_pago debe ser 'efectivo' o 'tpv'"
         )
     
-    # (E) ORIGEN TAXITUR: Solo para org Taxitur, obligatorio allí
-    if org_id == TAXITUR_ORG_ID:
-        # En Taxitur es obligatorio
+    # (E) ORIGEN TAXITUR: Basado en feature flag de la organizacion
+    # Obtener features de la organizacion
+    org_features = {}
+    if org_id:
+        org_doc = await db.organizations.find_one({"_id": ObjectId(org_id)})
+        if org_doc:
+            org_features = org_doc.get("features", {})
+    
+    # Verificar si la org tiene el feature taxitur_origen activo
+    has_taxitur_origen_feature = org_features.get("taxitur_origen", False)
+    
+    if has_taxitur_origen_feature:
+        # Si el feature esta activo, origen_taxitur es obligatorio
         if not service.origen_taxitur:
             raise HTTPException(
                 status_code=400,
-                detail="origen_taxitur es obligatorio para Taxitur (debe ser 'parada' o 'lagos')"
+                detail="origen_taxitur es obligatorio para esta organizacion (debe ser 'parada' o 'lagos')"
             )
         if service.origen_taxitur not in ("parada", "lagos"):
             raise HTTPException(
@@ -3294,12 +3304,8 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
                 detail="origen_taxitur debe ser 'parada' o 'lagos'"
             )
     else:
-        # Fuera de Taxitur, rechazar si se envía origen_taxitur
-        if service.origen_taxitur:
-            raise HTTPException(
-                status_code=400,
-                detail="origen_taxitur solo está permitido para la organización Taxitur"
-            )
+        # Si el feature NO esta activo, ignorar origen_taxitur (forzar a None)
+        service.origen_taxitur = None
     
     # (A) VEHÍCULO EN SERVICIO: Validar y determinar si hubo cambio
     # Determinar vehículo por defecto
