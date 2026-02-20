@@ -4706,17 +4706,6 @@ async def startup_event():
         print("[STARTUP] Indices datetime creados (service_dt_utc, inicio_dt_utc)")
         
         # NUEVO: Índice para idempotencia con client_uuid (Paso 5A)
-        # Primero, limpiar documentos con client_uuid: null para que sparse funcione
-        try:
-            cleanup_result = await db.services.update_many(
-                {"client_uuid": None},
-                {"$unset": {"client_uuid": ""}}
-            )
-            if cleanup_result.modified_count > 0:
-                print(f"[STARTUP] Limpiados {cleanup_result.modified_count} servicios con client_uuid null")
-        except Exception as cleanup_err:
-            print(f"[STARTUP] Info: Limpieza client_uuid: {cleanup_err}")
-        
         await db.services.create_index(
             [("organization_id", 1), ("client_uuid", 1)],
             unique=True,
