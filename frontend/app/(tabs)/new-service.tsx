@@ -47,6 +47,7 @@ interface TurnoActivo {
 export default function NewServiceScreen() {
   const { token, user } = useAuth();
   const { addPendingService } = useSync();
+  const { hasFeature } = useOrganization();
   const router = useRouter();
 
   const [fecha, setFecha] = useState(format(new Date(), 'dd/MM/yyyy'));
@@ -80,8 +81,8 @@ export default function NewServiceScreen() {
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
-  // PR2: Determinar si es organizacion Taxitur
-  const isTaxitur = isTaxiturOrg(user?.organization_id);
+  // Feature flag: Determinar si la organizacion tiene activo taxitur_origen
+  const hasTaxiturOrigenFeature = hasFeature('taxitur_origen');
 
   // PR2: Determinar vehiculo por defecto del turno
   const vehiculoDefaultId = turnoActivo?.vehiculo_id || '';
