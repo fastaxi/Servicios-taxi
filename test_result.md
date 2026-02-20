@@ -734,6 +734,18 @@ metadata:
   test_sequence: 0
   run_ui: false
 
+  - task: "Multi-tenant Config Hardening (Paso 4)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING MULTI-TENANT CONFIG HARDENING COMPLETADO (13/13 tests - 100% éxito). PARTE 1 Permisos /api/config: ✓ Admin rechazado correctamente (403 Forbidden), ✓ Superadmin puede modificar config global (200 OK), ✓ Cambios persisten correctamente (nombre_radio_taxi: TaxiFast). PARTE 2 Settings organización: ✓ Admin puede actualizar settings de su org (footer_name, footer_cif), ✓ Settings persisten correctamente en GET /my-organization. PARTE 3 Whitelist validación: ✓ Keys inválidas rechazadas (400 + mensaje específico), ✓ Keys válidas aceptadas (display_name). PARTE 4 Superadmin multi-org: ✓ Superadmin puede editar settings de cualquier org, ✓ Admin normal bloqueado en endpoint superadmin (403 Forbidden). PARTE 5 Validación tipos: ✓ Strings >500 chars rechazados (400), ✓ Objetos anidados rechazados (400), ✓ Strings válidos aceptados. VERIFICACIÓN CRÍTICA SEGURIDAD: ✓ Ningún admin puede modificar config global ✓ Cada admin puede modificar solo settings de su org ✓ Superadmin puede modificar settings de cualquier org. Sistema multi-tenant hardening 100% operativo."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
