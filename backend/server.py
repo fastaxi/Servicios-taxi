@@ -4187,7 +4187,8 @@ async def get_config():
     )
 
 @api_router.put("/config", response_model=ConfigResponse)
-async def update_config(config: ConfigBase, current_user: dict = Depends(get_current_admin)):
+async def update_config(config: ConfigBase, current_user: dict = Depends(get_current_superadmin)):
+    """Actualizar configuración global de la plataforma (SOLO SUPERADMIN)"""
     config_dict = config.dict()
     config_dict["updated_at"] = datetime.utcnow()
     
