@@ -3717,8 +3717,8 @@ async def get_services(
     elif limit > 10000:
         limit = 10000  # Maximum
     
-    # Proyección: traer solo campos necesarios (todos en este caso, pero preparado para futura optimización)
-    services = await db.services.find(query).sort("created_at", -1).limit(limit).to_list(limit)
+    # Ordenar por service_dt_utc (datetime real) descendente, fallback a created_at
+    services = await db.services.find(query).sort([("service_dt_utc", -1), ("created_at", -1)]).limit(limit).to_list(limit)
     return [
         ServiceResponse(
             id=str(service["_id"]),
