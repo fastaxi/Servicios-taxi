@@ -13,6 +13,12 @@ interface Organization {
   logo_base64?: string;
   color_primario?: string;
   color_secundario?: string;
+  settings?: {
+    display_name?: string;
+    logo_url?: string;
+    primary_color?: string;
+    [key: string]: string | undefined;
+  };
 }
 
 interface OrganizationBrandingProps {
@@ -47,8 +53,10 @@ export default function OrganizationBranding({ variant = 'header' }: Organizatio
     return null;
   }
 
-  const primaryColor = organization.color_primario || '#0066CC';
-  const logoSource = organization.logo_base64 || organization.logo_url;
+  // Priorizar settings sobre campos base
+  const displayName = organization.settings?.display_name || organization.nombre;
+  const primaryColor = organization.settings?.primary_color || organization.color_primario || '#0066CC';
+  const logoSource = organization.settings?.logo_url || organization.logo_base64 || organization.logo_url;
 
   if (variant === 'compact') {
     return (
