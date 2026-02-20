@@ -96,7 +96,7 @@ def main():
     status, turno_response = make_request("GET", "/turnos/activo", headers=headers)
     turno_id = None
     
-    if status == 404:
+    if status == 404 or not turno_response:
         # Create a turno
         turno_data = {
             "fecha_inicio": "20/02/2026",
@@ -110,8 +110,8 @@ def main():
             log_success(f"Created turno: {turno_id}")
         else:
             log_error(f"Failed to create turno: {response}")
-            # Try to use admin powers with existing taxista and turno
-    elif status == 200:
+            # Continue without turno_id for admin testing
+    elif status == 200 and turno_response:
         turno_id = turno_response['id']
         log_success(f"Using existing active turno: {turno_id}")
     
