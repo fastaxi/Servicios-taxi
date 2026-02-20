@@ -41,6 +41,11 @@ def parse_spanish_date_to_utc(fecha_str: str, hora_str: str = "00:00") -> Option
     try:
         if not fecha_str:
             return None
+        
+        # Si ya es un datetime, devolverlo (para datos que ya fueron migrados)
+        if isinstance(fecha_str, datetime):
+            return fecha_str
+        
         # Parsear fecha
         parts = fecha_str.split("/")
         if len(parts) != 3:
@@ -49,9 +54,12 @@ def parse_spanish_date_to_utc(fecha_str: str, hora_str: str = "00:00") -> Option
         
         # Parsear hora (default 00:00 si no se proporciona)
         hora_str = hora_str or "00:00"
-        hora_parts = hora_str.split(":")
-        hour = int(hora_parts[0]) if len(hora_parts) >= 1 else 0
-        minute = int(hora_parts[1]) if len(hora_parts) >= 2 else 0
+        if isinstance(hora_str, datetime):
+            hour, minute = hora_str.hour, hora_str.minute
+        else:
+            hora_parts = hora_str.split(":")
+            hour = int(hora_parts[0]) if len(hora_parts) >= 1 else 0
+            minute = int(hora_parts[1]) if len(hora_parts) >= 2 else 0
         
         # Crear datetime naive en hora de España
         local_dt = datetime(year, month, day, hour, minute, 0)
@@ -60,7 +68,7 @@ def parse_spanish_date_to_utc(fecha_str: str, hora_str: str = "00:00") -> Option
         # Convertir a UTC
         utc_dt = spain_dt.astimezone(pytz.UTC).replace(tzinfo=None)
         return utc_dt
-    except (ValueError, TypeError, IndexError) as e:
+    except (ValueError, TypeError, IndexError, AttributeError) as e:
         logger.warning(f"Error parsing date '{fecha_str}' + '{hora_str}': {e}")
         return None
 
