@@ -144,7 +144,7 @@ export default function TabsLayout() {
 
       <IniciarTurnoModal
         visible={modalVisible}
-        userId={user?._id || ''}
+        userId={user?.id || ''}
         userName={user?.nombre || ''}
         token={token || ''}
         onTurnoIniciado={handleTurnoIniciado}
