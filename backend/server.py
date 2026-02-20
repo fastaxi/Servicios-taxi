@@ -2383,6 +2383,11 @@ async def finalizar_turno(turno_id: str, turno_update: TurnoFinalizarUpdate, cur
     server_now = get_spain_now()
     update_dict["hora_fin"] = server_now.strftime("%H:%M")
     
+    # Calcular fin_dt_utc para ordenacion y filtros correctos
+    fin_dt_utc = parse_spanish_date_to_utc(update_dict.get("fecha_fin"), update_dict["hora_fin"])
+    if fin_dt_utc:
+        update_dict["fin_dt_utc"] = fin_dt_utc
+    
     await db.turnos.update_one(
         {"_id": oid, **org_filter},
         {"$set": update_dict}
