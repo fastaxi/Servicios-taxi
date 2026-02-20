@@ -130,9 +130,9 @@ export default function TabsLayout() {
         <Dialog visible={confirmarTurnoVisible} dismissable={false}>
           <Dialog.Title>Iniciar Turno</Dialog.Title>
           <Dialog.Content>
-            <Text variant="bodyLarge">¿Desea iniciar un turno ahora?</Text>
+            <Text variant="bodyLarge">Desea iniciar un turno ahora?</Text>
             <Text variant="bodySmall" style={{ marginTop: 8, color: '#666' }}>
-              Si selecciona "No", podra consultar y editar servicios, pero debera iniciar un turno desde la seccion "Turnos" para registrar nuevos servicios.
+              Si selecciona No, podra consultar y editar servicios, pero debera iniciar un turno desde la seccion Turnos para registrar nuevos servicios.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
