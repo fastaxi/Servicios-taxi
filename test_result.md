@@ -1539,6 +1539,67 @@ agent_communication:
   - agent: "main"
     message: |
       🎯 TESTING FINAL POST-IMPLEMENTACIÓN ELIMINAR TURNOS
+  
+  - agent: "testing"
+    message: |
+      🎯 TESTING EXHAUSTIVO FEATURE FLAGS TAXITUR_ORIGEN - 100% ÉXITO COMPLETO
+      
+      **📊 RESUMEN EJECUTIVO:**
+      ✅ **TODOS LOS REQUERIMIENTOS DEL PR VERIFICADOS Y FUNCIONANDO**
+      
+      **🔍 PARTE 1: /my-organization DEVUELVE FEATURES - ✅ COMPLETO**
+      ✅ Usuario Taxitur ve features.taxitur_origen: true
+      ✅ Usuarios de otras orgs ven features.taxitur_origen: false o {}
+      ✅ Endpoint /my-organization devuelve features correctamente desde BD
+      
+      **🚕 PARTE 2: ORG CON FEATURE ACTIVO (Taxitur) - ✅ COMPLETO**
+      ✅ POST sin origen_taxitur → 400 (correctamente rechazado)
+         Error: "origen_taxitur es obligatorio para esta organizacion (debe ser 'parada' o 'lagos')"
+      ✅ POST con origen_taxitur='parada' → 200 (aceptado correctamente)
+      ✅ POST con origen_taxitur='lagos' → 200 (aceptado correctamente)
+      
+      **🏢 PARTE 3: ORG SIN FEATURE ACTIVO - ✅ VERIFICADO**
+      ✅ 9 organizaciones SIN feature taxitur_origen verificadas
+      ✅ Usuarios de estas orgs NO requieren origen_taxitur
+      ✅ Campo origen_taxitur se ignora/fuerza a null en orgs sin feature
+      
+      **🔍 PARTE 4: FILTROS GET /services - ✅ FUNCIONANDO**
+      ✅ GET /services?origen_taxitur=parada → Filtra correctamente
+      ✅ GET /services?origen_taxitur=lagos → Filtra correctamente
+      ✅ Solo usuarios de orgs con feature pueden usar filtros
+      
+      **🎯 VERIFICACIÓN CRÍTICA: NO HAY DEPENDENCIA HARDCODED - ✅ VERIFICADO**
+      ✅ Feature flag se lee desde BD campo 'features.taxitur_origen'
+      ✅ NO hay dependencia del TAXITUR_ORG_ID hardcodeado
+      ✅ 10 organizaciones verificadas: 1 CON feature, 9 SIN feature
+      ✅ Feature toggle dinámico operativo (desactivar/reactivar funcionando)
+      ✅ Validación depende exclusivamente del feature flag de organización
+      
+      **🧪 TESTING EXHAUSTIVO EJECUTADO:**
+      - Verificación /my-organization devuelve features ✅
+      - Testing org con feature activo (validación obligatoria) ✅  
+      - Testing org sin feature activo (campo ignorado) ✅
+      - Filtros GET /services funcionando ✅
+      - Feature toggle dinámico ✅
+      - No dependencia hardcoded verificada ✅
+      
+      **🎉 CONCLUSIÓN FINAL:**
+      **✅ SISTEMA DE FEATURE FLAGS TAXITUR_ORIGEN 100% OPERATIVO**
+      
+      - Feature flag se lee correctamente desde la BD
+      - Validación funciona según features de organización
+      - NO hay dependencia de ID hardcodeado  
+      - Sistema multi-tenant robusto
+      - Todos los requerimientos del PR cumplidos
+      
+      **📋 CREDENCIALES VERIFICADAS:**
+      - Superadmin: superadmin / superadmin123 ✅
+      - Usuario Taxitur: taxitur_test / test123 ✅  
+      - Admin genérico: admin / admin123 ✅
+      
+      **🚀 RECOMENDACIÓN:**
+      El sistema de feature flags está completamente implementado y funcionando
+      según especificaciones. Listo para producción.
       
       **NUEVA FUNCIONALIDAD IMPLEMENTADA:**
       - DELETE /api/turnos/{turno_id} (solo admin)
