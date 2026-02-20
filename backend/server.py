@@ -1549,20 +1549,29 @@ async def superadmin_create_vehiculo(
     vehiculo: dict,
     current_user: dict = Depends(get_current_superadmin)
 ):
-    """Crear vehículo en cualquier organización (solo superadmin)"""
+    """Crear vehiculo en cualquier organizacion (solo superadmin)"""
     if not vehiculo.get("matricula"):
-        raise HTTPException(status_code=400, detail="La matrícula es obligatoria")
+        raise HTTPException(status_code=400, detail="La matricula es obligatoria")
     if not vehiculo.get("organization_id"):
-        raise HTTPException(status_code=400, detail="Debe seleccionar una organización")
+        raise HTTPException(status_code=400, detail="Debe seleccionar una organizacion")
     
-    # Verificar que la organización existe
+    # Verificar que la organizacion existe
     org = await db.organizations.find_one({"_id": ObjectId(vehiculo["organization_id"])})
     if not org:
-        raise HTTPException(status_code=404, detail="Organización no encontrada")
+        raise HTTPException(status_code=404, detail="Organizacion no encontrada")
+    
+    # Verificar que la matricula no exista en esta organizacion
+    matricula_upper = vehiculo["matricula"].upper()
+    existing = await db.vehiculos.find_one({
+        "matricula": matricula_upper,
+        "organization_id": vehiculo["organization_id"]
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="La matricula ya existe en esta organizacion")
     
     # Incluir TODOS los campos que usa el admin para compatibilidad completa
     vehiculo_dict = {
-        "matricula": vehiculo["matricula"].upper(),
+        "matricula": matricula_upper,
         "marca": vehiculo.get("marca", ""),
         "modelo": vehiculo.get("modelo", ""),
         "licencia": vehiculo.get("licencia", ""),
@@ -1575,7 +1584,7 @@ async def superadmin_create_vehiculo(
     }
     
     result = await db.vehiculos.insert_one(vehiculo_dict)
-    return {"id": str(result.inserted_id), "message": "Vehículo creado correctamente"}
+    return {"id": str(result.inserted_id), "message": "Vehiculo creado correctamente"}
 
 @api_router.put("/superadmin/vehiculos/{vehiculo_id}")
 async def superadmin_update_vehiculo(
