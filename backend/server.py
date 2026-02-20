@@ -3615,17 +3615,60 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
     # Multi-tenant: Asignar organization_id
     service_dict["organization_id"] = org_id
     
+    # ========================================
+    # IDEMPOTENCIA (Paso 5A): Si hay client_uuid, verificar duplicados
+    # ========================================
+    client_uuid = service_dict.get("client_uuid")
+    if client_uuid:
+        # Validar formato de client_uuid
+        client_uuid = str(client_uuid).strip()
+        if len(client_uuid) < 8 or len(client_uuid) > 64:
+            raise HTTPException(
+                status_code=400,
+                detail="client_uuid debe tener entre 8 y 64 caracteres"
+            )
+        service_dict["client_uuid"] = client_uuid
+        
+        # Buscar si ya existe un servicio con este client_uuid en la org
+        existing_service = await db.services.find_one({
+            "organization_id": org_id,
+            "client_uuid": client_uuid
+        })
+        
+        if existing_service:
+            # Ya existe - devolver el existente (idempotente)
+            return ServiceResponse(
+                id=str(existing_service["_id"]),
+                **{k: v for k, v in existing_service.items() if k != "_id"}
+            )
+    
     # Asignar turno_id: priorizar el validado del payload, luego turno activo
     if turno_from_payload:
         service_dict["turno_id"] = str(turno_from_payload["_id"])
     elif turno_activo:
         service_dict["turno_id"] = str(turno_activo["_id"])
     
-    # Calcular importe_total automáticamente
+    # Calcular importe_total automaticamente
     service_dict["importe_total"] = service_dict["importe"] + service_dict.get("importe_espera", 0)
     
-    result = await db.services.insert_one(service_dict)
-    created_service = await db.services.find_one({"_id": result.inserted_id})
+    # Intentar insertar (puede fallar por DuplicateKeyError si hay concurrencia)
+    try:
+        result = await db.services.insert_one(service_dict)
+        created_service = await db.services.find_one({"_id": result.inserted_id})
+    except Exception as e:
+        # Si falla por DuplicateKeyError (concurrencia), buscar el existente
+        if "duplicate key error" in str(e).lower() and client_uuid:
+            existing_service = await db.services.find_one({
+                "organization_id": org_id,
+                "client_uuid": client_uuid
+            })
+            if existing_service:
+                return ServiceResponse(
+                    id=str(existing_service["_id"]),
+                    **{k: v for k, v in existing_service.items() if k != "_id"}
+                )
+        # Si no es DuplicateKeyError o no se encuentra, re-lanzar
+        raise HTTPException(status_code=500, detail=f"Error al crear servicio: {str(e)}")
     
     return ServiceResponse(
         id=str(created_service["_id"]),
