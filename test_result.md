@@ -502,6 +502,18 @@ backend:
         agent: "testing"
         comment: "✅ TESTING PR1 COMPLETO (3/3 tests): 6.1 POST servicio con metodo_pago='efectivo' → 200 ✓, 6.2 POST servicio con metodo_pago='tpv' → 200 ✓, 6.3 GET services?metodo_pago=efectivo → 200 ✓ (6 servicios efectivo encontrados). Campo metodo_pago y filtros funcionando perfectamente."
 
+  - task: "Filtros datetime UTC - PASO 3"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTING FILTROS DATETIME PASO 3 COMPLETO (4/4 tests): Verificados filtros por rango de fechas con datetime UTC. Test crítico: filtro 2025 excluye 2024 ✓, filtro 2024 excluye 2025 ✓, caso específico 2026 no incluye 2025 ✓ (bug string comparison RESUELTO), ordenación DESC correcta ✓. Campo service_dt_utc implementado internamente, migración completada (27 servicios), índices datetime creados. BUG ORIGINAL COMPLETAMENTE RESUELTO."
+
 frontend:
   - task: "Login Screen"
     implemented: true
