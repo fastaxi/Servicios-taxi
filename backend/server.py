@@ -4647,6 +4647,15 @@ async def startup_event():
         await db.turnos.create_index([("organization_id", 1), ("inicio_dt_utc", -1)], name="idx_org_inicio_dt")
         print("[STARTUP] Indices datetime creados (service_dt_utc, inicio_dt_utc)")
         
+        # NUEVO: Índice para idempotencia con client_uuid (Paso 5A)
+        await db.services.create_index(
+            [("organization_id", 1), ("client_uuid", 1)],
+            unique=True,
+            sparse=True,
+            name="ux_org_client_uuid"
+        )
+        print("[STARTUP] Indice ux_org_client_uuid creado (idempotencia)")
+        
         print("[STARTUP] Todos los indices creados correctamente")
     except Exception as e:
         print(f"[STARTUP WARNING] Error creando indices: {e}")
