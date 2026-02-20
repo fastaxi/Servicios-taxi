@@ -4182,6 +4182,24 @@ async def startup_event():
         print(f"[STARTUP WARNING] Error creating indexes: {e}")
         # No fallar si los índices ya existen
     
+    # Compatibilidad hacia atrás: Si existe TAXITUR_ORG_ID, activar feature flag automáticamente
+    if TAXITUR_ORG_ID:
+        try:
+            taxitur_org = await db.organizations.find_one({"_id": ObjectId(TAXITUR_ORG_ID)})
+            if taxitur_org:
+                features = taxitur_org.get("features", {})
+                if not features.get("taxitur_origen"):
+                    # Activar el feature flag para esta organización
+                    await db.organizations.update_one(
+                        {"_id": ObjectId(TAXITUR_ORG_ID)},
+                        {"$set": {"features.taxitur_origen": True}}
+                    )
+                    logger.info(f"[STARTUP] Feature 'taxitur_origen' activado para org {TAXITUR_ORG_ID}")
+                else:
+                    logger.info(f"[STARTUP] Feature 'taxitur_origen' ya activo para org {TAXITUR_ORG_ID}")
+        except Exception as e:
+            logger.warning(f"[STARTUP] No se pudo verificar TAXITUR_ORG_ID: {e}")
+    
     # Seed de usuarios por defecto SOLO en no-producción y bajo flag explícita
     # En producción, los usuarios deben crearse manualmente por seguridad
     ALLOW_SEED_USERS = os.environ.get("ALLOW_SEED_USERS", "false").lower() == "true"
