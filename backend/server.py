@@ -3425,6 +3425,11 @@ async def create_service(service: ServiceCreate, current_user: dict = Depends(ge
     service_dict["created_at"] = datetime.utcnow()
     service_dict["synced"] = True
     
+    # Calcular service_dt_utc para ordenacion y filtros correctos
+    service_dt_utc = parse_spanish_date_to_utc(service_dict["fecha"], service_dict.get("hora", "00:00"))
+    if service_dt_utc:
+        service_dict["service_dt_utc"] = service_dt_utc
+    
     # Añadir campos de vehículo validados
     service_dict["vehiculo_cambiado"] = vehiculo_cambiado
     if vehiculo_validated:
