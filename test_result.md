@@ -1312,7 +1312,7 @@ agent_communication:
       - 6.3 GET services?metodo_pago=efectivo → 200 ✅ (6 servicios encontrados)
       
       **🔧 CONFIGURACIÓN DE PRUEBA UTILIZADA:**
-      - API Base URL: https://taxi-services-1.preview.emergentagent.com/api
+      - API Base URL: https://flagged-services.preview.emergentagent.com/api
       - TAXITUR_ORG_ID: 69484bec187c3bc2b0fdb8f4
       - OTHER_ORG_ID: 69429aaecdbc9d2db23e0ed5 (Taxi Tineo)
       - Usuarios: taxista_taxitur/test123, taxista_tineo/test123, admin/admin123

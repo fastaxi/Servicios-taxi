@@ -6,7 +6,7 @@ Debug specific failing tests
 import requests
 import json
 
-BASE_URL = "https://taxi-services-1.preview.emergentagent.com/api"
+BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
 
 def login(username, password):
     response = requests.post(f"{BASE_URL}/auth/login", json={
