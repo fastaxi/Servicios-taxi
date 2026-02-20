@@ -134,9 +134,8 @@ def test_parte_1_verify_service_dt_utc():
     taxista_data = {
         "username": test_username,
         "password": "test123",
-        "name": "Taxista Test DateTime",
+        "nombre": "Taxista Test DateTime",
         "role": "taxista",
-        "telefono": "123456789",
         "licencia": "TEST001"
     }
     
