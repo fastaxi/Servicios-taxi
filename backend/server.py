@@ -3769,6 +3769,14 @@ async def update_service(service_id: str, service: ServiceCreate, current_user: 
     importe_espera = service_dict.get("importe_espera", existing_service.get("importe_espera", 0))
     service_dict["importe_total"] = importe + importe_espera
     
+    # Recalcular service_dt_utc si se cambia fecha u hora
+    fecha_nueva = service_dict.get("fecha", existing_service.get("fecha"))
+    hora_nueva = service_dict.get("hora", existing_service.get("hora", "00:00"))
+    if "fecha" in service_dict or "hora" in service_dict:
+        service_dt_utc = parse_spanish_date_to_utc(fecha_nueva, hora_nueva)
+        if service_dt_utc:
+            service_dict["service_dt_utc"] = service_dt_utc
+    
     result = await db.services.update_one(
         {"_id": ObjectId(service_id), **org_filter},  # Doble check con org_filter
         {"$set": service_dict}
