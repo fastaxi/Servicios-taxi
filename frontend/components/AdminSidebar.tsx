@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Text, Divider, Avatar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, usePathname } from 'expo-router';
+import { useRouter, usePathname, Href } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import OrganizationBranding from './OrganizationBranding';
 
@@ -28,7 +28,7 @@ export default function AdminSidebar() {
   const { user, logout } = useAuth();
 
   const handleNavigation = (route: string) => {
-    router.push(route);
+    router.push(route as Href);
   };
 
   const handleLogout = () => {
