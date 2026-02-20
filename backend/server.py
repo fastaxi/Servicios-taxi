@@ -2127,6 +2127,11 @@ async def create_turno(turno: TurnoCreate, current_user: dict = Depends(get_curr
     server_now = get_spain_now()
     turno_dict["hora_inicio"] = server_now.strftime("%H:%M")
     
+    # Calcular inicio_dt_utc para ordenacion y filtros correctos
+    inicio_dt_utc = parse_spanish_date_to_utc(turno_dict["fecha_inicio"], turno_dict["hora_inicio"])
+    if inicio_dt_utc:
+        turno_dict["inicio_dt_utc"] = inicio_dt_utc
+    
     # INTEGRIDAD: Usar matrícula desde BD, ignorar lo que venga del cliente
     if vehiculo_validated:
         turno_dict["vehiculo_id"] = str(vehiculo_validated["_id"])
