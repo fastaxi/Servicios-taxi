@@ -1933,23 +1933,23 @@ async def delete_company(company_id: str, current_user: dict = Depends(get_curre
 # ==========================================
 @api_router.post("/vehiculos", response_model=VehiculoResponse)
 async def create_vehiculo(vehiculo: VehiculoCreate, current_user: dict = Depends(get_current_admin)):
-    """Crear vehículo - se asigna a la organización del admin"""
+    """Crear vehiculo - se asigna a la organizacion del admin"""
     
-    # SEGURIDAD: Superadmin no puede crear vehículos (evita datos sin tenant)
+    # SEGURIDAD: Superadmin no puede crear vehiculos (evita datos sin tenant)
     if is_superadmin(current_user):
         raise HTTPException(
             status_code=403,
-            detail="Superadmin no puede crear vehículos. Use una cuenta de admin de organización."
+            detail="Superadmin no puede crear vehiculos. Use una cuenta de admin de organizacion."
         )
     
     # Multi-tenant: Asignar organization_id
     org_id = get_user_organization_id(current_user)
     
-    # Verificar que la matrícula no exista dentro de la organización
+    # Verificar que la matricula no exista dentro de la organizacion
     query = {"matricula": vehiculo.matricula, "organization_id": org_id}
     existing = await db.vehiculos.find_one(query)
     if existing:
-        raise HTTPException(status_code=400, detail="La matrícula ya existe")
+        raise HTTPException(status_code=400, detail="La matricula ya existe en tu organizacion")
     
     vehiculo_dict = vehiculo.dict()
     vehiculo_dict["organization_id"] = org_id
