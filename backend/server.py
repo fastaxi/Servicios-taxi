@@ -3463,25 +3463,24 @@ async def sync_services(service_sync: ServiceSync, current_user: dict = Depends(
             
             # (7) VALIDACIONES PR1 - Mismas que en POST /api/services
             
-            # (D) MÉTODO DE PAGO: Validar valores permitidos
+            # (D) METODO DE PAGO: Validar valores permitidos
             if service.metodo_pago and service.metodo_pago not in ("efectivo", "tpv"):
                 errors.append(f"Servicio {idx}: metodo_pago debe ser 'efectivo' o 'tpv'")
                 continue
             
-            # (E) ORIGEN TAXITUR: Solo para org Taxitur, obligatorio allí
-            if org_id == TAXITUR_ORG_ID:
+            # (E) ORIGEN TAXITUR: Basado en feature flag de la organizacion
+            if has_taxitur_origen_feature:
                 if not service.origen_taxitur:
-                    errors.append(f"Servicio {idx}: origen_taxitur es obligatorio para Taxitur")
+                    errors.append(f"Servicio {idx}: origen_taxitur es obligatorio para esta organizacion")
                     continue
                 if service.origen_taxitur not in ("parada", "lagos"):
                     errors.append(f"Servicio {idx}: origen_taxitur debe ser 'parada' o 'lagos'")
                     continue
             else:
-                if service.origen_taxitur:
-                    errors.append(f"Servicio {idx}: origen_taxitur solo está permitido para Taxitur")
-                    continue
+                # Si el feature NO esta activo, ignorar origen_taxitur
+                service.origen_taxitur = None
             
-            # (A) VEHÍCULO EN SERVICIO: Validar y determinar si hubo cambio
+            # (A) VEHICULO EN SERVICIO: Validar y determinar si hubo cambio
             turno_ref = turno_validated or turno_activo
             vehiculo_default_id = None
             if turno_ref and turno_ref.get("vehiculo_id"):
