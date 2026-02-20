@@ -1011,6 +1011,7 @@ async def get_my_organization(current_user: dict = Depends(get_current_user)):
             "localidad": "",
             "provincia": "",
             "features": {},  # Sin features activos por defecto
+            "settings": {},  # Sin settings por defecto
         }
     
     org = await db.organizations.find_one({"_id": ObjectId(org_id)})
@@ -1030,7 +1031,9 @@ async def get_my_organization(current_user: dict = Depends(get_current_user)):
         "direccion": org.get("direccion", ""),
         "localidad": org.get("localidad", ""),
         "provincia": org.get("provincia", ""),
+        "cif": org.get("cif", ""),
         "features": org.get("features", {}),  # Feature flags de la organización
+        "settings": org.get("settings", {}),  # Tenant settings
     }
 
 # ==========================================
