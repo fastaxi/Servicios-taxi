@@ -14,7 +14,7 @@ from datetime import datetime
 # ==========================================
 # CONFIGURACIÓN
 # ==========================================
-BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:8001/api"
 
 # Credenciales proporcionadas
 SUPERADMIN_CREDENTIALS = {"username": "superadmin", "password": "superadmin123"}
