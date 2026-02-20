@@ -35,7 +35,7 @@ def get_spain_now():
 
 def parse_spanish_date_to_utc(fecha_str: str, hora_str: str = "00:00") -> Optional[datetime]:
     """
-    Convierte fecha dd/mm/yyyy + hora HH:mm (hora de España) a datetime UTC.
+    Convierte fecha dd/mm/yyyy O yyyy-mm-dd + hora HH:mm (hora de España) a datetime UTC.
     Retorna None si el formato es inválido.
     """
     try:
@@ -46,11 +46,22 @@ def parse_spanish_date_to_utc(fecha_str: str, hora_str: str = "00:00") -> Option
         if isinstance(fecha_str, datetime):
             return fecha_str
         
-        # Parsear fecha
-        parts = fecha_str.split("/")
-        if len(parts) != 3:
+        # Intentar parsear en diferentes formatos
+        day, month, year = None, None, None
+        
+        # Formato español: dd/mm/yyyy
+        if "/" in fecha_str:
+            parts = fecha_str.split("/")
+            if len(parts) == 3:
+                day, month, year = int(parts[0]), int(parts[1]), int(parts[2])
+        # Formato ISO: yyyy-mm-dd
+        elif "-" in fecha_str:
+            parts = fecha_str.split("-")
+            if len(parts) == 3:
+                year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
+        
+        if day is None or month is None or year is None:
             return None
-        day, month, year = int(parts[0]), int(parts[1]), int(parts[2])
         
         # Parsear hora (default 00:00 si no se proporciona)
         hora_str = hora_str or "00:00"
