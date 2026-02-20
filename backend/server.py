@@ -421,6 +421,19 @@ class OrganizationBase(BaseModel):
     notas: Optional[str] = ""
     activa: bool = True  # Si la organización está activa
     features: Optional[dict] = None  # Feature flags: {"taxitur_origen": true/false, ...}
+    settings: Optional[dict] = None  # Tenant settings: branding, footer, etc.
+
+# Whitelist de keys permitidas para settings (evitar que sea un basurero)
+ALLOWED_SETTINGS_KEYS = {
+    "display_name",      # Nombre a mostrar en UI
+    "logo_url",          # URL del logo (alternativa a base64)
+    "footer_name",       # Nombre para el footer
+    "footer_cif",        # CIF para el footer
+    "footer_extra",      # Texto extra para footer
+    "primary_color",     # Color primario (override)
+    "support_email",     # Email de soporte
+    "support_phone",     # Telefono de soporte
+}
 
 class OrganizationCreate(OrganizationBase):
     pass
