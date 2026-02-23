@@ -1,43 +1,13 @@
 {
   "cli": {
-    "version": ">= 13.2.0"
+    "version": ">= 18.0.0"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
+    "apk": {
       "distribution": "internal",
-      "node": "22.11.0",
-      "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host",
-        "EXPO_PUBLIC_TAXITUR_ORG_ID": "69484bec187c3bc2b0fdb8f4"
-      }
-    },
-    "preview": {
-      "distribution": "internal",
-      "node": "22.11.0",
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host",
-        "EXPO_PUBLIC_TAXITUR_ORG_ID": "69484bec187c3bc2b0fdb8f4"
-      }
-    },
-    "production": {
-      "node": "22.11.0",
-      "android": {
-        "buildType": "apk"
-      },
-      "ios": {
-        "buildConfiguration": "Release"
-      },
-      "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host",
-        "EXPO_PUBLIC_TAXITUR_ORG_ID": "69484bec187c3bc2b0fdb8f4"
       }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }
