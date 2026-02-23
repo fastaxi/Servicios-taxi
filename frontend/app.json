@@ -55,7 +55,11 @@
     },
     "extra": {
       "router": {},
-      "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host"
+      "EXPO_PUBLIC_BACKEND_URL": "https://flagged-services.preview.emergentagent.com",
+      "EXPO_PUBLIC_TAXITUR_ORG_ID": "69484bec187c3bc2b0fdb8f4",
+      "eas": {
+        "projectId": "acbf465e-bf17-4268-846e-32dcb18dde93"
+      }
     }
   }
 }
