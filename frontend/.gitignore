@@ -41,3 +41,6 @@ app-example
 
 # Lockfile - Usar solo yarn.lock (elegir uno)
 package-lock.json
+
+# never commit credentials
+.git-credentials
