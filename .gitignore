@@ -488,3 +488,6 @@ model.patch
 *.env.*
 .git-credentials
 *.apk
+
+# expo web export
+frontend/dist-web/
