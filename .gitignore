@@ -486,3 +486,8 @@ model.patch
 # Environment files
 *.env
 *.env.*
+.git-credentials
+*.apk
+
+# expo web export
+frontend/dist-web/
