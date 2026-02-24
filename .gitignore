@@ -491,3 +491,7 @@ model.patch
 
 # expo web export
 frontend/dist-web/
+-e 
+# Environment files
+*.env
+*.env.*
