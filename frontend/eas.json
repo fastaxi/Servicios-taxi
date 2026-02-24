@@ -3,11 +3,33 @@
     "version": ">= 18.0.0"
   },
   "build": {
-    "apk": {
+    "development": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "http://localhost:8001"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://flagged-services.preview.emergentagent.com"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://taxitineo.emergent.host"
+      },
       "android": {
         "buildType": "apk"
       }
     }
   }
 }
+
