@@ -968,4 +968,23 @@ const styles = StyleSheet.create({
     color: '#bbb',
     marginTop: 4,
   },
+  featureFlagsTitle: {
+    color: '#333',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  featureFlagRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 8,
+  },
+  featureFlagInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
 });
