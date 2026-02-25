@@ -423,6 +423,11 @@ class OrganizationBase(BaseModel):
     features: Optional[dict] = None  # Feature flags: {"taxitur_origen": true/false, ...}
     settings: Optional[dict] = None  # Tenant settings: branding, footer, etc.
 
+# Whitelist de feature flags permitidas
+ALLOWED_FEATURE_KEYS = {
+    "taxitur_origen",  # Habilitar campo origen Parada/Lagos
+}
+
 # Whitelist de keys permitidas para settings (evitar que sea un basurero)
 ALLOWED_SETTINGS_KEYS = {
     "display_name",      # Nombre a mostrar en UI
@@ -1156,6 +1161,63 @@ async def superadmin_update_org_settings(
         "features": updated_org.get("features", {}),
         "message": "Settings actualizados correctamente"
     }
+
+
+@api_router.put("/superadmin/organizations/{org_id}/features")
+async def superadmin_update_org_features(
+    org_id: str,
+    body: dict,
+    current_user: dict = Depends(get_current_superadmin)
+):
+    """Actualizar feature flags de una organizacion (solo Superadmin).
+    Body: { "features": { "taxitur_origen": true/false } }
+    Solo se permiten keys de ALLOWED_FEATURE_KEYS y valores boolean.
+    Merge: actualiza solo las keys enviadas sin borrar las existentes.
+    """
+    features_input = body.get("features")
+    if not isinstance(features_input, dict) or len(features_input) == 0:
+        raise HTTPException(status_code=400, detail="Se requiere un objeto 'features' con al menos una key")
+
+    # Validar keys y tipos
+    for key, value in features_input.items():
+        if key not in ALLOWED_FEATURE_KEYS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Feature flag '{key}' no permitida. Permitidas: {sorted(ALLOWED_FEATURE_KEYS)}"
+            )
+        if not isinstance(value, bool):
+            raise HTTPException(
+                status_code=400,
+                detail=f"El valor de '{key}' debe ser boolean (true/false), recibido: {type(value).__name__}"
+            )
+
+    # Verificar que la org existe
+    try:
+        org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID de organizacion invalido")
+
+    if not org:
+        raise HTTPException(status_code=404, detail="Organizacion no encontrada")
+
+    # Merge con features actuales
+    current_features = org.get("features") or {}
+    merged_features = {**current_features, **features_input}
+
+    await db.organizations.update_one(
+        {"_id": ObjectId(org_id)},
+        {"$set": {"features": merged_features, "updated_at": datetime.utcnow()}}
+    )
+
+    updated_org = await db.organizations.find_one({"_id": ObjectId(org_id)})
+    return {
+        "id": str(updated_org["_id"]),
+        "nombre": updated_org.get("nombre"),
+        "features": updated_org.get("features", {}),
+        "settings": updated_org.get("settings", {}),
+        "message": "Features actualizados correctamente"
+    }
+
 
 # ==========================================
 # ORGANIZATION ENDPOINTS (Superadmin only)
