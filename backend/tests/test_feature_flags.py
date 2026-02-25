@@ -98,6 +98,15 @@ class TestFeatureFlagsAuthorization:
         )
         assert response.status_code == 403, f"Expected 403, got {response.status_code}: {response.text}"
 
+    def test_no_token_gets_401(self):
+        """Request without token returns 401 Unauthorized"""
+        response = requests.put(
+            f"{BASE_URL}/api/superadmin/organizations/{TAXITUR_ORG_ID}/features",
+            json={"features": {"taxitur_origen": True}},
+            headers={"Content-Type": "application/json"}
+        )
+        assert response.status_code == 401, f"Expected 401, got {response.status_code}: {response.text}"
+
 
 class TestFeatureFlagsValidation:
     """Test input validation for feature flags endpoint"""
