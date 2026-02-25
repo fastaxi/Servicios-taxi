@@ -7,6 +7,25 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+
+import subprocess
+
+def get_git_sha() -> str:
+    """Return short git SHA if available, else env GIT_SHA, else 'unknown'."""
+    # Prefer real repo SHA when .git exists (Emergent preview), then fall back to env
+    try:
+        sha = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(pathlib.Path(__file__).resolve().parent),
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        if sha:
+            return sha
+    except Exception:
+        pass
+    return os.environ.get("GIT_SHA", "unknown")
+import pathlib
 import os
 import logging
 import secrets
@@ -360,7 +379,7 @@ async def log_requests(request, call_next):
 @app.get("/")
 async def root_health_check():
     """Health check endpoint for deployment verification"""
-    GIT_SHA = os.environ.get("GIT_SHA", "unknown")
+    GIT_SHA = get_git_sha()
     return {
         "status": "healthy",
         "service": "taxifast-api",
@@ -381,7 +400,7 @@ async def health_check():
         logger.error(f"Database health check failed: {e}")
         db_status = "disconnected"
     
-    GIT_SHA = os.environ.get("GIT_SHA", "unknown")
+    GIT_SHA = get_git_sha()
     return {
         "status": "healthy" if db_status == "connected" else "degraded",
         "database": db_status,
