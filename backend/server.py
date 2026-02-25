@@ -381,9 +381,11 @@ async def health_check():
         logger.error(f"Database health check failed: {e}")
         db_status = "disconnected"
     
+    GIT_SHA = os.environ.get("GIT_SHA", "unknown")
     return {
         "status": "healthy" if db_status == "connected" else "degraded",
         "database": db_status,
+        "git_sha": GIT_SHA,
         "timestamp": datetime.utcnow().isoformat()
     }
 
