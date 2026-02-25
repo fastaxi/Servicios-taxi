@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
-  const { pendingServices } = useSync();
+  const { pendingCount } = useSync();
   const { organization } = useOrganization();
   const router = useRouter();
 
@@ -58,8 +58,8 @@ export default function ProfileScreen() {
           </Text>
           <View style={styles.infoRow}>
             <Text variant="bodyMedium" style={styles.label}>Servicios pendientes:</Text>
-            <Text variant="bodyMedium" style={pendingServices > 0 ? styles.pending : styles.synced}>
-              {pendingServices}
+            <Text variant="bodyMedium" style={pendingCount > 0 ? styles.pending : styles.synced}>
+              {pendingCount}
             </Text>
           </View>
         </Card.Content>
