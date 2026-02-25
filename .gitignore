@@ -91,3 +91,7 @@ frontend/dist-web/
 # Misc
 model.patch
 *.apk
+-e 
+# Environment files
+*.env
+*.env.*
