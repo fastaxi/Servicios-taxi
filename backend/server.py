@@ -937,7 +937,7 @@ async def get_org_filter(user: dict) -> dict:
 # HEALTH CHECK ENDPOINT (P1)
 # ==========================================
 @api_router.get("/health")
-async def health_check():
+async def api_health_check():
     """
     Health check endpoint para monitoreo.
     Verifica conexión a la base de datos.
