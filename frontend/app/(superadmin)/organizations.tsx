@@ -244,6 +244,25 @@ export default function OrganizationsScreen() {
     }
   };
 
+  const handleToggleFeature = async (org: Organization, featureKey: string) => {
+    const currentValue = org.features?.[featureKey] || false;
+    setTogglingFeature(`${org.id}-${featureKey}`);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/superadmin/organizations/${org.id}/features`,
+        { features: { [featureKey]: !currentValue } },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      loadOrganizations();
+    } catch (error: any) {
+      console.error('Error toggling feature:', error);
+      alert(error.response?.data?.detail || 'Error al cambiar feature flag');
+    } finally {
+      setTogglingFeature(null);
+    }
+  };
+
   const handleDeleteOrganization = async (org: Organization) => {
     const confirmMsg = `¿Estas seguro de eliminar "${org.nombre}"? Se eliminaran TODOS los datos: usuarios, vehiculos, clientes, turnos y servicios.`;
     
