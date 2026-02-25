@@ -360,10 +360,12 @@ async def log_requests(request, call_next):
 @app.get("/")
 async def root_health_check():
     """Health check endpoint for deployment verification"""
+    GIT_SHA = os.environ.get("GIT_SHA", "unknown")
     return {
         "status": "healthy",
         "service": "taxifast-api",
         "version": "1.0.0",
+        "git_sha": GIT_SHA,
         "timestamp": datetime.utcnow().isoformat()
     }
 
@@ -4885,21 +4887,23 @@ async def startup_event():
     # ========================================
     await run_datetime_migration()
     
-    # Compatibilidad hacia atrás: Si existe TAXITUR_ORG_ID, activar feature flag automáticamente
+    # Compatibilidad hacia atrás: Si existe TAXITUR_ORG_ID, activar feature flag
+    # SOLO SI la key no existe aún (primera vez). Si ya existe (True o False),
+    # respetar la decisión del superadmin y NO pisar el valor.
     if TAXITUR_ORG_ID:
         try:
             taxitur_org = await db.organizations.find_one({"_id": ObjectId(TAXITUR_ORG_ID)})
             if taxitur_org:
-                features = taxitur_org.get("features", {})
-                if not features.get("taxitur_origen"):
-                    # Activar el feature flag para esta organización
+                features = taxitur_org.get("features") or {}
+                if "taxitur_origen" not in features:
+                    # Primera vez: activar el feature flag
                     await db.organizations.update_one(
                         {"_id": ObjectId(TAXITUR_ORG_ID)},
                         {"$set": {"features.taxitur_origen": True}}
                     )
-                    logger.info(f"[STARTUP] Feature 'taxitur_origen' activado para org {TAXITUR_ORG_ID}")
+                    logger.info(f"[STARTUP] Feature 'taxitur_origen' activado por primera vez para org {TAXITUR_ORG_ID}")
                 else:
-                    logger.info(f"[STARTUP] Feature 'taxitur_origen' ya activo para org {TAXITUR_ORG_ID}")
+                    logger.info(f"[STARTUP] Feature 'taxitur_origen' = {features['taxitur_origen']} para org {TAXITUR_ORG_ID} (respetado)")
         except Exception as e:
             logger.warning(f"[STARTUP] No se pudo verificar TAXITUR_ORG_ID: {e}")
     
