@@ -24,6 +24,7 @@ interface Organization {
   logo_base64: string | null;
   notas: string;
   activa: boolean;
+  features: Record<string, boolean>;
   total_taxistas: number;
   total_vehiculos: number;
   total_clientes: number;
@@ -61,6 +62,7 @@ export default function OrganizationsScreen() {
   const [adminModalVisible, setAdminModalVisible] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [saving, setSaving] = useState(false);
+  const [togglingFeature, setTogglingFeature] = useState<string | null>(null);
   const theme = useTheme();
 
   // Form states for new/edit organization
