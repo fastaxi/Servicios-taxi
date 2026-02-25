@@ -6,7 +6,7 @@ Verificar que los índices únicos ahora son por organización, no globales.
 La misma matrícula/número de cliente puede existir en diferentes organizaciones 
 pero NO puede duplicarse dentro de la misma organización.
 
-API Base URL: https://flagged-services.preview.emergentagent.com/api
+API Base URL: https://idempotent-services.preview.emergentagent.com/api
 
 CREDENCIALES:
 - Superadmin: superadmin / superadmin123  
@@ -19,7 +19,7 @@ import sys
 from typing import Dict, List, Any, Optional
 
 # Configuration
-BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
+BASE_URL = "https://idempotent-services.preview.emergentagent.com/api"
 SUPERADMIN_CREDENTIALS = {"username": "superadmin", "password": "superadmin123"}
 ADMIN_TAXITUR_CREDENTIALS = {"username": "admintur", "password": "admin123"}
 

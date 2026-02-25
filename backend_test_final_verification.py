@@ -4,7 +4,7 @@ TESTING IDEMPOTENCIA CON CLIENT_UUID (Paso 5A) - COMPREHENSIVE FINAL VERIFICATIO
 
 Testing the exact requirements from the review request.
 
-API Base URL: https://flagged-services.preview.emergentagent.com/api
+API Base URL: https://idempotent-services.preview.emergentagent.com/api
 
 CREDENCIALES:
 - Admin Taxitur: admintur / admin123  
@@ -19,7 +19,7 @@ import sys
 import time
 
 # API Configuration
-API_BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
+API_BASE_URL = "https://idempotent-services.preview.emergentagent.com/api"
 
 # Test credentials
 ADMIN_TAXITUR = {"username": "admintur", "password": "admin123"}

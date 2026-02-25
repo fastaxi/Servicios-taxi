@@ -15,7 +15,7 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://flagged-services.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://idempotent-services.preview.emergentagent.com"
       },
       "android": {
         "buildType": "apk"

@@ -8,7 +8,7 @@ import json
 import random
 import string
 
-BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
+BASE_URL = "https://idempotent-services.preview.emergentagent.com/api"
 
 def make_request(method, endpoint, data=None, token=None, timeout=15):
     """Make HTTP request with proper error handling"""

@@ -43,12 +43,12 @@ Contraseña: taxista123
 
 ### Vista Web (Preview)
 ```
-https://flagged-services.preview.emergentagent.com
+https://idempotent-services.preview.emergentagent.com
 ```
 
 ### API Backend
 ```
-https://flagged-services.preview.emergentagent.com/api
+https://idempotent-services.preview.emergentagent.com/api
 ```
 
 ## 📱 Cómo Usar en Dispositivo Móvil Real

@@ -120,7 +120,7 @@ export default function LoginScreen() {
 
           {__DEV__ && (
             <Text variant="bodySmall" style={styles.debugText}>
-              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://flagged-services.preview.emergentagent.com'}
+              API: {process.env.EXPO_PUBLIC_BACKEND_URL || 'https://idempotent-services.preview.emergentagent.com'}
             </Text>
           )}
 

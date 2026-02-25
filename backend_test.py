@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 # Configuration from review request
-BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
+BASE_URL = "https://idempotent-services.preview.emergentagent.com/api"
 
 # Credentials from review request
 CREDENTIALS = {

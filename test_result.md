@@ -1351,7 +1351,7 @@ agent_communication:
       - 5.2 Mensaje error: "client_uuid debe tener entre 8 y 64 caracteres" → ✓
       
       **🔧 CONFIGURACIÓN TESTING UTILIZADA:**
-      - API Base URL: https://flagged-services.preview.emergentagent.com/api ✓
+      - API Base URL: https://idempotent-services.preview.emergentagent.com/api ✓
       - Credencial admintur: admintur/admin123 ✓
       - Org Taxitur: 69484bec187c3bc2b0fdb8f4 ✓
       - Feature taxitur_origen: activa ✓
@@ -1424,7 +1424,7 @@ agent_communication:
       - 6.3 GET services?metodo_pago=efectivo → 200 ✅ (6 servicios encontrados)
       
       **🔧 CONFIGURACIÓN DE PRUEBA UTILIZADA:**
-      - API Base URL: https://flagged-services.preview.emergentagent.com/api
+      - API Base URL: https://idempotent-services.preview.emergentagent.com/api
       - TAXITUR_ORG_ID: 69484bec187c3bc2b0fdb8f4
       - OTHER_ORG_ID: 69429aaecdbc9d2db23e0ed5 (Taxi Tineo)
       - Usuarios: taxista_taxitur/test123, taxista_tineo/test123, admin/admin123
@@ -1510,7 +1510,7 @@ agent_communication:
       ✅ **TODOS LOS TESTS CRÍTICOS PASARON: 4/4 (100% SUCCESS RATE)**
       
       **🔧 CONFIGURACIÓN DE PRUEBA:**
-      - API Base URL: https://flagged-services.preview.emergentagent.com/api
+      - API Base URL: https://idempotent-services.preview.emergentagent.com/api
       - Credenciales: admintur / admin123 ✅
       - Total servicios analizados: 13 servicios existentes
       - Distribución de fechas: 15/12/2024 (8 servicios), 28/12/2025 (3 servicios), 2026-02-20 (2 servicios)

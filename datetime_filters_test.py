@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import uuid
 
 # API Configuration
-API_BASE = "https://flagged-services.preview.emergentagent.com/api"
+API_BASE = "https://idempotent-services.preview.emergentagent.com/api"
 
 # Credenciales
 SUPERADMIN_CREDS = {"username": "superadmin", "password": "superadmin123"}

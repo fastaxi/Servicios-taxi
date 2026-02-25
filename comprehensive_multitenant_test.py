@@ -3,7 +3,7 @@
 TESTING EXHAUSTIVO COMPLETO - ÍNDICES ÚNICOS MULTI-TENANT
 Implementa exactamente todos los casos de prueba solicitados en el review request
 
-API Base URL: https://flagged-services.preview.emergentagent.com/api
+API Base URL: https://idempotent-services.preview.emergentagent.com/api
 CREDENCIALES:
 - Superadmin: superadmin / superadmin123
 - Admin Taxitur: admintur / admin123
@@ -13,7 +13,7 @@ import requests
 import json
 import time
 
-BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
+BASE_URL = "https://idempotent-services.preview.emergentagent.com/api"
 
 class ComprehensiveMultiTenantTester:
     def __init__(self):

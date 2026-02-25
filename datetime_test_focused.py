@@ -9,7 +9,7 @@ from datetime import datetime
 import sys
 
 # API Configuration  
-API_BASE = "https://flagged-services.preview.emergentagent.com/api"
+API_BASE = "https://idempotent-services.preview.emergentagent.com/api"
 ADMIN_TAXITUR_CREDS = {"username": "admintur", "password": "admin123"}
 
 class Colors:

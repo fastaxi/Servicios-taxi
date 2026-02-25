@@ -11,7 +11,7 @@ import json
 import time
 
 # Configuration
-BASE_URL = "https://flagged-services.preview.emergentagent.com/api"
+BASE_URL = "https://idempotent-services.preview.emergentagent.com/api"
 
 def get_token(username, password):
     """Get authentication token"""
