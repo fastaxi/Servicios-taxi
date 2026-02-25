@@ -1,22 +1,20 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
-import { newClientUUID, isValidClientUUID } from '../utils/uuid';
+import { generateClientUUID, isValidClientUUID } from '../utils/uuid';
 
 import { API_URL } from '../config/api';
 
-interface PendingService {
+// --- Types ---
+
+export interface QueuedService {
   client_uuid: string;
-  fecha: string;
-  hora: string;
-  origen: string;
-  destino: string;
-  importe: number;
-  importe_espera?: number;
-  tipo: string;
-  [key: string]: any;
+  payload: Record<string, any>;
+  created_at: string; // ISO 8601
+  status: 'pending' | 'syncing' | 'synced' | 'failed';
+  error?: string;
 }
 
 interface SyncResult {
@@ -27,124 +25,173 @@ interface SyncResult {
 }
 
 interface SyncContextType {
-  pendingServices: number;
+  pendingCount: number;
+  pendingServices: QueuedService[];
   syncStatus: 'idle' | 'syncing' | 'success' | 'error';
-  syncServices: () => Promise<void>;
-  addPendingService: (service: any) => Promise<void>;
+  syncQueue: () => Promise<void>;
+  addToQueue: (payload: Record<string, any>, clientUUID: string) => Promise<void>;
 }
 
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
-const PENDING_SERVICES_KEY = 'pendingServices';
+// New versioned key to avoid conflicts with old format
+const QUEUE_KEY = 'offline_services_queue_v1';
+// Old key for migration
+const OLD_QUEUE_KEY = 'pendingServices';
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {
-  const [pendingServices, setPendingServices] = useState(0);
+  const [queue, setQueue] = useState<QueuedService[]>([]);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const { token } = useAuth();
+  const syncingRef = useRef(false);
 
+  // Load queue (and migrate old format) on mount
   useEffect(() => {
-    loadAndMigratePendingServices();
-    
-    // Listen for network changes
+    loadAndMigrateQueue();
+  }, []);
+
+  // Auto-sync when network comes back
+  useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
-      if (state.isConnected && pendingServices > 0) {
-        syncServices();
+      if (state.isConnected && queue.filter(s => s.status === 'pending' || s.status === 'failed').length > 0) {
+        syncQueue();
       }
     });
-
     return () => unsubscribe();
-  }, [pendingServices, token]);
+  }, [queue, token]);
 
   /**
-   * Load pending services and migrate any that don't have client_uuid
+   * Load queue from AsyncStorage and migrate old-format items
    */
-  const loadAndMigratePendingServices = async () => {
+  const loadAndMigrateQueue = async () => {
     try {
-      const pending = await AsyncStorage.getItem(PENDING_SERVICES_KEY);
-      if (pending) {
-        const services: PendingService[] = JSON.parse(pending);
-        let needsUpdate = false;
-        
-        // Migrate services that don't have client_uuid
-        const migratedServices = services.map(service => {
-          if (!isValidClientUUID(service.client_uuid)) {
-            needsUpdate = true;
-            return {
-              ...service,
-              client_uuid: newClientUUID()
-            };
-          }
-          return service;
-        });
-        
-        // Persist migrated services if needed
-        if (needsUpdate) {
-          await AsyncStorage.setItem(PENDING_SERVICES_KEY, JSON.stringify(migratedServices));
-          console.log('[SyncContext] Migrated pending services with client_uuid');
+      // 1. Load new format
+      const raw = await AsyncStorage.getItem(QUEUE_KEY);
+      let items: QueuedService[] = raw ? JSON.parse(raw) : [];
+
+      // 2. Migrate old format if present
+      const oldRaw = await AsyncStorage.getItem(OLD_QUEUE_KEY);
+      if (oldRaw) {
+        const oldItems: any[] = JSON.parse(oldRaw);
+        if (oldItems.length > 0) {
+          const migrated: QueuedService[] = oldItems.map(old => ({
+            client_uuid: isValidClientUUID(old.client_uuid) ? old.client_uuid : generateClientUUID(),
+            payload: old, // The old item IS the payload
+            created_at: new Date().toISOString(),
+            status: 'pending' as const,
+          }));
+          // Remove client_uuid from payload (it lives at top level now)
+          migrated.forEach(m => {
+            delete m.payload.client_uuid;
+          });
+          items = [...items, ...migrated];
+          // Remove old key
+          await AsyncStorage.removeItem(OLD_QUEUE_KEY);
+          console.log(`[SyncContext] Migrated ${migrated.length} old queue items`);
         }
-        
-        setPendingServices(migratedServices.length);
       }
+
+      // 3. Ensure all items have valid client_uuid
+      let needsPersist = false;
+      items = items.map(item => {
+        if (!isValidClientUUID(item.client_uuid)) {
+          needsPersist = true;
+          return { ...item, client_uuid: generateClientUUID() };
+        }
+        // Reset stuck "syncing" items back to pending
+        if (item.status === 'syncing') {
+          needsPersist = true;
+          return { ...item, status: 'pending' as const };
+        }
+        return item;
+      });
+
+      // Filter out already synced items
+      const active = items.filter(i => i.status !== 'synced');
+      if (active.length !== items.length) needsPersist = true;
+
+      if (needsPersist || oldRaw) {
+        await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(active));
+      }
+
+      setQueue(active);
     } catch (error) {
-      console.error('[SyncContext] Error loading pending services:', error);
+      console.error('[SyncContext] Error loading queue:', error);
     }
   };
 
   /**
-   * Add a service to the pending queue
-   * Ensures client_uuid is set for idempotency
+   * Add a service to the persistent offline queue.
+   * The client_uuid must be pre-generated by the caller.
    */
-  const addPendingService = async (service: any) => {
+  const addToQueue = useCallback(async (payload: Record<string, any>, clientUUID: string) => {
     try {
-      const pending = await AsyncStorage.getItem(PENDING_SERVICES_KEY);
-      const services: PendingService[] = pending ? JSON.parse(pending) : [];
-      
-      // Ensure client_uuid exists
-      const serviceWithUUID: PendingService = {
-        ...service,
-        client_uuid: service.client_uuid || newClientUUID()
+      const item: QueuedService = {
+        client_uuid: clientUUID,
+        payload,
+        created_at: new Date().toISOString(),
+        status: 'pending',
       };
-      
-      services.push(serviceWithUUID);
-      await AsyncStorage.setItem(PENDING_SERVICES_KEY, JSON.stringify(services));
-      setPendingServices(services.length);
-      
-      console.log(`[SyncContext] Added pending service with client_uuid: ${serviceWithUUID.client_uuid}`);
-      
-      // Try to sync immediately if connected
+
+      const raw = await AsyncStorage.getItem(QUEUE_KEY);
+      const items: QueuedService[] = raw ? JSON.parse(raw) : [];
+
+      // Prevent duplicate client_uuid in queue
+      if (items.some(existing => existing.client_uuid === clientUUID)) {
+        console.log(`[SyncContext] Item with uuid ${clientUUID} already in queue, skipping`);
+        return;
+      }
+
+      items.push(item);
+      await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(items));
+      setQueue(items);
+
+      console.log(`[SyncContext] Queued service ${clientUUID}`);
+
+      // Try immediate sync if connected
       const netInfo = await NetInfo.fetch();
-      if (netInfo.isConnected) {
-        await syncServices();
+      if (netInfo.isConnected && token) {
+        // Small delay to let state settle
+        setTimeout(() => syncQueue(), 500);
       }
     } catch (error) {
-      console.error('[SyncContext] Error adding pending service:', error);
+      console.error('[SyncContext] Error adding to queue:', error);
     }
-  };
+  }, [token]);
 
   /**
-   * Sync all pending services to the server
-   * Uses client_uuid for idempotency - safe to retry
+   * Sync all pending/failed items to the server via POST /api/services/sync
    */
-  const syncServices = async () => {
-    if (!token || syncStatus === 'syncing') return;
+  const syncQueue = useCallback(async () => {
+    if (!token || syncingRef.current) return;
 
     try {
+      syncingRef.current = true;
       setSyncStatus('syncing');
-      const pending = await AsyncStorage.getItem(PENDING_SERVICES_KEY);
-      
-      if (!pending) {
+
+      const raw = await AsyncStorage.getItem(QUEUE_KEY);
+      if (!raw) {
         setSyncStatus('idle');
+        syncingRef.current = false;
         return;
       }
 
-      const services: PendingService[] = JSON.parse(pending);
-      
-      if (services.length === 0) {
+      const items: QueuedService[] = JSON.parse(raw);
+      const toSync = items.filter(i => i.status === 'pending' || i.status === 'failed');
+
+      if (toSync.length === 0) {
         setSyncStatus('idle');
+        syncingRef.current = false;
         return;
       }
 
-      console.log(`[SyncContext] Syncing ${services.length} services...`);
+      console.log(`[SyncContext] Syncing ${toSync.length} services...`);
+
+      // Build batch payload: each service includes client_uuid in its payload
+      const services = toSync.map(item => ({
+        ...item.payload,
+        client_uuid: item.client_uuid,
+      }));
 
       const response = await axios.post<{
         message: string;
@@ -157,45 +204,61 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
       );
 
       const results = response.data.results || [];
-      const syncedUUIDs = new Set<string>();
-      
-      // Collect UUIDs of successfully synced services
-      results.forEach(result => {
-        if (result.status === 'created' || result.status === 'existing') {
-          if (result.client_uuid) {
-            syncedUUIDs.add(result.client_uuid);
+
+      // Map results by client_uuid
+      const resultMap = new Map<string, SyncResult>();
+      results.forEach(r => {
+        if (r.client_uuid) resultMap.set(r.client_uuid, r);
+      });
+
+      // Update queue based on results
+      const updatedItems = items.map(item => {
+        const result = resultMap.get(item.client_uuid);
+        if (result) {
+          if (result.status === 'created' || result.status === 'existing') {
+            return { ...item, status: 'synced' as const };
+          } else if (result.status === 'failed') {
+            return { ...item, status: 'failed' as const, error: result.error };
           }
         }
+        return item;
       });
-      
-      // Remove synced services from pending queue
-      const remainingServices = services.filter(
-        service => !syncedUUIDs.has(service.client_uuid)
-      );
-      
-      if (remainingServices.length === 0) {
-        await AsyncStorage.removeItem(PENDING_SERVICES_KEY);
+
+      // Keep only non-synced items
+      const remaining = updatedItems.filter(i => i.status !== 'synced');
+
+      if (remaining.length === 0) {
+        await AsyncStorage.removeItem(QUEUE_KEY);
       } else {
-        await AsyncStorage.setItem(PENDING_SERVICES_KEY, JSON.stringify(remainingServices));
-        console.log(`[SyncContext] ${remainingServices.length} services still pending after sync`);
+        await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
       }
-      
-      setPendingServices(remainingServices.length);
-      
-      const syncedCount = services.length - remainingServices.length;
-      console.log(`[SyncContext] Synced ${syncedCount} services successfully`);
-      
-      setSyncStatus('success');
+
+      setQueue(remaining);
+
+      const syncedCount = items.length - remaining.length;
+      console.log(`[SyncContext] Synced ${syncedCount}, remaining ${remaining.length}`);
+
+      setSyncStatus(remaining.filter(i => i.status === 'failed').length > 0 ? 'error' : 'success');
       setTimeout(() => setSyncStatus('idle'), 2000);
     } catch (error) {
       console.error('[SyncContext] Sync error:', error);
       setSyncStatus('error');
       setTimeout(() => setSyncStatus('idle'), 3000);
+    } finally {
+      syncingRef.current = false;
     }
-  };
+  }, [token]);
+
+  const pendingCount = queue.filter(i => i.status === 'pending' || i.status === 'failed').length;
 
   return (
-    <SyncContext.Provider value={{ pendingServices, syncStatus, syncServices, addPendingService }}>
+    <SyncContext.Provider value={{
+      pendingCount,
+      pendingServices: queue.filter(i => i.status !== 'synced'),
+      syncStatus,
+      syncQueue,
+      addToQueue,
+    }}>
       {children}
     </SyncContext.Provider>
   );
