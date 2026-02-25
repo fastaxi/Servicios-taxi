@@ -356,16 +356,36 @@ async def log_requests(request, call_next):
     
     return response
 
+# --- Git SHA auto-detection (una sola vez al importar) ---
+def _detect_git_sha() -> str:
+    """Detecta el SHA del commit actual. Prioridad:
+    1. git rev-parse --short HEAD (funciona si hay .git en el pod)
+    2. Variable de entorno GIT_SHA (inyectada por CI/CD)
+    3. "unknown"
+    """
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return os.environ.get("GIT_SHA", "unknown")
+
+_GIT_SHA = _detect_git_sha()
+
 # Root health check endpoint for deployment systems
 @app.get("/")
 async def root_health_check():
     """Health check endpoint for deployment verification"""
-    GIT_SHA = os.environ.get("GIT_SHA", "unknown")
     return {
         "status": "healthy",
         "service": "taxifast-api",
         "version": "1.0.0",
-        "git_sha": GIT_SHA,
+        "git_sha": _GIT_SHA,
         "timestamp": datetime.utcnow().isoformat()
     }
 
@@ -381,11 +401,10 @@ async def health_check():
         logger.error(f"Database health check failed: {e}")
         db_status = "disconnected"
     
-    GIT_SHA = os.environ.get("GIT_SHA", "unknown")
     return {
         "status": "healthy" if db_status == "connected" else "degraded",
         "database": db_status,
-        "git_sha": GIT_SHA,
+        "git_sha": _GIT_SHA,
         "timestamp": datetime.utcnow().isoformat()
     }
 
