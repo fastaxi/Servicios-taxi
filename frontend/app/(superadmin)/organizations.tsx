@@ -562,6 +562,32 @@ export default function OrganizationsScreen() {
                   <Chip icon="car" style={styles.statChip}>{org.total_vehiculos} vehiculos</Chip>
                   <Chip icon="briefcase" style={styles.statChip}>{org.total_clientes} clientes</Chip>
                 </View>
+
+                {/* Feature Flags */}
+                <Divider style={styles.divider} />
+                <Text variant="titleSmall" style={styles.featureFlagsTitle}>Feature Flags</Text>
+                <View style={styles.featureFlagRow} data-testid={`feature-flag-taxitur-origen-${org.id}`}>
+                  <View style={styles.featureFlagInfo}>
+                    <MaterialCommunityIcons 
+                      name="map-marker-multiple" 
+                      size={20} 
+                      color={org.features?.taxitur_origen ? '#4CAF50' : '#999'} 
+                    />
+                    <View style={{ marginLeft: 8, flex: 1 }}>
+                      <Text variant="bodyMedium">Taxitur: Origen Parada/Lagos</Text>
+                      <Text variant="bodySmall" style={{ color: '#999' }}>
+                        {org.features?.taxitur_origen 
+                          ? 'Campo obligatorio en servicios' 
+                          : 'Desactivado'}
+                      </Text>
+                    </View>
+                  </View>
+                  <Switch
+                    value={org.features?.taxitur_origen || false}
+                    onValueChange={() => handleToggleFeature(org, 'taxitur_origen')}
+                    disabled={togglingFeature === `${org.id}-taxitur_origen`}
+                  />
+                </View>
               </Card.Content>
               
               <Card.Actions style={styles.cardActions}>
