@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, ScrollView } from 'react-native';
-import { Text, Card, Chip, FAB, IconButton, Button, List } from 'react-native-paper';
+import { Text, Card, Chip, IconButton, Button, List } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
-import { useSync } from '../../contexts/SyncContext';
+import { useSync, QueuedService } from '../../contexts/SyncContext';
 import { useRouter, useFocusEffect } from 'expo-router';
 import axios from 'axios';
-import { format } from 'date-fns';
 
 import { API_URL } from '../../config/api';
 
@@ -32,15 +31,15 @@ export default function ServicesScreen() {
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedDates, setExpandedDates] = useState<{ [key: string]: boolean }>({});
+  const [showPendingList, setShowPendingList] = useState(false);
   const { token } = useAuth();
-  const { pendingServices, syncStatus, syncServices } = useSync();
+  const { pendingCount, pendingServices, syncStatus, syncQueue } = useSync();
   const router = useRouter();
 
   useEffect(() => {
     loadServices();
   }, []);
 
-  // Recargar datos cada vez que se enfoca la pantalla
   useFocusEffect(
     React.useCallback(() => {
       loadServices();
@@ -55,29 +54,21 @@ export default function ServicesScreen() {
 
   const loadServices = async () => {
     try {
-      console.log('=== Cargando servicios del taxista ===');
-      console.log('Token:', token ? 'Presente' : 'Ausente');
-      
-      // Cargar turno activo
       try {
         const turnoResponse = await axios.get(`${API_URL}/turnos/activo`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTurnoActivo(turnoResponse.data);
-        console.log('Turno activo encontrado:', turnoResponse.data?.id);
       } catch (error: any) {
         if (error.response?.status !== 404) {
           console.error('Error cargando turno activo:', error);
         }
         setTurnoActivo(null);
-        console.log('No hay turno activo');
       }
       
-      // Cargar todos los servicios
       const response = await axios.get(`${API_URL}/services`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Servicios recibidos:', response.data.length);
       setServices(response.data);
     } catch (error) {
       console.error('Error loading services:', error);
@@ -86,35 +77,24 @@ export default function ServicesScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await syncServices();
+    await syncQueue();
     await loadServices();
     setRefreshing(false);
   };
 
   const formatEuro = (amount: number) => {
-    return amount.toFixed(2).replace('.', ',') + ' €';
+    return amount.toFixed(2).replace('.', ',') + ' *';
   };
 
-  // Filtrar servicios segun si se muestra historial o no
   const getServiciosFiltrados = () => {
-    // Si no hay turno activo, mostrar todos siempre
-    if (!turnoActivo) {
-      return services;
-    }
-    
-    // Si NO muestra historial, mostrar solo del turno activo
-    if (!mostrarHistorial) {
-      return services.filter(s => s.turno_id === turnoActivo.id);
-    }
-    
-    // Si muestra historial, mostrar todos
+    if (!turnoActivo) return services;
+    if (!mostrarHistorial) return services.filter(s => s.turno_id === turnoActivo.id);
     return services;
   };
 
   const serviciosTurnoActivo = turnoActivo ? services.filter(s => s.turno_id === turnoActivo.id).length : 0;
   const serviciosArchivados = services.length - serviciosTurnoActivo;
 
-  // Agrupar servicios por fecha
   const agruparPorFecha = (servicios: Service[]) => {
     const grupos: { [key: string]: Service[] } = {};
     servicios.forEach(servicio => {
@@ -124,9 +104,7 @@ export default function ServicesScreen() {
       grupos[servicio.fecha].push(servicio);
     });
     
-    // Ordenar fechas de mas reciente a mas antigua
     const fechasOrdenadas = Object.keys(grupos).sort((a, b) => {
-      // Convertir dd/mm/yyyy a Date para comparar
       const [diaA, mesA, anoA] = a.split('/').map(Number);
       const [diaB, mesB, anoB] = b.split('/').map(Number);
       const fechaA = new Date(anoA, mesA - 1, diaA);
@@ -136,9 +114,35 @@ export default function ServicesScreen() {
     
     return fechasOrdenadas.map(fecha => ({
       fecha,
-      servicios: grupos[fecha].sort((a, b) => b.hora.localeCompare(a.hora)) // Ordenar por hora desc
+      servicios: grupos[fecha].sort((a, b) => b.hora.localeCompare(a.hora))
     }));
   };
+
+  const renderPendingItem = (item: QueuedService) => (
+    <Card key={item.client_uuid} style={styles.pendingCard}>
+      <Card.Content>
+        <View style={styles.pendingRow}>
+          <Text variant="bodyMedium" style={styles.pendingRoute}>
+            {item.payload.origen || '?'} - {item.payload.destino || '?'}
+          </Text>
+          <Chip
+            mode="flat"
+            compact
+            style={item.status === 'failed' ? styles.chipFailed : styles.chipPending}
+            textStyle={styles.chipTextWhite}
+          >
+            {item.status === 'failed' ? 'Error' : 'Pendiente'}
+          </Chip>
+        </View>
+        <Text variant="bodySmall" style={styles.pendingMeta}>
+          {item.payload.fecha} {item.payload.hora} | {(item.payload.importe || 0).toFixed(2).replace('.', ',')} *
+        </Text>
+        {item.error && (
+          <Text variant="bodySmall" style={styles.pendingError}>{item.error}</Text>
+        )}
+      </Card.Content>
+    </Card>
+  );
 
   const renderService = ({ item }: { item: Service }) => (
     <Card style={styles.card}>
@@ -146,7 +150,7 @@ export default function ServicesScreen() {
         <View style={styles.cardHeader}>
           <View style={styles.cardTitleContainer}>
             <Text variant="titleMedium" style={styles.cardTitle}>
-              {item.origen} → {item.destino}
+              {item.origen} - {item.destino}
             </Text>
             <Chip mode="flat" style={styles.chip}>
               {formatEuro(item.importe_total || item.importe)}
@@ -189,7 +193,6 @@ export default function ServicesScreen() {
           </Chip>
         </View>
 
-        {/* Chips de estado */}
         <View style={styles.statusChipsContainer}>
           {item.cobrado && (
             <Chip 
@@ -220,13 +223,45 @@ export default function ServicesScreen() {
 
   return (
     <View style={styles.container}>
-      {pendingServices > 0 && (
-        <View style={styles.syncBanner}>
-          <Text style={styles.syncText}>
-            {syncStatus === 'syncing'
-              ? 'Sincronizando servicios...'
-              : `${pendingServices} servicio(s) pendiente(s) de sincronizar`}
-          </Text>
+      {/* Paso 5B: Sync banner with pending count and optional detail list */}
+      {pendingCount > 0 && (
+        <View>
+          <View style={styles.syncBanner}>
+            <View style={styles.syncBannerContent}>
+              <Text style={styles.syncText}>
+                {syncStatus === 'syncing'
+                  ? 'Sincronizando servicios...'
+                  : `Pendientes de sincronizar: ${pendingCount}`}
+              </Text>
+              <View style={styles.syncActions}>
+                <Button
+                  mode="text"
+                  compact
+                  textColor="#333"
+                  onPress={() => setShowPendingList(!showPendingList)}
+                  icon={showPendingList ? 'chevron-up' : 'chevron-down'}
+                >
+                  {showPendingList ? 'Ocultar' : 'Ver'}
+                </Button>
+                {syncStatus !== 'syncing' && (
+                  <Button
+                    mode="text"
+                    compact
+                    textColor="#0066CC"
+                    onPress={() => syncQueue()}
+                    icon="sync"
+                  >
+                    Reintentar
+                  </Button>
+                )}
+              </View>
+            </View>
+          </View>
+          {showPendingList && pendingServices.length > 0 && (
+            <View style={styles.pendingListContainer}>
+              {pendingServices.map(renderPendingItem)}
+            </View>
+          )}
         </View>
       )}
 
@@ -234,7 +269,7 @@ export default function ServicesScreen() {
       {turnoActivo && !mostrarHistorial && (
         <View style={styles.turnoInfoBanner}>
           <Text style={styles.turnoInfoText}>
-            📋 Turno activo: {serviciosTurnoActivo} servicio(s) en este turno
+            Turno activo: {serviciosTurnoActivo} servicio(s) en este turno
           </Text>
           {serviciosArchivados > 0 && (
             <Text style={styles.turnoInfoSubtext}>
@@ -244,7 +279,7 @@ export default function ServicesScreen() {
         </View>
       )}
 
-      {/* Boton para ver/ocultar historial - solo si hay turno activo */}
+      {/* Boton para ver/ocultar historial */}
       {turnoActivo && serviciosArchivados > 0 && (
         <View style={styles.historialButtonContainer}>
           <Button
@@ -277,7 +312,6 @@ export default function ServicesScreen() {
           }
         />
       ) : (
-        /* Vista con historial o sin turno: Acordeones por fecha */
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -328,12 +362,61 @@ const styles = StyleSheet.create({
   },
   syncBanner: {
     backgroundColor: '#FFD700',
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  syncBannerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   syncText: {
     color: '#333',
     fontWeight: '600',
+    flex: 1,
+  },
+  syncActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  pendingListContainer: {
+    backgroundColor: '#FFF8E1',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFD700',
+  },
+  pendingCard: {
+    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    elevation: 1,
+  },
+  pendingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  pendingRoute: {
+    fontWeight: '600',
+    flex: 1,
+  },
+  pendingMeta: {
+    color: '#666',
+  },
+  pendingError: {
+    color: '#D32F2F',
+    marginTop: 4,
+  },
+  chipPending: {
+    backgroundColor: '#FF9800',
+  },
+  chipFailed: {
+    backgroundColor: '#D32F2F',
+  },
+  chipTextWhite: {
+    color: '#FFFFFF',
+    fontSize: 11,
   },
   turnoInfoBanner: {
     backgroundColor: '#E3F2FD',

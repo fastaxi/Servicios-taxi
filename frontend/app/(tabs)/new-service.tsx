@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import {
   TextInput,
@@ -19,7 +18,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
 import { useOrganization } from '../../contexts/OrganizationContext';
-import { newClientUUID } from '../../utils/uuid';
+import { generateClientUUID } from '../../utils/uuid';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -47,7 +46,7 @@ interface TurnoActivo {
 
 export default function NewServiceScreen() {
   const { token, user } = useAuth();
-  const { addPendingService } = useSync();
+  const { addToQueue } = useSync();
   const { hasFeature } = useOrganization();
   const router = useRouter();
 
@@ -58,16 +57,15 @@ export default function NewServiceScreen() {
   const [importe, setImporte] = useState('');
   const [importeEspera, setImporteEspera] = useState('');
   const [importeTotal, setImporteTotal] = useState('0,00');
-  const [kilometros, setKilometros] = useState(''); // PR2: Ahora opcional
+  const [kilometros, setKilometros] = useState('');
   const [tipo, setTipo] = useState('particular');
   const [empresaId, setEmpresaId] = useState('');
   const [empresaNombre, setEmpresaNombre] = useState('');
   const [cobrado, setCobrado] = useState(false);
   const [facturar, setFacturar] = useState(false);
   
-  // PR2: Nuevos campos
-  const [metodoPago, setMetodoPago] = useState('efectivo'); // efectivo | tpv
-  const [origenTaxitur, setOrigenTaxitur] = useState(''); // parada | lagos
+  const [metodoPago, setMetodoPago] = useState('efectivo');
+  const [origenTaxitur, setOrigenTaxitur] = useState('');
   const [vehiculoId, setVehiculoId] = useState('');
   const [vehiculoMatricula, setVehiculoMatricula] = useState('');
   const [kmInicioVehiculo, setKmInicioVehiculo] = useState('');
@@ -78,34 +76,27 @@ export default function NewServiceScreen() {
   const [turnoActivo, setTurnoActivo] = useState<TurnoActivo | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [vehiculoMenuVisible, setVehiculoMenuVisible] = useState(false);
-  const [origenTaxiturMenuVisible, setOrigenTaxiturMenuVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '' });
 
-  // Feature flag: Determinar si la organizacion tiene activo taxitur_origen
+  // Paso 5B: Stable client_uuid per submit attempt.
+  // Generated once when user presses "Guardar" and reused if queued.
+  const currentUUIDRef = useRef<string | null>(null);
+
   const hasTaxiturOrigenFeature = hasFeature('taxitur_origen');
 
-  // PR2: Determinar vehiculo por defecto del turno
   const vehiculoDefaultId = turnoActivo?.vehiculo_id || '';
-  
-  // PR2: Determinar si cambio de vehiculo (solo si hay un default)
   const vehiculoCambiado = vehiculoDefaultId && vehiculoId && vehiculoId !== vehiculoDefaultId;
 
-  // Funcion para parsear numeros en formato europeo
   const parseEuroNumber = (value: string): number => {
     if (!value) return 0;
     return parseFloat(value.replace(/\./g, '').replace(',', '.'));
   };
 
-  // Calcular importe total automaticamente
   useEffect(() => {
-    const calcularTotal = () => {
-      const importeNum = importe ? parseEuroNumber(importe) : 0;
-      const esperaNum = importeEspera ? parseEuroNumber(importeEspera) : 0;
-      const total = importeNum + esperaNum;
-      setImporteTotal(total.toFixed(2).replace('.', ','));
-    };
-    calcularTotal();
+    const importeNum = importe ? parseEuroNumber(importe) : 0;
+    const esperaNum = importeEspera ? parseEuroNumber(importeEspera) : 0;
+    setImporteTotal((importeNum + esperaNum).toFixed(2).replace('.', ','));
   }, [importe, importeEspera]);
 
   useEffect(() => {
@@ -148,7 +139,6 @@ export default function NewServiceScreen() {
           vehiculo_id: turno.vehiculo_id,
           vehiculo_matricula: turno.vehiculo_matricula,
         });
-        // Preseleccionar vehiculo del turno
         setVehiculoId(turno.vehiculo_id);
         setVehiculoMatricula(turno.vehiculo_matricula);
       }
@@ -163,7 +153,6 @@ export default function NewServiceScreen() {
       return false;
     }
 
-    // Validar formato de fecha dd/mm/yyyy
     const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
     if (!dateRegex.test(fecha)) {
       setSnackbar({ visible: true, message: 'Formato de fecha incorrecto. Usa dd/mm/yyyy' });
@@ -181,7 +170,6 @@ export default function NewServiceScreen() {
       return false;
     }
 
-    // PR2: Kilometros ahora opcionales, pero si se rellenan deben ser validos
     if (kilometros) {
       const kmNum = parseEuroNumber(kilometros);
       if (isNaN(kmNum) || kmNum < 0) {
@@ -198,13 +186,11 @@ export default function NewServiceScreen() {
       }
     }
 
-    // PR2: Validar origen_taxitur obligatorio si la org tiene el feature activo
     if (hasTaxiturOrigenFeature && !origenTaxitur) {
       setSnackbar({ visible: true, message: 'Debes seleccionar el origen (Parada o Lagos)' });
       return false;
     }
 
-    // PR2: Validar km de vehiculo si cambio
     if (vehiculoCambiado) {
       const kmInicio = parseInt(kmInicioVehiculo);
       const kmFin = parseInt(kmFinVehiculo);
@@ -227,40 +213,38 @@ export default function NewServiceScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || loading) return;
 
     setLoading(true);
 
-    // Generar client_uuid para idempotencia (Paso 5B)
-    // Este UUID se mantiene estable para reintentos
-    const clientUUID = newClientUUID();
+    // Paso 5B: Generate stable client_uuid ONCE per submit.
+    // If user retaps "Guardar" while loading, the same UUID is reused.
+    if (!currentUUIDRef.current) {
+      currentUUIDRef.current = generateClientUUID();
+    }
+    const clientUUID = currentUUIDRef.current;
 
-    const serviceData: any = {
+    const serviceData: Record<string, any> = {
       fecha,
       hora,
       origen,
       destino,
       importe: parseEuroNumber(importe),
       importe_espera: importeEspera ? parseEuroNumber(importeEspera) : 0,
-      kilometros: kilometros ? parseEuroNumber(kilometros) : null, // PR2: Ahora puede ser null
+      kilometros: kilometros ? parseEuroNumber(kilometros) : null,
       tipo,
       empresa_id: tipo === 'empresa' ? empresaId : null,
       empresa_nombre: tipo === 'empresa' ? empresaNombre : null,
       cobrado,
       facturar,
-      // PR2: Nuevos campos
       metodo_pago: metodoPago,
       vehiculo_id: vehiculoId || null,
-      // Paso 5B: client_uuid para idempotencia
-      client_uuid: clientUUID,
     };
 
-    // PR2: Solo enviar origen_taxitur si la org tiene el feature activo
     if (hasTaxiturOrigenFeature) {
       serviceData.origen_taxitur = origenTaxitur;
     }
 
-    // PR2: Anadir km de vehiculo si cambio
     if (vehiculoCambiado) {
       serviceData.km_inicio_vehiculo = parseInt(kmInicioVehiculo);
       serviceData.km_fin_vehiculo = parseInt(kmFinVehiculo);
@@ -270,29 +254,39 @@ export default function NewServiceScreen() {
       const netInfo = await NetInfo.fetch();
 
       if (netInfo.isConnected) {
-        await axios.post(`${API_URL}/services`, serviceData, {
+        // Try online first, include client_uuid in payload
+        await axios.post(`${API_URL}/services`, { ...serviceData, client_uuid: clientUUID }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSnackbar({ visible: true, message: 'Servicio guardado correctamente' });
       } else {
-        await addPendingService(serviceData);
+        // Offline: queue directly
+        await addToQueue(serviceData, clientUUID);
         setSnackbar({
           visible: true,
-          message: 'Servicio guardado localmente. Se sincronizara cuando haya conexion',
+          message: 'Sin conexion. Servicio guardado en cola, se sincronizara automaticamente',
         });
       }
 
+      // Success path: reset UUID and form
+      currentUUIDRef.current = null;
       resetForm();
-      
-      setTimeout(() => {
-        router.push('/services');
-      }, 500);
+      setTimeout(() => router.push('/services'), 500);
     } catch (error: any) {
       console.error('Error saving service:', error);
+
+      // Paso 5B: On ANY API failure, queue the service for later sync
+      // The same client_uuid ensures no duplicates when retried
+      await addToQueue(serviceData, clientUUID);
+      currentUUIDRef.current = null;
+      resetForm();
+
       setSnackbar({
         visible: true,
-        message: error.response?.data?.detail || 'Error al guardar el servicio',
+        message: 'Error de red. Servicio guardado en cola, se sincronizara automaticamente',
       });
+
+      setTimeout(() => router.push('/services'), 500);
     } finally {
       setLoading(false);
     }
@@ -315,7 +309,7 @@ export default function NewServiceScreen() {
     setOrigenTaxitur('');
     setKmInicioVehiculo('');
     setKmFinVehiculo('');
-    // Restaurar vehiculo del turno
+    currentUUIDRef.current = null;
     if (turnoActivo) {
       setVehiculoId(turnoActivo.vehiculo_id);
       setVehiculoMatricula(turnoActivo.vehiculo_matricula);
@@ -374,14 +368,13 @@ export default function NewServiceScreen() {
 
           <View style={styles.row}>
             <TextInput
-              label="Importe (€) *"
+              label="Importe (*) *"
               value={importe}
               onChangeText={setImporte}
               mode="outlined"
               keyboardType="default"
               style={styles.halfInput}
             />
-            {/* PR2: Kilometros ahora opcional (sin asterisco) */}
             <TextInput
               label="Kilometros"
               value={kilometros}
@@ -393,7 +386,7 @@ export default function NewServiceScreen() {
           </View>
 
           <TextInput
-            label="Importe de espera (€)"
+            label="Importe de espera (*)"
             value={importeEspera}
             onChangeText={setImporteEspera}
             mode="outlined"
@@ -403,7 +396,7 @@ export default function NewServiceScreen() {
           />
 
           <TextInput
-            label="Importe Total (€)"
+            label="Importe Total (*)"
             value={importeTotal}
             mode="outlined"
             editable={false}
@@ -411,7 +404,7 @@ export default function NewServiceScreen() {
             right={<TextInput.Icon icon="calculator" />}
           />
 
-          {/* PR2: Selector de vehiculo */}
+          {/* Selector de vehiculo */}
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Vehiculo
           </Text>
@@ -443,11 +436,11 @@ export default function NewServiceScreen() {
             ))}
           </Menu>
 
-          {/* PR2: Mostrar campos de km si cambio de vehiculo */}
+          {/* Campos de km si cambio de vehiculo */}
           {vehiculoCambiado && (
             <View style={styles.kmCambioContainer}>
               <Text variant="bodySmall" style={styles.kmCambioWarning}>
-                ⚠️ Has cambiado de vehiculo. Debes indicar los kilometros:
+                Has cambiado de vehiculo. Debes indicar los kilometros:
               </Text>
               <View style={styles.row}>
                 <TextInput
@@ -470,7 +463,7 @@ export default function NewServiceScreen() {
             </View>
           )}
 
-          {/* PR2: Metodo de pago */}
+          {/* Metodo de pago */}
           <Text variant="titleMedium" style={styles.sectionTitle}>
             Metodo de Pago
           </Text>
@@ -478,13 +471,13 @@ export default function NewServiceScreen() {
             value={metodoPago}
             onValueChange={setMetodoPago}
             buttons={[
-              { value: 'efectivo', label: '💵 Efectivo', icon: 'cash' },
-              { value: 'tpv', label: '💳 TPV', icon: 'credit-card' },
+              { value: 'efectivo', label: 'Efectivo', icon: 'cash' },
+              { value: 'tpv', label: 'TPV', icon: 'credit-card' },
             ]}
             style={styles.segmented}
           />
 
-          {/* PR2: Origen Taxitur (solo si la org tiene el feature activo) */}
+          {/* Origen Taxitur (solo si la org tiene el feature activo) */}
           {hasTaxiturOrigenFeature && (
             <>
               <Text variant="titleMedium" style={styles.sectionTitle}>
@@ -494,8 +487,8 @@ export default function NewServiceScreen() {
                 value={origenTaxitur}
                 onValueChange={setOrigenTaxitur}
                 buttons={[
-                  { value: 'parada', label: '🚏 Parada' },
-                  { value: 'lagos', label: '🏔️ Lagos' },
+                  { value: 'parada', label: 'Parada' },
+                  { value: 'lagos', label: 'Lagos' },
                 ]}
                 style={styles.segmented}
               />
@@ -652,7 +645,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingVertical: 8,
   },
-  // PR2: Estilos para cambio de vehiculo
   kmCambioContainer: {
     backgroundColor: '#FFF3E0',
     padding: 12,
