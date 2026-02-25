@@ -31,7 +31,7 @@ interface Company {
 
 export default function EditServiceScreen() {
   const { token } = useAuth();
-  const { syncServices } = useSync();
+  const { syncQueue } = useSync();
   const router = useRouter();
   const params = useLocalSearchParams();
   
