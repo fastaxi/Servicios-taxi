@@ -953,6 +953,7 @@ async def health_check():
         return {
             "status": "healthy",
             "database": "connected",
+            "git_sha": _GIT_SHA,
             "timestamp": datetime.utcnow().isoformat(),
             "stats": {
                 "users": users_count,
