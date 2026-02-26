@@ -24,7 +24,10 @@ def get_git_sha() -> str:
             return sha
     except Exception:
         pass
-    return os.environ.get("GIT_SHA", "unknown")
+    val = os.environ.get("GIT_SHA")
+    if not val or not str(val).strip():
+        return "unknown"
+    return val
 import pathlib
 import os
 import logging
