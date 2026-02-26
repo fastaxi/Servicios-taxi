@@ -395,7 +395,10 @@ def _detect_git_sha() -> str:
             return result.stdout.strip()
     except Exception:
         pass
-    return os.environ.get("GIT_SHA", "unknown")
+    val = os.environ.get("GIT_SHA")
+    if not val or not str(val).strip():
+        return "unknown"
+    return val
 
 _GIT_SHA = _detect_git_sha()
 
