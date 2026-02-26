@@ -7,6 +7,25 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+
+import subprocess
+
+def get_git_sha() -> str:
+    """Return short git SHA if available, else env GIT_SHA, else 'unknown'."""
+    # Prefer real repo SHA when .git exists (Emergent preview), then fall back to env
+    try:
+        sha = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(pathlib.Path(__file__).resolve().parent.parent),
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        if sha:
+            return sha
+    except Exception:
+        pass
+    return os.environ.get("GIT_SHA", "unknown")
+import pathlib
 import os
 import logging
 import secrets
@@ -4891,8 +4910,8 @@ async def startup_event():
             await db.services.create_index(
                 [("organization_id", 1), ("client_uuid", 1)],
                 unique=True,
-                sparse=True,
-                name="ux_org_client_uuid"
+                name="ux_org_client_uuid",
+                partialFilterExpression={"client_uuid": {"$type": "string", "$exists": True, "$ne": ""}}
             )
             print("[STARTUP] Indice ux_org_client_uuid creado (idempotencia)")
         except Exception as idx_err:
