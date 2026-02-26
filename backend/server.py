@@ -16,7 +16,7 @@ def get_git_sha() -> str:
     try:
         sha = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"],
-            cwd=str(pathlib.Path(__file__).resolve().parent),
+            cwd=str(pathlib.Path(__file__).resolve().parent.parent),
             stderr=subprocess.DEVNULL,
             text=True,
         ).strip()
@@ -4890,8 +4890,8 @@ async def startup_event():
             await db.services.create_index(
                 [("organization_id", 1), ("client_uuid", 1)],
                 unique=True,
-                sparse=True,
-                name="ux_org_client_uuid"
+                name="ux_org_client_uuid",
+                partialFilterExpression={"client_uuid": {"$type": "string", "$exists": True, "$ne": ""}}
             )
             print("[STARTUP] Indice ux_org_client_uuid creado (idempotencia)")
         except Exception as idx_err:
