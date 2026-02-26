@@ -405,7 +405,8 @@ async def root_health_check():
         "service": "taxifast-api",
         "version": "1.0.0",
         "git_sha": _GIT_SHA,
-        "timestamp": datetime.utcnow().isoformat()
+                "build_marker": "redeploy-marker-20260226-063200",
+"timestamp": datetime.utcnow().isoformat()
     }
 
 # API health check endpoint
